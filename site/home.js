@@ -36,12 +36,25 @@
   const assistants = () => S.coaches.filter(c => c.kind === "assistant");
   const coachById = id => S.coaches.find(c => c.id === id);
 
+  // **words** → yellow highlighter, _words_ → red squiggle, \n → line break (applied after escaping)
+  // (function declarations so they're ready before renderStatic() runs at the top)
+  function marks(t) {
+    return esc(t)
+      .replace(/\*\*(.+?)\*\*/g, '<mark class="hl">$1</mark>')
+      .replace(/(^|[^\w])_(.+?)_(?=[^\w]|$)/g, '$1<span class="squig">$2</span>')
+      .replace(/\n/g, "<br>");
+  }
+  // same text with the marks removed, for places that show it plain
+  function plain(t) {
+    return t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/(^|[^\w])_(.+?)_(?=[^\w]|$)/g, "$1$2");
+  }
+
   /* ================================================== static content */
   function renderStatic() {
     $("#lede").textContent = C.event.pitch;
     $("#goal-line").textContent = C.event.goal;
     $("#pitch").textContent = C.event.pitch;
-    $("#prio").textContent = C.priority;
+    $("#prio").innerHTML = marks(C.priority);
     $("#tz").textContent = UI.tz;
     $("#ticket-stub").insertAdjacentHTML("afterbegin", UI.barcode("PTG-1116", 60, 40));
     const st = UI.status();
@@ -56,8 +69,8 @@
       try { localStorage.setItem("ptg:goals", JSON.stringify(v)); } catch (e) { /* storage blocked */ }
     });
 
-    $("#steps").innerHTML = C.steps.map(s => "<li><span><b>" + esc(s.t) + "</b>" + esc(s.d) + "</span></li>").join("");
-    $("#roles").innerHTML = C.roles.map(r => "<p><b>" + esc(r.name) + "</b><br>" + esc(r.d) + (r.alt ? ' <span class="alt">(aka ' + esc(r.alt.replace(/\.$/, "")) + ")</span>" : "") + "</p>").join("");
+    $("#steps").innerHTML = C.steps.map(s => "<li><span><b>" + marks(s.t) + "</b>" + marks(s.d) + "</span></li>").join("");
+    $("#roles").innerHTML = C.roles.map(r => "<p><b>" + (r.icon ? '<span class="role-dot" aria-hidden="true">' + r.icon + "</span>" : "") + esc(r.name) + "</b><br>" + esc(r.d) + (r.alt ? ' <span class="alt">(aka ' + esc(r.alt.replace(/\.$/, "")) + ")</span>" : "") + "</p>").join("");
     $("#after").innerHTML = "<b>After you apply</b>" + C.signupAfter.map(s => "<span>" + esc(s) + "</span>").join("<i>→</i>");
 
     renderSchedule();
@@ -185,7 +198,7 @@
     box.classList.remove("single");
     if (!S.me) {
       box.innerHTML =
-        '<article class="sheet app">' + appTop("Form PTG-T", "Team application") + '<p class="who">For full rosters. ' + esc(C.priority) + "</p>" + blanks(TEAM_Q) +
+        '<article class="sheet app">' + appTop("Form PTG-T", "Team application") + '<p class="who">For full rosters. ' + esc(plain(C.priority)) + "</p>" + blanks(TEAM_Q) +
         '<div class="app-foot"><button type="button" class="btn js-login">Log in with Discord to apply</button></div></article>' +
         '<article class="sheet app">' + appTop("Form PTG-S", "Solo application") + '<p class="who">For individual players. Staff place solo signups together on a team, under one of the eight mentors.</p>' + blanks(SOLO_Q) +
         '<div class="app-foot"><button type="button" class="btn js-login">Log in with Discord to apply</button></div></article>';
@@ -218,7 +231,7 @@
     const prefs = (s && s.mentor_prefs) || [];
     if (locked) return '<article class="sheet app locked">' + appTop("Form PTG-T", "Team application") + '<p class="who">You applied solo. Withdraw that application first if you want to apply as a team instead.</p>' + blanks(TEAM_Q) + "</article>";
     return '<form class="sheet app" id="f-team" novalidate>' + appTop("Form PTG-T", "Team application") +
-      '<p class="who">Applying as <b>@' + esc(S.me.username || UI.who(S.me)) + "</b>, team captain. " + esc(C.priority) + "</p>" +
+      '<p class="who">Applying as <b>@' + esc(S.me.username || UI.who(S.me)) + "</b>, team captain. " + esc(plain(C.priority)) + "</p>" +
       '<div class="fgrid">' +
         '<label class="fld wide"><span class="k">01 Team name</span><input name="team_name" maxlength="40" required value="' + val(s, "team_name") + '"></label>' +
         '<div class="fld wide"><span class="k">02 Players (in-game name · Discord username)</span><div class="prows">' +

@@ -13,15 +13,16 @@ window.PTG = {
 
   goals: ["Learn from the best players", "2 Tourney Days", "2 Week Event"],
 
+  /* Step text marks: **words** = yellow highlighter, _words_ = red squiggle underline, \n = line break. */
   steps: [
-    { t: "Log in and apply", d: "Log in with Discord, then apply as a full team, or solo to get placed on a team with other individual players." },
-    { t: "Teams are chosen", d: "Teams that played ERCS/ERCC qualifiers with ¾ of their original lineup, or played T2 events, get priority." },
-    { t: "Pick your coach", d: "Teams rank the mentors they want on the application. Staff then distribute the 8 main mentors across the teams." },
-    { t: "Request sessions", d: "Mentors post the hours they're free. You pick an hour in and an hour out and send a request; the mentor accepts or declines it." },
-    { t: "Scrim and compete", d: "Scrim days each week, a Mock Checkpoint on Sunday Nov 15, then the Real Checkpoint on Sunday Nov 22." }
+    { t: "Sign Up!", d: "Register as a **full team**, or _sign up solo_ and get placed on a team with other individual players." },
+    { t: "Teams are Chosen.", d: "Teams will be picked and released!" },
+    { t: "Pick your Coach", d: "Chosen teams rank the mentors they want.\nStaff then distribute the 8 main mentors across the teams." },
+    { t: "Book Sessions...", d: "Mentors post their availability.\nPlayers book 30–60 minute team or individual reviews, like booking an office hour!" },
+    { t: "Play and Compete!", d: "Designated scrim days each week, **a Mock Checkpoint on Sunday Nov 15,** then **the Real Checkpoint on Sunday Nov 22.**" }
   ],
 
-  priority: "Teams who played ERCS/ERCC qualifiers with ¾ of their original lineup, or who played T2 events, are prioritized.",
+  priority: "Teams who played _ERCS/ERCC qualifiers_ with ¾ of their original lineup, or who played T2 events, are prioritized.",
 
   schedule: [
     { date: "2026-11-09", kind: "kickoff", short: "Day 1", title: "Event begins", note: "Teams meet their mentors and session requests open." },
@@ -34,10 +35,10 @@ window.PTG = {
   ],
 
   roles: [
-    { key: "staff", name: "Staff", d: "Oversee everything, monitor interactions, and keep the event moving smoothly." },
-    { key: "mentor", name: "Mentors", d: "The 8 team coaches. Group review sessions, character-specific help, and any other questions from their team." },
-    { key: "assistant", name: "Assistant Coaches", d: "Role and character specialists on standby. Individual coaching and general help for players on any team." },
-    { key: "player", name: "Players", d: "Developing players here to learn the game.", alt: "Chuds learning the game." }
+    { key: "staff", icon: "⚫", name: "Staff", d: "Oversee everything, monitor interactions, and keep the event moving smoothly." },
+    { key: "mentor", icon: "🔴", name: "Mentors", d: "The 8 team coaches. Group review sessions, character-specific help, and any other questions from their team." },
+    { key: "assistant", icon: "⭕", name: "Assistant Coaches", d: "Role and character specialists on standby. Individual coaching and general help for players on any team." },
+    { key: "player", icon: "⚪", name: "Players", d: "Developing players here to learn the game.", alt: "Chuds learning the game." }
   ],
 
   resources: [
