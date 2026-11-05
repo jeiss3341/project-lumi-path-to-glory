@@ -71,7 +71,7 @@
 
     $("#steps").innerHTML = C.steps.map(s => "<li><span><b>" + marks(s.t) + "</b>" + marks(s.d) + "</span></li>").join("");
     $("#roles").innerHTML = C.roles.map(r => "<p><b>" + (r.icon ? '<span class="role-dot" aria-hidden="true">' + r.icon + "</span>" : "") + esc(r.name) + "</b><br>" + esc(r.d) + (r.alt ? ' <span class="alt">(aka ' + esc(r.alt.replace(/\.$/, "")) + ")</span>" : "") + "</p>").join("");
-    $("#after").innerHTML = "<b>After you apply</b>" + C.signupAfter.map(s => "<span>" + esc(s) + "</span>").join("<i>→</i>");
+    if ($("#after")) $("#after").innerHTML = "<b>After you apply</b>" + C.signupAfter.map(s => "<span>" + esc(s) + "</span>").join("<i>→</i>");
 
     renderSchedule();
 
@@ -195,6 +195,7 @@
 
   function renderApply() {
     const box = $("#apply");
+    if (!box) return; // Sign up section removed from the page (2026-11-05); forms kept here in case it comes back
     box.classList.remove("single");
     if (!S.me) {
       box.innerHTML =

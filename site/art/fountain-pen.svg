@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 160" width="600" height="160">
+  <!-- Path to Glory · desk prop: uncapped fountain pen with its cap, nib resting in a fresh red ink blot -->
+  <defs>
+    <filter id="soft" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="5"/></filter>
+    <linearGradient id="lacquer" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b3835"/>
+      <stop offset=".28" stop-color="#151413"/>
+      <stop offset=".72" stop-color="#0b0a0a"/>
+      <stop offset="1" stop-color="#2c2a27"/>
+    </linearGradient>
+    <linearGradient id="grip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2826"/>
+      <stop offset=".5" stop-color="#080807"/>
+      <stop offset="1" stop-color="#242220"/>
+    </linearGradient>
+    <linearGradient id="nib" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6ebc4"/>
+      <stop offset=".45" stop-color="#d8c07e"/>
+      <stop offset="1" stop-color="#9c7f43"/>
+    </linearGradient>
+    <linearGradient id="trim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ef6a60"/>
+      <stop offset=".5" stop-color="#d6403a"/>
+      <stop offset="1" stop-color="#8f241f"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f3ef"/>
+      <stop offset=".5" stop-color="#b9b6ae"/>
+      <stop offset="1" stop-color="#77746d"/>
+    </linearGradient>
+    <radialGradient id="ink" cx=".42" cy=".38" r=".7">
+      <stop offset="0" stop-color="#c2342e"/>
+      <stop offset=".7" stop-color="#a42b26"/>
+      <stop offset="1" stop-color="#7a1d19"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ink leaking from the nib, spreading out along the desk -->
+  <g>
+    <path d="M2 34C10 14 40 10 60 20c16 8 30 2 50 10 22 9 42 6 64 18 24 13 52 10 80 22 20 9 26 24 10 34-14 9-34 2-52 8-20 7-30 22-56 20-24-2-30-18-52-20C76 120 52 130 34 120 16 110 22 92 10 82-2 72-4 52 2 34z" fill="url(#ink)"/>
+    <path d="M206 108c12 4 18 16 12 26-4 7 2 16-6 18s-14-8-12-16-8-16 6-28z" fill="#8f241f"/>
+    <path d="M120 124c8 2 10 10 6 16s-12 2-12-4 0-12 6-12z" fill="#8f241f"/>
+    <circle cx="240" cy="132" r="5" fill="#a42b26"/>
+    <circle cx="258" cy="118" r="3" fill="#a42b26"/>
+    <circle cx="150" cy="146" r="3.4" fill="#a42b26"/>
+    <circle cx="90" cy="138" r="2.4" fill="#a42b26"/>
+    <path d="M24 40c14-10 34-10 48-4" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".28"/>
+    <path d="M150 74c22 2 44 8 64 18" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".25"/>
+    <path d="M60 108c14 4 30 4 44 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".18"/>
+  </g>
+
+  <!-- shadows on the desk -->
+  <ellipse cx="300" cy="72" rx="262" ry="11" fill="#000" opacity=".5" filter="url(#soft)"/>
+  <ellipse cx="420" cy="138" rx="118" ry="10" fill="#000" opacity=".45" filter="url(#soft)"/>
+
+  <!-- PEN -->
+  <!-- nib -->
+  <path d="M16 52 L74 40 Q82 40 84 44 L84 60 Q82 64 74 64 Z" fill="url(#nib)"/>
+  <path d="M16 52 L60 52" stroke="#5b4a26" stroke-width="1.2"/>
+  <circle cx="60" cy="52" r="2.6" fill="#3a2f19"/>
+  <path d="M66 46 q6 6 0 12" fill="none" stroke="#9c7f43" stroke-width="1"/>
+  <path d="M30 49 L72 41" stroke="#fff" stroke-width="1.4" opacity=".55"/>
+  <!-- grip section -->
+  <path d="M84 42 L152 37 L152 67 L84 62 Z" fill="url(#grip)"/>
+  <path d="M90 45 L150 41" stroke="#fff" stroke-width="1.2" opacity=".18"/>
+  <!-- trim ring -->
+  <rect x="152" y="35" width="7" height="34" rx="1.5" fill="url(#trim)"/>
+  <!-- barrel -->
+  <path d="M159 34 H516 Q548 34 560 52 Q548 70 516 70 H159 Z" fill="url(#lacquer)"/>
+  <rect x="470" y="34" width="16" height="36" fill="url(#trim)"/>
+  <path d="M166 40 H508" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".22"/>
+  <path d="M166 64 H508" stroke="#fff" stroke-width="1" stroke-linecap="round" opacity=".08"/>
+
+  <!-- CAP, lying beside -->
+  <g transform="rotate(-3 420 120)">
+    <path d="M318 104 H500 Q528 104 538 120 Q528 136 500 136 H318 Z" fill="url(#lacquer)"/>
+    <rect x="312" y="102" width="12" height="36" rx="2" fill="url(#trim)"/>
+    <rect x="404" y="102" width="6" height="36" fill="url(#trim)" opacity=".9"/>
+    <!-- clip -->
+    <path d="M500 106 H392 Q384 106 384 111 Q384 115 392 115 H500" fill="url(#steel)"/>
+    <circle cx="390" cy="110.5" r="5" fill="url(#steel)"/>
+    <path d="M330 110 H492" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".2"/>
+  </g>
+</svg>

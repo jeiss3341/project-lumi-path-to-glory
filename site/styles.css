@@ -142,6 +142,12 @@ h1,h2,h3,h4{text-wrap:balance}
 .roles-card{transform:rotate(1.4deg)}
 .roles-card p+p{margin-top:28px}
 .roles-card .alt{font-family:var(--f-type);color:var(--ink-soft)}
+/* desk prop: fountain pen tucked under the Who's who paper, ink leaking out from beneath it */
+.brief-side{position:relative}
+.brief-side .roles-card{z-index:1}
+.desk-pen{display:block;width:min(430px,96%);height:auto;margin:-92px 0 50px 10%;transform:rotate(26deg);transform-origin:8% 30%;position:relative;z-index:0;pointer-events:none;user-select:none}
+/* ink soaking into the paper where the nib sits underneath */
+.brief-side .roles-card::after{content:"";position:absolute;left:4%;bottom:-6px;width:46%;height:70px;pointer-events:none;background:radial-gradient(60% 55% at 35% 100%,rgba(164,43,38,.30),rgba(164,43,38,.12) 55%,transparent 75%);mix-blend-mode:multiply}
 .role-dot{display:inline-block;margin-right:8px;font-size:.95em;line-height:1}
 /* text marks: yellow highlighter + red squiggle */
 mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba(255,232,90,.5) 3%,rgba(255,232,90,.4) 96%,rgba(255,230,0,0) 100%);padding:0 .14em;margin:0 -.14em;border-radius:.3em .5em .35em .45em;-webkit-box-decoration-break:clone;box-decoration-break:clone}

@@ -78,8 +78,8 @@
           (signup.kind === "team" ? "Team application for <b>" + esc(signup.team_name) + "</b>" : "Solo application as <b>" + esc(signup.ign) + "</b>") +
           ", sent " + esc(UI.date(signup.created_at, { month: "short", day: "numeric" })) + ".</p></div>" +
           (signup.staff_note ? '<p class="note-box"><b>Note from staff:</b> ' + esc(signup.staff_note) + "</p>" : "") +
-          '<a class="btn ghost" href="index.html#signup">' + (["pending", "waitlist", "withdrawn"].includes(signup.status) ? "View or edit it" : "View it") + "</a>"
-          : '<p>You haven\'t applied yet.</p><a class="btn" href="index.html#signup">Apply as a team or solo</a>') +
+          '<a class="btn ghost" href="index.html#brief">' + (["pending", "waitlist", "withdrawn"].includes(signup.status) ? "View or edit it" : "View it") + "</a>"
+          : '<p>You haven\'t applied yet.</p><a class="btn" href="index.html#brief">How to sign up</a>') +
       "</section>" +
       '<section class="sheet dpanel"><h2>Your team</h2>' +
         (team ? '<p class="big-name">' + esc(team.name) + '</p><p>Mentor: <b>' + esc(coach ? UI.coachName(coach) : "To be assigned") + "</b></p>" +

@@ -2,6 +2,12 @@
 
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
+## 2026-11-05
+- Removed the Sign up section (team and solo application forms) from the home page. Later sections are renumbered (Schedule is now 03 … Channels 08), and "Sign up" is gone from the top menu on both pages.
+  - The "Signups open now!" ticket, the footer link and the desk's application buttons now go to The brief instead.
+  - Needs a decision: there is no way to apply on the site any more. Players need another route (a Discord form, a link in the Sign Up! step, etc.). The form code is still in `site/home.js` (`renderApply`) and simply skips itself while the section is missing, so it can come back easily.
+- The brief: fountain pen desk prop (`site/art/fountain-pen.svg`). Uncapped black pen with red trim and its cap, tucked under the Who's who paper with red ink leaking out onto the desk and a faint ink stain soaking into the paper's bottom edge. Decorative only (hidden from screen readers).
+
 ## 2026-11-04
 - The brief: "How it runs" steps reworded and recapitalized (Sign Up!, Teams are Chosen., Pick your Coach, Book Sessions..., Play and Compete!).
   - New text marks for the steps and the Priority note in `site/content.js`: `**words**` = yellow highlighter, `_words_` = red squiggle underline. The application forms show the priority text without marks.

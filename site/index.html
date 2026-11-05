@@ -17,7 +17,7 @@
   <div class="wrap">
     <a class="code" href="index.html">PATH*TO*GLORY—(11)-(22)</a>
     <nav aria-label="Sections">
-      <a href="#brief">Brief</a><a href="#signup">Sign up</a><a href="#schedule">Schedule</a><a href="#faculty">Faculty</a><a href="#book">Office hours</a><a href="#rosters">Rosters</a><a href="#notes">Field notes</a><a href="#channels">Channels</a>
+      <a href="#brief">Brief</a><a href="#schedule">Schedule</a><a href="#faculty">Faculty</a><a href="#book">Office hours</a><a href="#rosters">Rosters</a><a href="#notes">Field notes</a><a href="#channels">Channels</a>
     </nav>
     <div class="auth" id="auth"></div>
   </div>
@@ -37,7 +37,7 @@
         <p class="lede" id="lede"></p>
         <div class="range" aria-label="November 9 to November 22"><span>11/09</span><i></i><span>11/22</span></div>
       </article>
-      <a class="ticket" href="#signup">
+      <a class="ticket" href="#brief">
         <span class="stub" id="ticket-stub"><span>ADMIT ONE</span></span>
         <span class="t-main">
           <span class="t-label" id="ticket-status">Class starts</span>
@@ -88,21 +88,18 @@
         <ol class="steps" id="steps"></ol>
         <div class="prio"><span class="stamp">Priority</span><p id="prio"></p></div>
       </article>
-      <aside class="index roles-card" aria-label="Roles">
-        <h3>Who's who</h3>
-        <div id="roles"></div>
-      </aside>
+      <div class="brief-side">
+        <aside class="index roles-card" aria-label="Roles">
+          <h3>Who's who</h3>
+          <div id="roles"></div>
+        </aside>
+        <img class="desk-pen" src="art/fountain-pen.svg" alt="" aria-hidden="true" width="600" height="160">
+      </div>
     </div>
   </section>
 
-  <section class="sec wrap" id="signup">
-    <div class="sec-head"><span class="no">(03)</span><h2>Sign up</h2><p>Two ways in. Bring your own roster, or come solo and staff place you on a team. Log in with Discord to apply; one application per account.</p></div>
-    <div class="apply" id="apply"></div>
-    <div class="after" id="after"></div>
-  </section>
-
   <section class="sec wrap" id="schedule">
-    <div class="sec-head"><span class="no">(04)</span><h2>Schedule</h2><p>Two weeks, two Sundays that count. Days marked with a dashed tag are tentative until staff lock the scrim days.</p></div>
+    <div class="sec-head"><span class="no">(03)</span><h2>Schedule</h2><p>Two weeks, two Sundays that count. Days marked with a dashed tag are tentative until staff lock the scrim days.</p></div>
     <div class="sched">
       <div class="sheet planner">
         <div class="planner-top"><h3>November 2026</h3><span>Two-week planner</span></div>
@@ -115,7 +112,7 @@
   </section>
 
   <section class="sec wrap" id="faculty">
-    <div class="sec-head"><span class="no">(05)</span><h2>Faculty</h2><p>Eight main mentors, one per team. Each file carries their playstyle, character pool, competitive history and a short about-me.</p></div>
+    <div class="sec-head"><span class="no">(04)</span><h2>Faculty</h2><p>Eight main mentors, one per team. Each file carries their playstyle, character pool, competitive history and a short about-me.</p></div>
     <div class="fac" id="fac">
       <div class="fac-badge" id="fac-badge"></div>
       <article class="sheet info" id="fac-info"></article>
@@ -131,7 +128,7 @@
   </section>
 
   <section class="sec wrap" id="book">
-    <div class="sec-head"><span class="no">(06)</span><h2>Office hours</h2><p>Mentors post the hours they're free. Pick an hour in and an hour out inside those hours and send a request; the mentor accepts or declines it. Times are in your time zone (<span id="tz"></span>).</p></div>
+    <div class="sec-head"><span class="no">(05)</span><h2>Office hours</h2><p>Mentors post the hours they're free. Pick an hour in and an hour out inside those hours and send a request; the mentor accepts or declines it. Times are in your time zone (<span id="tz"></span>).</p></div>
     <div class="book">
       <form class="sheet book-ctl" id="book-form">
         <div><label class="k" for="bk-who">Coach</label><select id="bk-who"></select></div>
@@ -153,7 +150,7 @@
   </section>
 
   <section class="sec wrap" id="rosters">
-    <div class="sec-head"><span class="no">(07)</span><h2>Rosters</h2><p>Coaches and participants, one folder tab per team.</p></div>
+    <div class="sec-head"><span class="no">(06)</span><h2>Rosters</h2><p>Coaches and participants, one folder tab per team.</p></div>
     <div class="rost-tabs" role="tablist" aria-label="Teams" id="rost-tabs"></div>
     <div class="rost-body">
       <article class="sheet form" id="rost-form" role="tabpanel"></article>
@@ -162,7 +159,7 @@
   </section>
 
   <section class="sec wrap" id="notes">
-    <div class="sec-head"><span class="no">(08)</span><h2>Field notes</h2><p>Everything from the event is open to the public, so the whole scene can learn from it.</p></div>
+    <div class="sec-head"><span class="no">(07)</span><h2>Field notes</h2><p>Everything from the event is open to the public, so the whole scene can learn from it.</p></div>
     <div class="notes">
       <div class="cards" id="res"></div>
       <article class="sheet oblig">
@@ -179,13 +176,13 @@
   </section>
 
   <section class="sec wrap" id="channels">
-    <div class="sec-head"><span class="no">(09)</span><h2>Channels</h2></div>
+    <div class="sec-head"><span class="no">(08)</span><h2>Channels</h2></div>
     <div class="links" id="links"></div>
   </section>
 
   <footer class="wrap foot">
     <span>Path to Glory * ( pre-season mentor event )</span>
-    <a href="#signup">Signups open now →</a>
+    <a href="#brief">Signups open now →</a>
   </footer>
 </main>
 
