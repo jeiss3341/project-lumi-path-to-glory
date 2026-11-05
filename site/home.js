@@ -44,10 +44,23 @@
       .replace(/(^|[^\w])_(.+?)_(?=[^\w]|$)/g, '$1<span class="squig">$2</span>')
       .replace(/\n/g, "<br>");
   }
-  // text with blank lines → separate paragraphs
+  // text with blank lines → separate paragraphs; ~~words~~ → red pencil underline
   function paras(t) {
-    return String(t).split(/\n\s*\n/).map(p => "<p>" + esc(p.trim()).replace(/\n/g, "<br>") + "</p>").join("");
+    return String(t).split(/\n\s*\n/).map(p => "<p>" + esc(p.trim()).replace(/\n/g, "<br>").replace(/~~(.+?)~~/g, '<span class="pencil-ul">$1</span>') + "</p>").join("");
   }
+  // red pencil doodles for the mentor files (drawn with the #pencil filter, see styles.css .doodle)
+  const DOODLE = {
+    burst: '<svg class="doodle d-burst" viewBox="0 0 40 34" aria-hidden="true"><path d="M7 16 L4.5 5"/><path d="M15 21 L26 10.5"/><path d="M19 29.5 L35 27"/></svg>',
+    sparkles: '<svg class="doodle d-spark" viewBox="0 0 64 40" aria-hidden="true"><path d="M17 3 C18 11 20 14 29 16 C20 18.5 18.5 21 17 30 C15.5 21 13.5 18.5 5 16.5 C13.5 14 15.5 11 17 3 Z"/><path d="M52 17 L51.5 33 M45 25.5 L59 24.5"/></svg>' +
+      '<svg class="doodle d-plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 L11.5 22 M2.5 12.5 L21.5 11.5"/></svg>',
+    burger: '<svg class="doodle d-burger" viewBox="0 0 64 50" aria-hidden="true">' +
+      '<path d="M8 22 C8 9 20 4 33 4 C46 4 57 10 57 22 Z"/>' +                 // top bun
+      '<path d="M22 11 l2 -1 M31 9 l2 0.5 M40 11 l2 1 M27 16 l1.5 -1 M36 16 l2 0"/>' + // sesame
+      '<path d="M5 26 C9 23 12 29 16 26 C20 23 23 29 27 26 C31 23 34 29 38 26 C42 23 45 29 49 26 C53 23 56 29 60 26"/>' + // lettuce
+      '<path d="M7 30 H58 C60 30 60 36 58 36 H7 C5 36 5 30 7 30 Z"/>' +       // patty
+      '<path d="M9 39 H56 C56 45 50 47 45 47 H19 C13 47 9 45 9 39 Z"/>' +       // bottom bun
+      '<path d="M48 4 L55 1.5 M52 8 L60 7"/></svg>'                              // little "fresh" marks
+  };
   // competitive history line: a trailing "(...)" note drops onto its own line
   function histItem(h) {
     const m = String(h).match(/^(.*?)\s*(\([^()]*\))\s*$/);
@@ -153,20 +166,21 @@
       const top = side => '<div class="info-top"><span>Mentor file ' + pad(m.slot) + " / " + pad(ms.length) + side + "</span><span>" + esc(m.badge_id) + "</span></div>";
       const chips = (list, ph) => list && list.length ? list.map(p => "<span>" + esc(p) + "</span>").join("") : ph;
       const flipBtn = label => '<button type="button" class="flip-btn js-flip" aria-pressed="false">' + label + "</button>";
+      const dz = k => (m.doodles || []).includes(k); // red pencil doodles this mentor's file gets
       const front =
         '<article class="sheet info face front">' + clip + top("") +
-        "<h3>" + UI.ph(m.name, UI.coachName(m)) + "</h3>" +
+        "<h3>" + UI.ph(m.name, UI.coachName(m)) + (dz("burst") ? DOODLE.burst : "") + "</h3>" +
         '<span class="team-tag">' + esc(UI.bare(UI.coachTeam(m))) + "</span>" +
         '<div class="info-grid">' +
           "<section><h4>Playstyle</h4>" + (m.playstyle ? paras(m.playstyle) : "<p>" + UI.ph("", "[One or two lines on how this mentor plays and what they focus on in review.]") + "</p>") + "</section>" +
-          '<section class="pool-sec"><h4>Character pool</h4>' +
+          '<section class="pool-sec"><h4>Character pool</h4>' + (dz("sparkles") ? DOODLE.sparkles : "") +
             (m.pool && m.pool.length
               ? '<div class="pfp" aria-live="polite">' + charPfp(m.pool[0]) + '</div><div class="pool pool-pick">' +
                 m.pool.map((p, k) => '<button type="button" class="pool-chip' + (k ? "" : " on") + '" data-char="' + esc(p) + '">' + esc(p) + "</button>").join("") + "</div>" +
                 (m.pool_note ? '<p class="pool-note">' + esc(m.pool_note) + "</p>" : "")
               : '<div class="pfp">' + charPfp("") + '</div><div class="pool"><span class="ph">[Main]</span><span class="ph">[Secondary]</span><span class="ph">[Pocket pick]</span></div>') +
           "</section>" +
-          '<section><h4>Competitive history</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul></section>" +
+          '<section class="hist-sec"><h4>Competitive history</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul>" + (dz("burger") ? DOODLE.burger : "") + "</section>" +
           "<section><h4>About me</h4>" + (m.about ? paras(m.about) : "<p>" + UI.ph("", "[A short about-me written by the mentor.]") + "</p>") + "</section>" +
         "</div>" +
         '<div class="info-foot"><span>Main: ' + UI.ph(m.main_character, "[Main character]") + " · Display: " + UI.ph(m.display_skin, "[Display skin]") + '</span><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="#book" data-book="' + esc(m.id) + '">Request a session</a></span></div>' +

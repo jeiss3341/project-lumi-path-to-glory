@@ -108,7 +108,8 @@ window.PTG = {
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).
   coachSeed: [
     { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Actor", team_name: "team not found", display_skin: "Training Director Katja",
-      playstyle: "I usually play the mage or engage tank, either way I am running it down to make space for my teammates.",
+      playstyle: "I usually play the mage or ~~engage tank~~, either way I am running it down to make space for my teammates.",
+      doodles: ["burst", "sparkles", "burger"], // red pencil doodles on the front of the file
       pool: ["Niah", "Markus", "Kenneth"],
       history: ["2 mickey mouses (ERCC S9, ERCT 1)", "some mcchickens (ERCS 2nd-3rd million times)"],
       about: "I play whatever's op on patch and good for team comp. 15 ranked games.\n\nStarted playing early access solos, stopped before official launch, came back season 4-5 and have played ercs every season since.",

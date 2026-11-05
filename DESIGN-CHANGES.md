@@ -3,6 +3,8 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-05
+- Faculty: red pencil doodles on Actor's file (burst by the name, sparkle + crosses around the character pool, a burger by the comp history, and a pencil underline under "engage tank"). Drawn as SVG with the `#pencil` filter.
+  - Per mentor: add `doodles: ["burst", "sparkles", "burger"]` (any of them) in `site/content.js`, and wrap words in `~~…~~` in playstyle / about / coaching for the pencil underline. The demo needs "Reset data" to pick up changes.
 - Faculty: mentor 02 is **Dylan** (team Trigger) and mentor 03 is **Chibiarc** (team uberman), filled in from the Coach Infographic form (responses 1 and 3) the same way as Actor, front and back.
   - New optional fields: `pool_note` (small line under the character pool, e.g. "(lol)") and `ps` (a P.S. list on the back, used for Chibiarc's extra answer).
   - Chibiarc's "Some ercs wins / Sometimes plays rank / Sometimes stream / Master of sleeping" answer is split: the ERCS line under Competitive history, the rest under About me.

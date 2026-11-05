@@ -281,6 +281,18 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .pfp-ph{font:900 52px/1 var(--f-display);color:#f3f2ee;letter-spacing:-.04em}
 .pool-chip{appearance:none;background:transparent;color:var(--ink);border:1.5px solid var(--ink);padding:6px 11px;font:600 13px/1 var(--f-display);border-radius:999px;cursor:pointer;transition:background .15s,color .15s}
 .pool-chip.on,.pool-chip:hover{background:var(--ink);color:var(--paper)}
+/* red pencil doodles on the mentor files */
+.doodle{fill:none;stroke:var(--red);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:url(#pencil);pointer-events:none;overflow:visible}
+.info h3 .d-burst{display:inline-block;width:.62em;height:.53em;margin-left:-.02em;vertical-align:top;transform:translateY(-.32em);stroke-width:2.6}
+.pool-sec{position:relative}
+.pool-sec .d-spark{position:absolute;left:clamp(84px,44%,118px);top:-26px;width:58px;height:36px}
+.pool-sec .d-plus{position:absolute;left:-14px;top:116px;width:18px;height:18px}
+.hist-sec{position:relative}
+.hist-sec .d-burger{position:absolute;left:-30px;bottom:-40px;width:54px;height:42px;transform:rotate(-8deg)}
+@media (max-width:640px){.hist-sec .d-burger{left:auto;right:4px;bottom:auto;top:-14px}.pool-sec .d-plus{left:-10px}}
+.pencil-ul{position:relative;white-space:nowrap}
+.pencil-ul::after{content:"";position:absolute;left:-2px;right:-3px;bottom:-8px;height:7px;pointer-events:none;filter:url(#pencil);
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 8' preserveAspectRatio='none'%3E%3Cpath d='M2 5.5 C30 2.5 60 3 90 4 S140 5 158 2.5' fill='none' stroke='%23d6403a' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/100% 100%}
 .pool-sec>.pool-note{grid-column:2;margin:8px 0 0;font:400 13px/1.35 var(--f-type);color:var(--ink-soft)}
 .hist-note{display:block;font-size:14px;color:var(--ink-soft);padding-left:1.1em}
 .fun{font-family:var(--f-type);font-size:17px}
