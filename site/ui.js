@@ -72,7 +72,8 @@
   UI.art = function (c, o) {
     const file = c && C.art && C.art[c.id];
     if (file) {
-      return '<div class="ptg-art" style="position:relative;overflow:hidden;width:100%;height:100%;background:#141416">' +
+      // uploaded art sits on the same dark grid as the Katja poster crop (.art-grid in styles.css)
+      return '<div class="ptg-art art-grid" style="position:relative;overflow:hidden;width:100%;height:100%;background-color:#141416">' +
         '<img src="' + UI.esc(file) + '" alt="' + UI.esc((c.display_skin || UI.coachName(c)) + " display art") + '" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% 18%"></div>';
     }
     if (c && c.display_skin === "Training Director Katja") {

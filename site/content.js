@@ -80,7 +80,8 @@ window.PTG = {
   // It fills the 4:5 art window on the ID badge (cropped to fit, anchored near the top).
   // m1 has no entry, so it keeps the crop from the event poster.
   art: {
-    // m2: "art/m2.webp",
+    m2: "art/m2.webp", // Prison Officer Abigail (Dylan)
+    m3: "art/m3.webp", // Shoichi (Chibiarc)
     // a1: "art/a1.webp",
   },
 
@@ -90,13 +91,18 @@ window.PTG = {
     Niah: "art/chars/niah.png",
     Markus: "art/chars/markus.png",
     Kenneth: "art/chars/kenneth.webp",
+    Abigail: "art/chars/abigail.webp",
+    Darko: "art/chars/darko.webp",
+    Hyunwoo: "art/chars/hyunwoo.png",
+    Shoichi: "art/chars/shoichi.png",
   },
 
   // Display skin → base character, for the placeholder art letter.
   skins: {
     "Training Director Katja": "Katja", "Instructor Fiora": "Fiora", "Researcher Barbara": "Barbara",
     "Student Council President Elena": "Elena", "Academy Laura": "Laura", "Academy Theodore": "Theodore",
-    "Academy Estelle": "Estelle", "Transfer Student Bianca": "Bianca", "Rebellious Nicky": "Nicky"
+    "Academy Estelle": "Estelle", "Transfer Student Bianca": "Bianca", "Rebellious Nicky": "Nicky",
+    "Prison Officer Abigail": "Abigail", "Shoichi": "Shoichi"
   },
 
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).
@@ -113,8 +119,30 @@ window.PTG = {
       fun_fact: "I will be lower elo than the mentees when the event starts.",
       hobbies: ["Watching streams", "Video games in general", "LARPing", "Going for a run"],
       fav_teams: ["LFT · gwork", "GNS · DINA"] },
-    { id: "m2", kind: "mentor", slot: 2, badge_id: "INS-0472-KV", name: "", team_name: "", display_skin: "Instructor Fiora" },
-    { id: "m3", kind: "mentor", slot: 3, badge_id: "INS-0473-BL", name: "", team_name: "", display_skin: "Researcher Barbara" },
+    // m2 and m3 from the Coach Infographic form (responses 1 and 3, Nov 5)
+    { id: "m2", kind: "mentor", slot: 2, badge_id: "INS-0472-KV", name: "Dylan", team_name: "Trigger", display_skin: "Prison Officer Abigail",
+      playstyle: "My playstyle depends on my character and team comp, but I tend to lean greedy.",
+      pool: ["Abigail", "Darko"],
+      pool_note: "but ive been kinda inting on darko recently",
+      history: ["Finals ercs/ercc when baeksu doesnt sleep"],
+      about: "Hello, my name is Dylannn. I play Fighters and chuds till they buff abigail.",
+      coaching: "This is my first time coaching a full team, so I’m still figuring out my style. I expect to be fairly hands-on and guide players closely, but I’ll also be blunt: if something is bad or I don’t like it, I’ll say so. I’ll also repeat feedback as many times as it takes for it to stick.",
+      games: ["Epic Seven (i need a mentor)"],
+      fun_fact: "I am not a norm terrorist actually rustska got 10k games",
+      hobbies: ["Norms"],
+      fav_teams: ["6789 · Squortle"] },
+    { id: "m3", kind: "mentor", slot: 3, badge_id: "INS-0473-BL", name: "Chibiarc", team_name: "uberman", display_skin: "Shoichi",
+      playstyle: "Melee chungus.\n\nLowkey tho as long as its not triple ranged should be chill.",
+      pool: ["Hyunwoo", "Shoichi"],
+      pool_note: "(lol)",
+      history: ["Some ercs wins"],
+      about: "Sometimes plays rank.\nSometimes stream.\nMaster of sleeping.",
+      coaching: "Opposite of whatever fwitchu put here.\n\nI will say though I dont like sugarcoating things.",
+      games: ["JRPGs", "League", "Single Player Games", "Turn based", "etc"],
+      fun_fact: "mcdonald.",
+      hobbies: ["GA (I like ga)"],
+      fav_teams: ["N/a maybe gsxg?"],
+      ps: ["play fat chungus for uberman", "Leni + hyunwoo", "Anything with more than 200 auto range is too hard"] },
     { id: "m4", kind: "mentor", slot: 4, badge_id: "INS-0474-EP", name: "", team_name: "", display_skin: "Student Council President Elena" },
     { id: "m5", kind: "mentor", slot: 5, badge_id: "INS-0475-LA", name: "", team_name: "", display_skin: "Academy Laura" },
     { id: "m6", kind: "mentor", slot: 6, badge_id: "INS-0476-TH", name: "", team_name: "", display_skin: "Academy Theodore" },

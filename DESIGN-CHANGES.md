@@ -3,6 +3,13 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-05
+- Faculty: mentor 02 is **Dylan** (team Trigger) and mentor 03 is **Chibiarc** (team uberman), filled in from the Coach Infographic form (responses 1 and 3) the same way as Actor, front and back.
+  - New optional fields: `pool_note` (small line under the character pool, e.g. "(lol)") and `ps` (a P.S. list on the back, used for Chibiarc's extra answer).
+  - Chibiarc's "Some ercs wins / Sometimes plays rank / Sometimes stream / Master of sleeping" answer is split: the ERCS line under Competitive history, the rest under About me.
+  - Character pfps added for Abigail, Darko, Hyunwoo and Shoichi (`site/art/chars/`).
+  - Instructor card display art: Dylan → Prison Officer Abigail (`site/art/m2.webp`), Chibiarc → Shoichi (`site/art/m3.webp`), cropped close (head to chest) from the full arts. Any uploaded badge art now sits on a dark charcoal grid with darker edges (`.art-grid`), matching the Katja poster crop. Their display skins changed from Instructor Fiora / Researcher Barbara, and both were added to the `skins` list.
+  - Needs database: the live `coaches` rows for m2/m3 need `display_skin` updated to match.
+  - Needs code + database (same as Actor): these details only live in `site/content.js` for demo mode; the live `coaches` rows for m2/m3 need them too, plus the new `pool_note` and `ps` fields.
 - Faculty: mentor 01 is now **Actor** (green tag "team not found"), with playstyle, character pool, competitive history and a two-paragraph about-me. The demo mentor login is renamed Actor too.
 - Faculty: the mentor file flips over (click the file or "Flip file ↻") to an "Off the record" back with coaching style + motto, other games played, favorite hobbies, fav teams and a fun fact. Empty fields show placeholders for the other mentors.
   - Needs code + database: Actor's details live in `site/content.js` (`coachSeed`), which only feeds demo mode. For the live site, the `coaches` row for m1 needs the same name/team/playstyle/pool/history/about, and new columns for `coaching`, `motto`, `games`, `fun_fact`, `hobbies`, `fav_teams`, plus fields for them in the mentor's desk profile form (`site/desk.js`).

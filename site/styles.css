@@ -142,6 +142,11 @@ h1,h2,h3,h4{text-wrap:balance}
 .roles-card{transform:rotate(1.4deg)}
 .roles-card p+p{margin-top:28px}
 .roles-card .alt{font-family:var(--f-type);color:var(--ink-soft)}
+/* badge display art: dark charcoal with a fine light grid and darker edges, like the Katja poster crop */
+.ptg-art.art-grid{background-color:#1a1a1d!important;
+  background-image:radial-gradient(120% 90% at 50% 40%,transparent 45%,rgba(0,0,0,.55) 100%),
+    linear-gradient(rgba(255,255,255,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);
+  background-size:100% 100%,7.5% 6.1%,7.5% 6.1%;background-position:0 0,-1px -1px,-1px -1px}
 /* desk prop: fountain pen tucked under the Who's who paper, ink leaking out from beneath it */
 .brief-side{position:relative}
 .brief-side .roles-card{z-index:1}
@@ -267,7 +272,8 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 /* (background-clip:text breaks the 3D flip in Chrome, so the pencil texture is an SVG filter instead) */
 /* character pool: black & white pfp that follows the hovered character */
 /* pfp sits beside the character names so the pool is about as tall as Playstyle (no gap in the row) */
-.pool-sec{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:16px}
+.pool-sec{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:16px}
+.pool-sec>.pfp{grid-row:2/4}
 .pool-sec>h4{grid-column:1/-1}
 .pool-sec>.pool{flex-direction:column;align-items:flex-start;align-self:start;gap:6px}
 .pfp{width:104px;aspect-ratio:1;margin:2px 0 0;background:#111;border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(0,0,0,.18);position:relative;overflow:hidden;display:grid;place-items:center;transform:rotate(-2deg)}
@@ -275,6 +281,7 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .pfp-ph{font:900 52px/1 var(--f-display);color:#f3f2ee;letter-spacing:-.04em}
 .pool-chip{appearance:none;background:transparent;color:var(--ink);border:1.5px solid var(--ink);padding:6px 11px;font:600 13px/1 var(--f-display);border-radius:999px;cursor:pointer;transition:background .15s,color .15s}
 .pool-chip.on,.pool-chip:hover{background:var(--ink);color:var(--paper)}
+.pool-sec>.pool-note{grid-column:2;margin:8px 0 0;font:400 13px/1.35 var(--f-type);color:var(--ink-soft)}
 .hist-note{display:block;font-size:14px;color:var(--ink-soft);padding-left:1.1em}
 .fun{font-family:var(--f-type);font-size:17px}
 @media (prefers-reduced-motion:reduce){.flip-card{transition:none}}
