@@ -8,11 +8,30 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23d6403a'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='14' fill='%23f3f2ee'%3EPTG%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=Reenie+Beanie&display=swap">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
+<!-- shared SVG filters: rubber-stamp ink that bleeds at the edges and skips in spots -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="ink-bleed" x="-15%" y="-30%" width="130%" height="160%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency=".055" numOctaves="2" seed="4" result="warp"/>
+    <feDisplacementMap in="SourceGraphic" in2="warp" scale="4" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+    <feGaussianBlur in="rough" stdDeviation=".6" result="bleed"/>
+    <feMerge result="inked"><feMergeNode in="bleed"/><feMergeNode in="rough"/></feMerge>
+    <feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="1" seed="11" result="speck"/>
+    <feColorMatrix in="speck" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -7 0 0 0 4.6" result="holes"/>
+    <feComposite in="inked" in2="holes" operator="in"/>
+  </filter>
+  <!-- graphite pencil: grainy, streaky coverage with slightly wobbly edges -->
+  <filter id="pencil" x="-5%" y="-15%" width="110%" height="130%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="1.2 .3" numOctaves="2" seed="2" result="grain"/>
+    <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -2.4 0 0 0 2.15" result="cover"/>
+    <feComposite in="SourceGraphic" in2="cover" operator="in" result="lead"/>
+    <feDisplacementMap in="lead" in2="grain" scale="1.4" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 <header class="topbar">
   <div class="wrap">
     <a class="code" href="index.html">PATH*TO*GLORY—(11)-(22)</a>
@@ -115,7 +134,7 @@
     <div class="sec-head"><span class="no">(04)</span><h2>Faculty</h2><p>Eight main mentors, one per team. Each file carries their playstyle, character pool, competitive history and a short about-me.</p></div>
     <div class="fac" id="fac">
       <div class="fac-badge" id="fac-badge"></div>
-      <article class="sheet info" id="fac-info"></article>
+      <div class="info-flip" id="fac-info"></div>
     </div>
     <div class="fac-nav">
       <div class="fac-tabs" role="tablist" aria-label="Mentors" id="fac-tabs"></div>

@@ -3,6 +3,15 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-05
+- Faculty: mentor 01 is now **Actor** (green tag "team not found"), with playstyle, character pool, competitive history and a two-paragraph about-me. The demo mentor login is renamed Actor too.
+- Faculty: the mentor file flips over (click the file or "Flip file ↻") to an "Off the record" back with coaching style + motto, other games played, favorite hobbies, fav teams and a fun fact. Empty fields show placeholders for the other mentors.
+  - Needs code + database: Actor's details live in `site/content.js` (`coachSeed`), which only feeds demo mode. For the live site, the `coaches` row for m1 needs the same name/team/playstyle/pool/history/about, and new columns for `coaching`, `motto`, `games`, `fun_fact`, `hobbies`, `fav_teams`, plus fields for them in the mentor's desk profile form (`site/desk.js`).
+  - People who opened the demo before will still see the old sample data until they press "Reset data" in the yellow demo bar.
+- Faculty file details:
+  - Competitive history: a trailing "(…)" note now sits on its own smaller line under the result.
+  - Character pool: a 104px black & white pfp box beside a column of character names (sized so the row matches Playstyle, no gap), no name label. The flip file is only as tall as the side facing up; hovering (or tapping) a character swaps the pfp. Niah, Markus and Kenneth have art in `site/art/chars/` (122×160 originals, so they're a little soft at full size). Other characters show their initial until an image is added to `charArt` in `site/content.js`.
+  - Back: the motto is straight, in Reenie Beanie (Google Fonts) with a graphite pencil texture (`#pencil` SVG filter in `site/index.html`). "Off the record" stamp is bigger with an ink-bleed effect (`#ink-bleed` filter).
+  - Note: `background-clip:text` breaks the 3D flip in Chrome, so texture effects on the flip card use SVG filters instead.
 - Schedule planner: now a cream ticket (`#f4eee0`) with a light paper-fiber texture and stamp-style half-circle notches down both sides, after a ticket reference. The shadow follows the notched shape. Smaller notches and tighter margins on phones. Day box outlines darkened (`#a8987a`) so the grid reads clearly.
 - Schedule: scrim days (Nov 11, 14, 18, 21) now show a Project Lumi "SCRIM" sticker (`site/art/scrim-sticker.svg`, the cat monitor logo with SCRIM in pixel letters) in place of the small Scrim/Prio tags, at a slightly different spot and angle on each day (seeded by the date, so it doesn't jump around between visits). The legend uses a mini sticker too, and "Tentative" is gone from the legend.
   - The "Days marked with a dashed tag are tentative…" sentence is removed from the Schedule intro. Scrim days are still tentative in `content.js`, but the calendar no longer marks that.

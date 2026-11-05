@@ -137,7 +137,7 @@
         v: 1, me: null,
         profiles: [
           { id: "u-staff", discord_id: "1001", username: "lumi.staff", display_name: "Lumi Staff", avatar_url: "", role: "staff" },
-          { id: "u-neotep", discord_id: "1002", username: "neotep", display_name: "Neotep", avatar_url: "", role: "player" },
+          { id: "u-neotep", discord_id: "1002", username: "actor", display_name: "Actor", avatar_url: "", role: "player" },
           { id: "u-jeiss", discord_id: "1003", username: "jeiss", display_name: "Jeiss", avatar_url: "", role: "player" },
           { id: "u-rustska", discord_id: "1004", username: "rustska", display_name: "Rustska", avatar_url: "", role: "player" },
           { id: "u-solo", discord_id: "1005", username: "newplayer", display_name: "New Player", avatar_url: "", role: "player" }

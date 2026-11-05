@@ -84,6 +84,14 @@ window.PTG = {
     // a1: "art/a1.webp",
   },
 
+  // Character pfps for the mentor files' character pool (shown black & white). Name must match the pool exactly.
+  // Drop a square image in site/art/chars/ and add a line, e.g. Niah: "art/chars/niah.webp",
+  charArt: {
+    Niah: "art/chars/niah.png",
+    Markus: "art/chars/markus.png",
+    Kenneth: "art/chars/kenneth.webp",
+  },
+
   // Display skin → base character, for the placeholder art letter.
   skins: {
     "Training Director Katja": "Katja", "Instructor Fiora": "Fiora", "Researcher Barbara": "Barbara",
@@ -93,7 +101,18 @@ window.PTG = {
 
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).
   coachSeed: [
-    { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Neotep", team_name: "NeoChair", display_skin: "Training Director Katja" },
+    { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Actor", team_name: "team not found", display_skin: "Training Director Katja",
+      playstyle: "I usually play the mage or engage tank, either way I am running it down to make space for my teammates.",
+      pool: ["Niah", "Markus", "Kenneth"],
+      history: ["2 mickey mouses (ERCC S9, ERCT 1)", "some mcchickens (ERCS 2nd-3rd million times)"],
+      about: "I play whatever's op on patch and good for team comp. 15 ranked games.\n\nStarted playing early access solos, stopped before official launch, came back season 4-5 and have played ercs every season since.",
+      // back of the mentor file (flip side)
+      coaching: "I am pretty light-hearted, the goal is simplify the game and I focus more on understanding win cons and mechanics. Macro is fake until you are in finals.",
+      motto: "If you hit your abilities and dodge theirs you win!!!",
+      games: ["Valorant", "EU4", "Barony", "RoR2", "Cluesbysam"],
+      fun_fact: "I will be lower elo than the mentees when the event starts.",
+      hobbies: ["Watching streams", "Video games in general", "LARPing", "Going for a run"],
+      fav_teams: ["LFT · gwork", "GNS · DINA"] },
     { id: "m2", kind: "mentor", slot: 2, badge_id: "INS-0472-KV", name: "", team_name: "", display_skin: "Instructor Fiora" },
     { id: "m3", kind: "mentor", slot: 3, badge_id: "INS-0473-BL", name: "", team_name: "", display_skin: "Researcher Barbara" },
     { id: "m4", kind: "mentor", slot: 4, badge_id: "INS-0474-EP", name: "", team_name: "", display_skin: "Student Council President Elena" },

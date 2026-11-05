@@ -247,6 +247,37 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .arrows{display:flex;gap:8px}
 .arrow{appearance:none;width:46px;height:46px;border-radius:50%;border:1.5px solid var(--paper);background:transparent;color:var(--paper);font:600 18px/1 var(--f-mono);cursor:pointer}
 .arrow:hover{background:var(--paper);color:var(--ink)}
+/* mentor file flips over to show its back */
+.info-flip{perspective:1800px;cursor:pointer;min-width:0}
+.flip-card{display:grid;transition:transform .7s cubic-bezier(.3,.7,.2,1),height .45s ease;transform-style:preserve-3d}
+.flip-card>.face{grid-area:1/1;align-self:start;backface-visibility:hidden;-webkit-backface-visibility:hidden;min-width:0}
+.flip-card>.back{transform:rotateY(180deg)}
+.info-flip.flipped .flip-card{transform:rotateY(180deg)}
+.info-flip .face a,.info-flip .face button{cursor:pointer}
+.info-grid p+p{margin-top:10px}
+.foot-btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.flip-btn{appearance:none;background:transparent;border:0;border-bottom:1.5px dashed currentColor;color:var(--red-deep);font:600 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:4px 0;cursor:pointer}
+.flip-btn:hover{color:var(--ink)}
+.back-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+/* "Off the record": bigger rubber stamp, ink bleeds at the edges and skips in spots (#ink-bleed in index.html) */
+.back .stamp{transform:rotate(-6deg);font-size:clamp(19px,2.2vw,24px);padding:12px 16px 11px;border-width:4px;filter:url(#ink-bleed);text-shadow:0 0 1.5px rgba(214,64,58,.55)}
+/* coaching motto: straight, pencil handwriting with a graphite texture */
+.motto{margin-top:16px!important;font:400 clamp(30px,3.4vw,40px)/1.05 "Reenie Beanie","Bradley Hand","Segoe Print",cursive;letter-spacing:.01em;
+  color:#2f2d2a;-webkit-text-stroke:.3px #2f2d2a;filter:url(#pencil)}
+/* (background-clip:text breaks the 3D flip in Chrome, so the pencil texture is an SVG filter instead) */
+/* character pool: black & white pfp that follows the hovered character */
+/* pfp sits beside the character names so the pool is about as tall as Playstyle (no gap in the row) */
+.pool-sec{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:16px}
+.pool-sec>h4{grid-column:1/-1}
+.pool-sec>.pool{flex-direction:column;align-items:flex-start;align-self:start;gap:6px}
+.pfp{width:104px;aspect-ratio:1;margin:2px 0 0;background:#111;border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(0,0,0,.18);position:relative;overflow:hidden;display:grid;place-items:center;transform:rotate(-2deg)}
+.pfp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 25%;filter:grayscale(1) contrast(1.12)}
+.pfp-ph{font:900 52px/1 var(--f-display);color:#f3f2ee;letter-spacing:-.04em}
+.pool-chip{appearance:none;background:transparent;color:var(--ink);border:1.5px solid var(--ink);padding:6px 11px;font:600 13px/1 var(--f-display);border-radius:999px;cursor:pointer;transition:background .15s,color .15s}
+.pool-chip.on,.pool-chip:hover{background:var(--ink);color:var(--paper)}
+.hist-note{display:block;font-size:14px;color:var(--ink-soft);padding-left:1.1em}
+.fun{font-family:var(--f-type);font-size:17px}
+@media (prefers-reduced-motion:reduce){.flip-card{transition:none}}
 .swap{animation:swap .35s ease}
 @keyframes swap{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:none}}
 

@@ -44,6 +44,21 @@
       .replace(/(^|[^\w])_(.+?)_(?=[^\w]|$)/g, '$1<span class="squig">$2</span>')
       .replace(/\n/g, "<br>");
   }
+  // text with blank lines → separate paragraphs
+  function paras(t) {
+    return String(t).split(/\n\s*\n/).map(p => "<p>" + esc(p.trim()).replace(/\n/g, "<br>") + "</p>").join("");
+  }
+  // competitive history line: a trailing "(...)" note drops onto its own line
+  function histItem(h) {
+    const m = String(h).match(/^(.*?)\s*(\([^()]*\))\s*$/);
+    return m && m[1] ? "<li>" + esc(m[1]) + '<span class="hist-note">' + esc(m[2]) + "</span></li>" : "<li>" + esc(h) + "</li>";
+  }
+  // small black & white pfp for a character: art from PTG.charArt if there is a file, else a lettered placeholder
+  function charPfp(name) {
+    const file = name && C.charArt && C.charArt[name];
+    if (file) return '<img src="' + esc(file) + '" alt="' + esc(name) + '">';
+    return '<span class="pfp-ph" aria-hidden="true">' + esc((name || "?").charAt(0)) + "</span>";
+  }
   // same text with the marks removed, for places that show it plain
   function plain(t) {
     return t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/(^|[^\w])_(.+?)_(?=[^\w]|$)/g, "$1$2");
@@ -134,18 +149,73 @@
       fi = (i + ms.length) % ms.length;
       const m = ms[fi];
       $("#fac-badge").innerHTML = UI.badge(m);
-      $("#fac-info").innerHTML =
-        '<svg class="clip" viewBox="0 0 44 112" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M30 40 V96 a10 10 0 0 1 -20 0 V22 a14 14 0 0 1 28 0 V88 a4 4 0 0 1 -8 0 V40"/></svg>' +
-        '<div class="info-top"><span>Mentor file ' + pad(m.slot) + " / " + pad(ms.length) + "</span><span>" + esc(m.badge_id) + "</span></div>" +
+      const clip = '<svg class="clip" viewBox="0 0 44 112" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M30 40 V96 a10 10 0 0 1 -20 0 V22 a14 14 0 0 1 28 0 V88 a4 4 0 0 1 -8 0 V40"/></svg>';
+      const top = side => '<div class="info-top"><span>Mentor file ' + pad(m.slot) + " / " + pad(ms.length) + side + "</span><span>" + esc(m.badge_id) + "</span></div>";
+      const chips = (list, ph) => list && list.length ? list.map(p => "<span>" + esc(p) + "</span>").join("") : ph;
+      const flipBtn = label => '<button type="button" class="flip-btn js-flip" aria-pressed="false">' + label + "</button>";
+      const front =
+        '<article class="sheet info face front">' + clip + top("") +
         "<h3>" + UI.ph(m.name, UI.coachName(m)) + "</h3>" +
         '<span class="team-tag">' + esc(UI.bare(UI.coachTeam(m))) + "</span>" +
         '<div class="info-grid">' +
           "<section><h4>Playstyle</h4><p>" + UI.ph(m.playstyle, "[One or two lines on how this mentor plays and what they focus on in review.]") + "</p></section>" +
-          '<section><h4>Character pool</h4><div class="pool">' + (m.pool && m.pool.length ? m.pool.map(p => "<span>" + esc(p) + "</span>").join("") : '<span class="ph">[Main]</span><span class="ph">[Secondary]</span><span class="ph">[Pocket pick]</span>') + "</div></section>" +
-          '<section><h4>Competitive history</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul></section>" +
-          "<section><h4>About me</h4><p>" + UI.ph(m.about, "[A short about-me written by the mentor.]") + "</p></section>" +
+          '<section class="pool-sec"><h4>Character pool</h4>' +
+            (m.pool && m.pool.length
+              ? '<div class="pfp" aria-live="polite">' + charPfp(m.pool[0]) + '</div><div class="pool pool-pick">' +
+                m.pool.map((p, k) => '<button type="button" class="pool-chip' + (k ? "" : " on") + '" data-char="' + esc(p) + '">' + esc(p) + "</button>").join("") + "</div>"
+              : '<div class="pfp">' + charPfp("") + '</div><div class="pool"><span class="ph">[Main]</span><span class="ph">[Secondary]</span><span class="ph">[Pocket pick]</span></div>') +
+          "</section>" +
+          '<section><h4>Competitive history</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul></section>" +
+          "<section><h4>About me</h4>" + (m.about ? paras(m.about) : "<p>" + UI.ph("", "[A short about-me written by the mentor.]") + "</p>") + "</section>" +
         "</div>" +
-        '<div class="info-foot"><span>Main: ' + UI.ph(m.main_character, "[Main character]") + " · Display: " + UI.ph(m.display_skin, "[Display skin]") + '</span><a class="btn" href="#book" data-book="' + esc(m.id) + '">Request a session</a></div>';
+        '<div class="info-foot"><span>Main: ' + UI.ph(m.main_character, "[Main character]") + " · Display: " + UI.ph(m.display_skin, "[Display skin]") + '</span><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="#book" data-book="' + esc(m.id) + '">Request a session</a></span></div>' +
+        "</article>";
+      const back =
+        '<article class="sheet info face back" inert>' + top(" · back") +
+        '<div class="back-head"><h3>' + UI.ph(m.name, UI.coachName(m)) + '</h3><span class="stamp">Off the record</span></div>' +
+        '<div class="info-grid">' +
+          '<section class="wide"><h4>Coaching style</h4>' + (m.coaching ? paras(m.coaching) : "<p>" + UI.ph("", "[How this mentor likes to coach.]") + "</p>") +
+            (m.motto ? '<p class="motto">“' + esc(m.motto) + "”</p>" : "") + "</section>" +
+          '<section><h4>Other games played</h4><div class="pool">' + chips(m.games, '<span class="ph">[Game]</span><span class="ph">[Game]</span>') + "</div></section>" +
+          '<section><h4>Favorite hobbies</h4><ul class="hist">' + (m.hobbies && m.hobbies.length ? m.hobbies.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[Hobby]</span></li>') + "</ul></section>" +
+          '<section><h4>Fav teams</h4><ul class="hist">' + (m.fav_teams && m.fav_teams.length ? m.fav_teams.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[Team · player]</span></li>') + "</ul></section>" +
+          '<section><h4>Fun fact</h4><p class="fun">' + UI.ph(m.fun_fact, "[Something fun about this mentor.]") + "</p></section>" +
+        "</div>" +
+        '<div class="info-foot"><span>Click the file to flip it back</span>' + flipBtn("Flip back ↺") + "</div>" +
+        "</article>";
+      const box = $("#fac-info");
+      box.classList.remove("flipped");
+      box.innerHTML = '<div class="flip-card">' + front + back + "</div>";
+      // the file is only as tall as the side facing up (no empty space under the shorter side)
+      const fitFile = () => { const up = $(box.classList.contains("flipped") ? ".face.back" : ".face.front", box); if (up) $(".flip-card", box).style.height = up.offsetHeight + "px"; };
+      fitFile();
+      if (document.fonts) document.fonts.ready.then(fitFile); // web fonts can change the height once they load
+      if (!window.__ptgFitFile) { window.__ptgFitFile = true; addEventListener("resize", () => { if (box.__fit) box.__fit(); }); }
+      box.__fit = fitFile;
+      // character pool: hovering (or tapping / tabbing to) a character swaps the pfp above the pool
+      const pick = $(".pool-pick", box), pfp = $(".front .pfp", box);
+      if (pick && pfp) {
+        const showChar = chip => {
+          if (!chip || chip.classList.contains("on")) return;
+          $$(".pool-chip", pick).forEach(c => c.classList.toggle("on", c === chip));
+          pfp.innerHTML = charPfp(chip.dataset.char);
+        };
+        pick.onmouseover = e => showChar(e.target.closest(".pool-chip"));
+        pick.onfocusin = e => showChar(e.target.closest(".pool-chip"));
+        pick.onclick = e => showChar(e.target.closest(".pool-chip"));
+      }
+      // flip on click anywhere on the file (links and buttons other than the flip button keep their own job)
+      box.onclick = e => {
+        if (e.target.closest("a, select, input, textarea") || (e.target.closest("button") && !e.target.closest(".js-flip"))) return;
+        if (window.getSelection && String(window.getSelection()).length) return; // let people select text
+        const on = box.classList.toggle("flipped");
+        $$(".js-flip", box).forEach(b => b.setAttribute("aria-pressed", String(on)));
+        $(".face.front", box).inert = on;  // only the side facing up can be read or tabbed into
+        $(".face.back", box).inert = !on;
+        fitFile();
+        const target = $(on ? ".face.back .js-flip" : ".face.front .js-flip", box);
+        if (e.target.closest(".js-flip") && target) target.focus({ preventScroll: true });
+      };
       if (animOK) ["#fac-badge", "#fac-info"].forEach(s => { const el = $(s); el.classList.remove("swap"); void el.offsetWidth; el.classList.add("swap"); });
       $$("#fac-tabs .tab").forEach((t, j) => { t.setAttribute("aria-selected", String(j === fi)); t.tabIndex = j === fi ? 0 : -1; });
       if (focus) document.getElementById("ft-" + fi).focus();
