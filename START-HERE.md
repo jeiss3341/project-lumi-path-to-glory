@@ -2,6 +2,21 @@
 
 Welcome to Path to Glory. This page gets you from zero to designing in a few minutes.
 
+## 0. One-time setup (let Claude walk you through it)
+
+You need the Claude desktop app (Code tab) or Claude Code, since a regular claude.ai chat can't install things or open folders. Open it in any folder and paste this:
+
+```text
+Help me set up to work on a GitHub project. I'm a designer, not a developer, so give me one step at a time and wait for me to confirm each step before the next.
+
+The project is https://github.com/jeiss3341/project-lumi-path-to-glory and Jeiss has invited me as a collaborator.
+
+1. Check whether Git is installed on my computer. If it isn't, walk me through installing GitHub Desktop from https://desktop.github.com (it includes Git) and signing in with my GitHub account. I'll do the sign-in myself; never ask me for my password or a token.
+2. Help me accept the collaborator invite at https://github.com/jeiss3341/project-lumi-path-to-glory/invitations.
+3. Help me clone the repo into a folder I choose, for example Documents\project-lumi-path-to-glory.
+4. Once it's cloned, move this session into that folder, read START-HERE.md, and tell me I'm ready for the design prompt in step 3 of that file.
+```
+
 ## 1. Look at it first (no setup)
 
 Open these in your browser:
