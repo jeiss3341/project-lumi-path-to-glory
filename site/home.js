@@ -285,11 +285,30 @@
     animOK = true;
   }
 
+  // wear and tear on some assistant badges so they don't all look fresh off the printer
+  const WEAR = {
+    scratches: '<path d="M118 9 L172 33"/><path class="faint" d="M128 6 L178 27"/><path d="M146 41 C158 45 172 47 192 54"/><path class="faint" d="M104 20 l9 3 M181 15 l6 4"/>',
+    scuff: '<ellipse class="scuff" cx="26" cy="128" rx="44" ry="20"/><path d="M8 130 L62 108"/><path class="faint" d="M16 138 L54 121 M38 134 l16 -5"/><path d="M4 118 l6 -2"/>',
+    gouge: '<path d="M4 76 C60 64 118 68 198 42"/><path class="faint" d="M10 81 C64 70 120 74 196 49"/><path class="faint" d="M70 30 l3 1 M150 96 l4 -1 M30 104 l2 2"/>',
+    marked: '<rect class="tape" x="78" y="-6" width="48" height="16" transform="rotate(-4 102 2)"/><path class="ink" d="M156 64 l6 7 l15 -17"/><path class="faint" d="M168 70 L194 58"/>',
+    nicks: '<path d="M196 92 l-7 3 M197 99 l-5 1"/><path class="faint" d="M60 14 L96 6 M120 128 L160 118"/><ellipse class="scuff" cx="178" cy="18" rx="26" ry="12"/>'
+  };
+  const WEAR_BY_SLOT = ["", "scratches", "", "scuff", "gouge", "", "marked", "nicks"]; // a1..a8; blank = clean card
   function renderAssist() {
-    $("#assist").innerHTML = assistants().map(a =>
-      '<div class="mini-badge"><div class="b-strip"><span>ROLE COACH · PTG</span></div><div class="mb-body">' +
+    $("#assist").innerHTML = assistants().map((a, i) =>
+      '<div class="mini-badge">' +
+      (WEAR[WEAR_BY_SLOT[i % WEAR_BY_SLOT.length]] ? '<svg class="wear" viewBox="0 0 200 140" preserveAspectRatio="none" aria-hidden="true">' + WEAR[WEAR_BY_SLOT[i % WEAR_BY_SLOT.length]] + "</svg>" : "") +
+      // optional sticker slapped on the empty right side (from the coach row, or the event content as a fallback)
+      ((seed => {
+        const s = a.sticker || seed.sticker, at = a.sticker_at || seed.sticker_at || {}; // sticker_at: { top: "30%", tilt: -14 }
+        return s ? '<img class="mb-sticker" src="' + esc(s) + '" alt="" width="240" height="240" style="' +
+          (at.top ? "top:" + esc(at.top) + ";" : "") + (at.tilt != null ? "--tilt:" + Number(at.tilt) + "deg" : "") + '">' : "";
+      })(C.coachSeed.find(c => c.id === a.id) || {})) +
+      '<div class="b-strip"><span>ROLE COACH · PTG</span></div><div class="mb-body">' +
       '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>' + esc(a.badge_id) + "</span></div>" +
       '<div class="mb-role">Assistant</div><div class="mb-name">[' + esc(UI.bare(UI.coachName(a))) + "]</div>" +
+      // icon between the name and the role focus: art from PTG.art (e.g. a1: "art/a1.webp"), else an empty slot
+      '<div class="mb-icon">' + (C.art && C.art[a.id] ? '<img src="' + esc(C.art[a.id]) + '" alt="' + esc(UI.bare(UI.coachName(a))) + ' icon">' : '<span class="mb-icon-ph" aria-hidden="true">?</span>') + "</div>" +
       '<div class="mb-focus">' + UI.ph(a.focus, "[Role focus]") + "<br>" + UI.ph((a.pool || []).join(", "), "[Characters or topics]") + "</div>" +
       '<div class="mb-foot"><span class="b-team">Any team</span><a href="#book" data-book="' + esc(a.id) + '">Request ›</a></div></div></div>').join("");
   }

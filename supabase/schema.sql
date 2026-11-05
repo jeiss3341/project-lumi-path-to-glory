@@ -543,7 +543,11 @@ insert into public.coaches (id, kind, slot, badge_id, name, team_name, display_s
   ('a1', 'assistant', 1, 'AST-0511-RC', '', '', ''),
   ('a2', 'assistant', 2, 'AST-0512-RC', '', '', ''),
   ('a3', 'assistant', 3, 'AST-0513-RC', '', '', ''),
-  ('a4', 'assistant', 4, 'AST-0514-RC', '', '', '')
+  ('a4', 'assistant', 4, 'AST-0514-RC', '', '', ''),
+  ('a5', 'assistant', 5, 'AST-0515-RC', '', '', ''),
+  ('a6', 'assistant', 6, 'AST-0516-RC', '', '', ''),
+  ('a7', 'assistant', 7, 'AST-0517-RC', '', '', ''),
+  ('a8', 'assistant', 8, 'AST-0518-RC', '', '', '')
 on conflict (id) do nothing;
 
 insert into public.teams (name, coach_id, players, sort)

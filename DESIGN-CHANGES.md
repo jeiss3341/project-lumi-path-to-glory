@@ -3,6 +3,13 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-05
+- Assistant & role coaches: now 8 assistants (a5–a8 added, badges AST-0515-RC … AST-0518-RC) in two rows of four (two per row on tablets, one on phones).
+  - Needs database: re-run the coaches seed in `supabase/schema.sql` (a5–a8 were added there; existing rows are left alone).
+- Assistant & role coaches: names filled in: 01 Baeksu, 02 Jalja, 03 CamperonDuty, 04 Squortle, 05 Jignut, 06 Kyroshoot, 07 Superior, 08 Nesious.
+  - Stickers: Jalja has a round chibi sticker (`site/art/stickers/jalja.webp`), Baeksu has a die-cut bread-loaf sticker that follows the drawing's outline (`site/art/stickers/baeksu.webp`). Set by `sticker` on the coach in `coachSeed`; the site falls back to that even when the live row has no sticker.
+  - Needs database: the live `coaches` rows a1–a8 need these names.
+- Assistant & role coaches: wear on some badges for variety: 02 scratches, 04 scuffed corner, 05 long gouge, 07 tape residue + red pen tick, 08 nicks + scuff (01, 03, 06 stay clean). Set per slot in `WEAR_BY_SLOT` in `site/home.js`.
+- Assistant & role coaches: each card has a small square icon between the name and the role focus (dark grid, red corner marks, "?" until art is added). Add art by putting `a1: "art/a1.webp"` (etc.) in the `art` list in `site/content.js`.
 - Faculty: red pencil doodles on Chibiarc's file, redrawn to follow the designer's sketch closely: uneven cat ears on the name with a chibi face under it (N-shaped bangs, big oval eyes, cat mouth, blush ticks), a hand-added "!" after "Some ercs wins", and a tipped-over fries carton with a zigzag and spilling fries by the character pool.
   - New content options: `"chibi"` and `"fries"` in `doodles`, and `[[…]]` in comp history for something added by hand (`[[!]]` draws a pencil exclamation mark).
 - Faculty: red pencil scribbles on Dylan's file: "^_^" by the character pool, "baeksu" struck through and corrected to "BREADSU" in comp history, and "# NORMS terrorist" by the buttons.

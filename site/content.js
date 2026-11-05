@@ -152,9 +152,15 @@ window.PTG = {
     { id: "m6", kind: "mentor", slot: 6, badge_id: "INS-0476-TH", name: "", team_name: "", display_skin: "Academy Theodore" },
     { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "", team_name: "", display_skin: "Academy Estelle" },
     { id: "m8", kind: "mentor", slot: 8, badge_id: "INS-0478-BT", name: "", team_name: "", display_skin: "Transfer Student Bianca" },
-    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "", team_name: "", display_skin: "" },
-    { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "", team_name: "", display_skin: "" },
-    { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "", team_name: "", display_skin: "" },
-    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "", team_name: "", display_skin: "" }
+    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "",
+      sticker: "art/stickers/baeksu.webp", sticker_at: { top: "26%", tilt: -16 } }, // die-cut sticker that follows the drawing's outline
+    { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "", display_skin: "",
+      sticker: "art/stickers/jalja.webp" }, // small chibi sticker on the card's empty right side
+    { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "", display_skin: "" },
+    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "", display_skin: "" },
+    { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "", display_skin: "" },
+    { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "", display_skin: "" },
+    { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "", display_skin: "" },
+    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", display_skin: "" }
   ]
 };

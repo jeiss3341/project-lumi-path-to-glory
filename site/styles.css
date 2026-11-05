@@ -389,7 +389,9 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .assist-head{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline;margin-bottom:24px}
 .assist-head h3{font:900 clamp(24px,3vw,36px)/1 var(--f-display);letter-spacing:-.035em;text-transform:uppercase;margin:0}
 .assist-head p{margin:0;color:var(--muted);max-width:62ch}
-.assist-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}
+.assist-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+@media (max-width:980px){.assist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.assist-grid{grid-template-columns:minmax(0,1fr)}}
 .mini-badge{background:var(--badge);color:#f4f4f2;border-radius:12px;display:grid;grid-template-columns:22px minmax(0,1fr);overflow:hidden;box-shadow:var(--lift);min-width:0;position:relative}
 .mini-badge::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.1),transparent 34%);pointer-events:none}
 .mini-badge:nth-child(odd){transform:rotate(-1.2deg)}
@@ -399,6 +401,24 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .mb-body{padding:14px 14px 16px;display:grid;gap:8px;min-width:0}
 .mb-role{font:900 26px/.9 var(--f-display);font-stretch:108%;text-transform:uppercase}
 .mb-name{font:800 17px/1.1 var(--f-display);text-transform:uppercase;overflow-wrap:anywhere}
+/* wear on some assistant badges: fine scratches, scuffs, tape residue, a red pen tick */
+.mini-badge .wear{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.1;stroke-linecap:round;mix-blend-mode:screen}
+.mini-badge .wear *{vector-effect:non-scaling-stroke}
+.mini-badge .wear .faint{stroke:rgba(255,255,255,.3);stroke-width:.8}
+.mini-badge .wear .scuff{fill:rgba(255,255,255,.13);stroke:none;filter:blur(6px)}
+.mini-badge .wear .tape{fill:rgba(236,230,214,.2);stroke:rgba(236,230,214,.28);stroke-width:.6;stroke-dasharray:2 2}
+.mini-badge .wear .ink{stroke:var(--red);stroke-width:2.2;opacity:.75;filter:url(#pencil)}
+/* sticker on an assistant badge (right side, next to the icon) */
+.mb-sticker{position:absolute;right:8%;top:44%;width:clamp(58px,30%,76px);height:auto;transform:rotate(var(--tilt,8deg));z-index:3;pointer-events:none;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+/* assistant icon: small square on the same dark grid as the instructor art, with red corner marks */
+.mb-icon{width:58px;aspect-ratio:1;position:relative;overflow:hidden;border:1px solid #3a3a40;display:grid;place-items:center;
+  background-color:#1a1a1d;background-image:linear-gradient(rgba(255,255,255,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);background-size:8px 8px}
+.mb-icon::before,.mb-icon::after{content:"";position:absolute;width:9px;height:9px;border:0 solid var(--red);z-index:1}
+.mb-icon::before{top:3px;left:3px;border-top-width:2px;border-left-width:2px}
+.mb-icon::after{bottom:3px;right:3px;border-bottom-width:2px;border-right-width:2px}
+.mb-icon img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mb-icon-ph{font:900 26px/1 var(--f-display);color:transparent;-webkit-text-stroke:1.5px var(--red);opacity:.85}
 .mb-focus{font:500 11px/1.5 var(--f-mono);color:#b3b3b8;letter-spacing:.04em}
 .mb-focus .ph{color:#8d8d93}
 .mini-badge .b-team{font-size:10px;padding:5px 8px}
