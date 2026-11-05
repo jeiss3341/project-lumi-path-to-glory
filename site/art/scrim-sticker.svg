@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <!-- Path to Glory · SCRIM day sticker, from the Project Lumi logo -->
+  <defs>
+    <filter id="drop" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="1.5" dy="3" stdDeviation="2.4" flood-color="#000" flood-opacity=".32"/>
+    </filter>
+    <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".55"/>
+      <stop offset=".35" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- die-cut white vinyl edge -->
+  <path d="M30 64 L62 22 L94 52 H146 L178 22 L210 64 V194 Q210 210 194 210 H46 Q30 210 30 194 Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" filter="url(#drop)"/>
+  <!-- monitor -->
+  <path d="M30 64 L62 22 L94 52 H146 L178 22 L210 64 V194 Q210 210 194 210 H46 Q30 210 30 194 Z" fill="#fff" stroke="#151413" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M50 66h24M166 66h24" stroke="#151413" stroke-width="4.5" stroke-linecap="round"/>
+  <rect x="50" y="78" width="140" height="80" rx="7" fill="#fff" stroke="#151413" stroke-width="6"/>
+  <path d="M62 88 Q120 80 178 88 Q186 118 178 148 Q120 156 62 148 Q54 118 62 88 Z" fill="#151413"/>
+  <path d="M53 81 L62 88 M187 81 L178 88 M53 155 L62 148 M187 155 L178 148" stroke="#151413" stroke-width="3"/>
+  <path d="M76 101h5v5h-5zM81 101h5v5h-5zM76 106h5v5h-5zM81 106h5v5h-5zM86 106h5v5h-5zM81 111h5v5h-5zM86 111h5v5h-5zM91 111h5v5h-5zM86 116h5v5h-5zM91 116h5v5h-5zM96 116h5v5h-5zM101 116h5v5h-5zM81 121h5v5h-5zM86 121h5v5h-5zM91 121h5v5h-5zM76 126h5v5h-5zM81 126h5v5h-5zM86 126h5v5h-5zM76 131h5v5h-5zM81 131h5v5h-5zM154 101h5v5h-5zM159 101h5v5h-5zM149 106h5v5h-5zM154 106h5v5h-5zM159 106h5v5h-5zM144 111h5v5h-5zM149 111h5v5h-5zM154 111h5v5h-5zM134 116h5v5h-5zM139 116h5v5h-5zM144 116h5v5h-5zM149 116h5v5h-5zM144 121h5v5h-5zM149 121h5v5h-5zM154 121h5v5h-5zM149 126h5v5h-5zM154 126h5v5h-5zM159 126h5v5h-5zM154 131h5v5h-5zM159 131h5v5h-5zM108 96h3.5v3.5h-3.5zM111.5 99.5h3.5v3.5h-3.5zM128.5 96h3.5v3.5h-3.5zM125 99.5h3.5v3.5h-3.5z" fill="#fff"/>
+  <!-- SCRIM on the front panel -->
+  <path d="M61.4 168h4.4v4.4h-4.4zM65.8 168h4.4v4.4h-4.4zM70.2 168h4.4v4.4h-4.4zM74.6 168h4.4v4.4h-4.4zM57 172.4h4.4v4.4h-4.4zM57 176.8h4.4v4.4h-4.4zM61.4 181.2h4.4v4.4h-4.4zM65.8 181.2h4.4v4.4h-4.4zM70.2 181.2h4.4v4.4h-4.4zM74.6 185.6h4.4v4.4h-4.4zM74.6 190h4.4v4.4h-4.4zM57 194.4h4.4v4.4h-4.4zM61.4 194.4h4.4v4.4h-4.4zM65.8 194.4h4.4v4.4h-4.4zM70.2 194.4h4.4v4.4h-4.4zM87.4 168h4.4v4.4h-4.4zM91.8 168h4.4v4.4h-4.4zM96.2 168h4.4v4.4h-4.4zM100.6 168h4.4v4.4h-4.4zM83 172.4h4.4v4.4h-4.4zM83 176.8h4.4v4.4h-4.4zM83 181.2h4.4v4.4h-4.4zM83 185.6h4.4v4.4h-4.4zM83 190h4.4v4.4h-4.4zM87.4 194.4h4.4v4.4h-4.4zM91.8 194.4h4.4v4.4h-4.4zM96.2 194.4h4.4v4.4h-4.4zM100.6 194.4h4.4v4.4h-4.4zM109 168h4.4v4.4h-4.4zM113.4 168h4.4v4.4h-4.4zM117.8 168h4.4v4.4h-4.4zM122.2 168h4.4v4.4h-4.4zM109 172.4h4.4v4.4h-4.4zM126.6 172.4h4.4v4.4h-4.4zM109 176.8h4.4v4.4h-4.4zM126.6 176.8h4.4v4.4h-4.4zM109 181.2h4.4v4.4h-4.4zM113.4 181.2h4.4v4.4h-4.4zM117.8 181.2h4.4v4.4h-4.4zM122.2 181.2h4.4v4.4h-4.4zM109 185.6h4.4v4.4h-4.4zM117.8 185.6h4.4v4.4h-4.4zM109 190h4.4v4.4h-4.4zM122.2 190h4.4v4.4h-4.4zM109 194.4h4.4v4.4h-4.4zM126.6 194.4h4.4v4.4h-4.4zM135 168h4.4v4.4h-4.4zM139.4 168h4.4v4.4h-4.4zM143.8 168h4.4v4.4h-4.4zM148.2 168h4.4v4.4h-4.4zM152.6 168h4.4v4.4h-4.4zM143.8 172.4h4.4v4.4h-4.4zM143.8 176.8h4.4v4.4h-4.4zM143.8 181.2h4.4v4.4h-4.4zM143.8 185.6h4.4v4.4h-4.4zM143.8 190h4.4v4.4h-4.4zM135 194.4h4.4v4.4h-4.4zM139.4 194.4h4.4v4.4h-4.4zM143.8 194.4h4.4v4.4h-4.4zM148.2 194.4h4.4v4.4h-4.4zM152.6 194.4h4.4v4.4h-4.4zM161 168h4.4v4.4h-4.4zM178.6 168h4.4v4.4h-4.4zM161 172.4h4.4v4.4h-4.4zM165.4 172.4h4.4v4.4h-4.4zM174.2 172.4h4.4v4.4h-4.4zM178.6 172.4h4.4v4.4h-4.4zM161 176.8h4.4v4.4h-4.4zM169.8 176.8h4.4v4.4h-4.4zM178.6 176.8h4.4v4.4h-4.4zM161 181.2h4.4v4.4h-4.4zM169.8 181.2h4.4v4.4h-4.4zM178.6 181.2h4.4v4.4h-4.4zM161 185.6h4.4v4.4h-4.4zM178.6 185.6h4.4v4.4h-4.4zM161 190h4.4v4.4h-4.4zM178.6 190h4.4v4.4h-4.4zM161 194.4h4.4v4.4h-4.4zM178.6 194.4h4.4v4.4h-4.4z" fill="#d6403a"/>
+  <!-- vinyl shine -->
+  <path d="M30 64 L62 22 L94 52 H146 L178 22 L210 64 V194 Q210 210 194 210 H46 Q30 210 30 194 Z" fill="url(#gloss)" opacity=".5"/>
+</svg>

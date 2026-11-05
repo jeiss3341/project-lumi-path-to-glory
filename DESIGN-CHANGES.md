@@ -3,6 +3,9 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-05
+- Schedule: scrim days (Nov 11, 14, 18, 21) now show a Project Lumi "SCRIM" sticker (`site/art/scrim-sticker.svg`, the cat monitor logo with SCRIM in pixel letters) in place of the small Scrim/Prio tags, at a slightly different spot and angle on each day (seeded by the date, so it doesn't jump around between visits). The legend uses a mini sticker too, and "Tentative" is gone from the legend.
+  - The "Days marked with a dashed tag are tentative…" sentence is removed from the Schedule intro. Scrim days are still tentative in `content.js`, but the calendar no longer marks that.
+- Schedule intro: red squiggle under "two Sundays that count", and the "Days marked…" sentence moved to its own line. Squiggles in section headers use full red so they show on the dark desk.
 - Removed the Sign up section (team and solo application forms) from the home page. Later sections are renumbered (Schedule is now 03 … Channels 08), and "Sign up" is gone from the top menu on both pages.
   - The "Signups open now!" ticket, the footer link and the desk's application buttons now go to The brief instead.
   - Needs a decision: there is no way to apply on the site any more. Players need another route (a Discord form, a link in the Sign Up! step, etc.). The form code is still in `site/home.js` (`renderApply`) and simply skips itself while the section is missing, so it can come back easily.

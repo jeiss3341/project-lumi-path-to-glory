@@ -88,7 +88,20 @@
     let sel = (C.schedule.find(e => e.date >= todayY) || C.schedule[C.schedule.length - 1]).date;
     $("#dows").innerHTML = days.slice(0, 7).map(d => "<span>" + d.dow + "</span>").join("");
     const label = ["", "Week 1 · Scrims → Mock checkpoint", "Week 2 · Prio scrims → Real checkpoint"];
-    const chip = ev => '<span class="chip ' + ev.kind + (ev.tentative ? " tbc" : "") + '">' + esc(ev.short) + "</span>";
+    // scrim days get the Project Lumi SCRIM sticker instead of a text tag,
+    // slapped on at a random-looking spot and angle (seeded by the date, so it stays put between visits)
+    const stickerSpot = ymd => {
+      let h = 2166136261;
+      for (const c of ymd) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+      const r = () => { // mulberry32
+        h = (h + 0x6D2B79F5) | 0;
+        let t = Math.imul(h ^ (h >>> 15), 1 | h);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      return "--sx:" + Math.round(2 + r() * 38) + "%;--sy:" + Math.round(38 + r() * 10) + "%;--sr:" + Math.round(-14 + r() * 28) + "deg";
+    };
+    const chip = ev => ev.kind === "scrim" ? '<img class="scrim-sticker" src="art/scrim-sticker.svg" alt="" width="240" height="240" style="' + stickerSpot(ev.date) + '">' : '<span class="chip ' + ev.kind + (ev.tentative ? " tbc" : "") + '">' + esc(ev.short) + "</span>";
     $("#weeks").innerHTML = [1, 2].map(w => '<div class="wk">' + label[w] + '</div><div class="week">' +
       days.filter(d => d.week === w).map(d => '<button class="day" data-iso="' + d.ymd + '" aria-pressed="false" aria-label="' +
         esc(UI.date(d.d, { weekday: "long", month: "long", day: "numeric" }) + (d.events.length ? ", " + d.events.map(e => e.title).join(", ") : ", open day")) + '"><span class="num">' + d.n + "</span>" +

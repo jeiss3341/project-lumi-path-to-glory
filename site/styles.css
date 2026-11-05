@@ -152,6 +152,7 @@ h1,h2,h3,h4{text-wrap:balance}
 /* text marks: yellow highlighter + red squiggle */
 mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba(255,232,90,.5) 3%,rgba(255,232,90,.4) 96%,rgba(255,230,0,0) 100%);padding:0 .14em;margin:0 -.14em;border-radius:.3em .5em .35em .45em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .squig{text-decoration:underline wavy color-mix(in srgb,var(--red) 50%,transparent);text-decoration-thickness:1px;text-underline-offset:.2em;text-decoration-skip-ink:none}
+.sec-head .squig{text-decoration-color:color-mix(in srgb,var(--red) 70%,transparent);text-decoration-thickness:1.5px}
 
 /* schedule */
 .sched{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:30px;align-items:start}
@@ -176,6 +177,10 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .chip.tbc{border-style:dashed}
 .legend{display:flex;flex-wrap:wrap;gap:14px 20px;margin-top:16px;font:500 11px/1 var(--f-mono);letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase;align-items:center}
 .legend .chip{transform:none}
+/* scrim days: Project Lumi SCRIM sticker slapped on the day box */
+.day .scrim-sticker{position:absolute;left:var(--sx,20%);top:var(--sy,30%);width:min(60%,64px);height:auto;transform:rotate(var(--sr,-7deg));pointer-events:none}
+.legend .scrim-mini{display:inline-flex;align-items:center;gap:6px}
+.legend .scrim-mini img{width:24px;height:24px;transform:rotate(-7deg)}
 
 .dd{padding:26px 24px 24px;display:grid;gap:12px}
 .dd::before{content:"";position:absolute;top:-12px;left:50%;width:110px;height:26px;background:rgba(214,64,58,.88);transform:translateX(-50%) rotate(-3deg)}
