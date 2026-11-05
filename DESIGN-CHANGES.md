@@ -3,6 +3,7 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-05
+- Schedule planner: now a cream ticket (`#f4eee0`) with a light paper-fiber texture and stamp-style half-circle notches down both sides, after a ticket reference. The shadow follows the notched shape. Smaller notches and tighter margins on phones. Day box outlines darkened (`#a8987a`) so the grid reads clearly.
 - Schedule: scrim days (Nov 11, 14, 18, 21) now show a Project Lumi "SCRIM" sticker (`site/art/scrim-sticker.svg`, the cat monitor logo with SCRIM in pixel letters) in place of the small Scrim/Prio tags, at a slightly different spot and angle on each day (seeded by the date, so it doesn't jump around between visits). The legend uses a mini sticker too, and "Tentative" is gone from the legend.
   - The "Days marked with a dashed tag are tentative…" sentence is removed from the Schedule intro. Scrim days are still tentative in `content.js`, but the calendar no longer marks that.
 - Schedule intro: red squiggle under "two Sundays that count", and the "Days marked…" sentence moved to its own line. Squiggles in section headers use full red so they show on the dark desk.
