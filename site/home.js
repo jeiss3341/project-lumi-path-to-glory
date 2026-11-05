@@ -59,12 +59,49 @@
       '<path d="M5 26 C9 23 12 29 16 26 C20 23 23 29 27 26 C31 23 34 29 38 26 C42 23 45 29 49 26 C53 23 56 29 60 26"/>' + // lettuce
       '<path d="M7 30 H58 C60 30 60 36 58 36 H7 C5 36 5 30 7 30 Z"/>' +       // patty
       '<path d="M9 39 H56 C56 45 50 47 45 47 H19 C13 47 9 45 9 39 Z"/>' +       // bottom bun
-      '<path d="M48 4 L55 1.5 M52 8 L60 7"/></svg>'                              // little "fresh" marks
+      '<path d="M48 4 L55 1.5 M52 8 L60 7"/></svg>',                             // little "fresh" marks
+    // cat ears on the name + a chibi face peeking out under it
+    // traced from the sketch: uneven "^" cat ears on the name, chibi face peeking out under it
+    chibi: '<svg class="doodle d-chibi" viewBox="0 0 177 179" aria-hidden="true">' +
+      '<path d="M25 21 L35 2.5 L51 17"/><path d="M32 20.5 Q35 16 38 19.5"/>' +                      // left ear + inner hook
+      '<path d="M121 19 L141 6.5 L144 20"/><path d="M132 16 Q135 14.5 136 17 L137 21"/>' +            // right ear + inner hook
+      '<g transform="translate(0 90)">' +
+        '<path d="M11 8 C4 22 2 44 6 60 C8 70 12 76 15 81 L17 71 L27 79"/>' +                        // far-left hair, kicked-out end
+        '<path d="M30 4 L18 24 L33 19 L35 31"/>' +                                                   // left "N" bangs
+        '<path d="M71 3 C71 12 70 20 58 30"/>' +                                                     // centre strand
+        '<path d="M71 22 L75.5 44 L82 31 L86.5 46 L98 40"/>' +                                       // middle zigzag bangs
+        '<path d="M108 8 C110 20 116 27 128 32"/><path d="M141 25 L146 32 L156 32"/>' +              // right bangs + tuft
+        '<path d="M151 4 C157 8 156 30 155 50 C154 64 152 76 152 84 L162 77 L166 82"/>' +           // right hair
+        '<path d="M166 14 C171 30 173 55 171 80"/>' +                                                // far-right hair
+        '<ellipse cx="49" cy="41" rx="19" ry="11"/><ellipse cx="121" cy="45" rx="24" ry="12.5"/>' +  // eyes
+        '<ellipse class="fill" cx="48" cy="38.5" rx="5.5" ry="7.5"/><ellipse class="fill" cx="120" cy="39" rx="5.5" ry="7.5"/>' + // irises
+        '<circle class="shine" cx="46.5" cy="36" r="1.6"/><circle class="shine" cx="118.5" cy="36.5" r="1.6"/>' +
+        '<path d="M29 50 L29 62"/>' +                                                                // cheek edge
+        '<path d="M32 63 C40 80 60 88 88 88 C112 88 132 80 141 66"/>' +                              // chin
+        '<path d="M65 59 C68 64 72 64 76.5 61 C80 64 86 65 92 62.5"/>' +                             // cat mouth
+        '<path d="M45 58 L45.5 62 M50 59 L50.5 62.5 M117 62 L117.5 66 M123 63 L123.5 66.5"/>' +      // blush ticks
+      "</g></svg>",
+    // traced from the sketch: tipped-over fries carton with a zigzag on it, fries spilling out
+    fries: '<svg class="doodle d-fries" viewBox="0 0 132 104" aria-hidden="true">' +
+      '<path d="M37 37 C55 25 75 12 92 3 C102 12 115 25 129 37 C112 48 95 60 77 72"/>' +   // carton
+      '<path d="M37 37 C50 36 65 40 72 50 C75 58 76 64 77 72"/><path d="M37 37 C36 44 40 50 46 53"/>' + // opening + lip
+      '<path d="M85 17 L78 31 L88 29 L85 40 L110 30"/>' +                                 // zigzag on the carton
+      '<path d="M47 53 L33 64 L37 69 L52 58"/><path d="M50 64 L70 50 M53 68 L72 54"/>' +  // fries in the opening
+      '<path d="M69 63 L73 66 L63 90 L49 87 Z"/>' +                                       // fat fry
+      '<path d="M30 80 L35 83 L13 100 L3 97 Z"/></svg>'                                   // fry falling out
   };
   // competitive history line: a trailing "(...)" note drops onto its own line
   function histItem(h) {
     const m = String(h).match(/^(.*?)\s*(\([^()]*\))\s*$/);
-    return m && m[1] ? "<li>" + esc(m[1]) + '<span class="hist-note">' + esc(m[2]) + "</span></li>" : "<li>" + esc(h) + "</li>";
+    return m && m[1] ? "<li>" + fixes(esc(m[1])) + '<span class="hist-note">' + esc(m[2]) + "</span></li>" : "<li>" + fixes(esc(h)) + "</li>";
+  }
+  // {{old|new}} → old word struck through in red pencil with the correction scribbled underneath
+  // [[text]] → text added by hand in red pencil (e.g. an extra "!")
+  function fixes(html) {
+    return html.replace(/\{\{(.+?)\|(.+?)\}\}/g, '<span class="pencil-fix"><s>$1</s><span class="fix" aria-label="corrected to $2">$2</span></span>')
+      .replace(/\[\[(.+?)\]\]/g, (_, t) => t === "!"
+        ? '<svg class="doodle d-bang" viewBox="0 0 10 28" role="img" aria-label="!"><path d="M5 2.5 L5 17"/><path d="M5 23.5 l.2 .3"/></svg>'
+        : '<span class="pencil-add">' + t + "</span>");
   }
   // small black & white pfp for a character: art from PTG.charArt if there is a file, else a lettered placeholder
   function charPfp(name) {
@@ -169,11 +206,11 @@
       const dz = k => (m.doodles || []).includes(k); // red pencil doodles this mentor's file gets
       const front =
         '<article class="sheet info face front">' + clip + top("") +
-        "<h3>" + UI.ph(m.name, UI.coachName(m)) + (dz("burst") ? DOODLE.burst : "") + "</h3>" +
+        "<h3>" + UI.ph(m.name, UI.coachName(m)) + (dz("burst") ? DOODLE.burst : "") + (dz("chibi") ? DOODLE.chibi : "") + "</h3>" +
         '<span class="team-tag">' + esc(UI.bare(UI.coachTeam(m))) + "</span>" +
         '<div class="info-grid">' +
           "<section><h4>Playstyle</h4>" + (m.playstyle ? paras(m.playstyle) : "<p>" + UI.ph("", "[One or two lines on how this mentor plays and what they focus on in review.]") + "</p>") + "</section>" +
-          '<section class="pool-sec"><h4>Character pool</h4>' + (dz("sparkles") ? DOODLE.sparkles : "") +
+          '<section class="pool-sec"><h4>Character pool</h4>' + (dz("sparkles") ? DOODLE.sparkles : "") + (dz("smile") ? '<span class="scribble s-smile" aria-hidden="true">^_^</span>' : "") + (dz("fries") ? DOODLE.fries : "") +
             (m.pool && m.pool.length
               ? '<div class="pfp" aria-live="polite">' + charPfp(m.pool[0]) + '</div><div class="pool pool-pick">' +
                 m.pool.map((p, k) => '<button type="button" class="pool-chip' + (k ? "" : " on") + '" data-char="' + esc(p) + '">' + esc(p) + "</button>").join("") + "</div>" +
@@ -183,7 +220,8 @@
           '<section class="hist-sec"><h4>Competitive history</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul>" + (dz("burger") ? DOODLE.burger : "") + "</section>" +
           "<section><h4>About me</h4>" + (m.about ? paras(m.about) : "<p>" + UI.ph("", "[A short about-me written by the mentor.]") + "</p>") + "</section>" +
         "</div>" +
-        '<div class="info-foot"><span>Main: ' + UI.ph(m.main_character, "[Main character]") + " · Display: " + UI.ph(m.display_skin, "[Display skin]") + '</span><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="#book" data-book="' + esc(m.id) + '">Request a session</a></span></div>' +
+        '<div class="info-foot"><span>Main: ' + UI.ph(m.main_character, "[Main character]") + " · Display: " + UI.ph(m.display_skin, "[Display skin]") + '</span><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="#book" data-book="' + esc(m.id) + '">Request a session</a></span>' +
+          (m.foot_scribble ? '<span class="scribble s-foot" aria-hidden="true">' + esc(m.foot_scribble).replace(/\n/g, "<br>") + "</span>" : "") + "</div>" +
         "</article>";
       const back =
         '<article class="sheet info face back" inert>' + top(" · back") +

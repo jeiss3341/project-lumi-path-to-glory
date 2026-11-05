@@ -290,6 +290,29 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .hist-sec{position:relative}
 .hist-sec .d-burger{position:absolute;left:-30px;bottom:-40px;width:54px;height:42px;transform:rotate(-8deg)}
 @media (max-width:640px){.hist-sec .d-burger{left:auto;right:4px;bottom:auto;top:-14px}.pool-sec .d-plus{left:-10px}}
+/* handwritten red pencil notes */
+.scribble,.pencil-fix .fix{-webkit-text-stroke:.5px var(--red)}
+.scribble{font:400 26px/.9 "Reenie Beanie","Bradley Hand","Segoe Print",cursive;color:var(--red);filter:url(#pencil);pointer-events:none;letter-spacing:.02em}
+.pool-sec .s-smile{position:absolute;left:clamp(130px,62%,170px);top:-34px;font-size:30px;transform:rotate(-6deg)}
+.info-foot{position:relative}
+.s-foot{position:absolute;right:8%;top:30px;font-size:30px;line-height:.85;transform:rotate(-9deg);text-align:left}
+@media (max-width:640px){.s-foot{position:static;transform:rotate(-6deg);margin:4px 0 0 auto}.pool-sec .s-smile{left:150px;top:-10px}}
+.pencil-fix{position:relative;display:inline-block;white-space:nowrap}
+.pencil-fix s{text-decoration:none;position:relative}
+.pencil-fix s::after{content:"";position:absolute;left:-3px;right:-4px;top:52%;height:6px;filter:url(#pencil);
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 6' preserveAspectRatio='none'%3E%3Cpath d='M2 4 C25 2.5 55 3.5 98 1.5' fill='none' stroke='%23d6403a' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/100% 100%}
+.pencil-fix .fix{position:absolute;left:-2px;top:88%;font:400 24px/1 "Reenie Beanie","Bradley Hand","Segoe Print",cursive;color:var(--red);filter:url(#pencil);transform:rotate(-2deg);letter-spacing:.04em}
+.hist li:has(.pencil-fix){margin-bottom:14px}
+.pencil-add{font:400 1.7em/0 "Reenie Beanie","Bradley Hand","Segoe Print",cursive;color:var(--red);-webkit-text-stroke:.6px var(--red);filter:url(#pencil);margin-left:1px;vertical-align:-.05em}
+.d-bang{display:inline-block;width:.4em;height:1.25em;vertical-align:-.1em;margin-left:0;stroke-width:3.6}
+/* Chibiarc: cat ears on the name + chibi face under it, fries by the character pool */
+.doodle .fill{fill:var(--red);stroke:none}
+.info h3{position:relative}
+.doodle .shine{fill:#f3f2ee;stroke:none}
+/* sized and placed from the sketch (62px name, 754px-wide file) */
+.info h3 .d-chibi{position:absolute;left:2.03em;top:-.34em;width:2.86em;height:2.89em;stroke-width:2.2}
+.pool-sec .d-fries{position:absolute;right:-2px;top:67px;width:132px;height:104px;stroke-width:2}
+@media (max-width:640px){.pool-sec .d-fries{right:-4px;top:auto;bottom:-34px;width:84px;height:66px}}
 .pencil-ul{position:relative;white-space:nowrap}
 .pencil-ul::after{content:"";position:absolute;left:-2px;right:-3px;bottom:-8px;height:7px;pointer-events:none;filter:url(#pencil);
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 8' preserveAspectRatio='none'%3E%3Cpath d='M2 5.5 C30 2.5 60 3 90 4 S140 5 158 2.5' fill='none' stroke='%23d6403a' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/100% 100%}

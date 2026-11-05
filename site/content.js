@@ -125,7 +125,9 @@ window.PTG = {
       playstyle: "My playstyle depends on my character and team comp, but I tend to lean greedy.",
       pool: ["Abigail", "Darko"],
       pool_note: "but ive been kinda inting on darko recently",
-      history: ["Finals ercs/ercc when baeksu doesnt sleep"],
+      history: ["Finals ercs/ercc when {{baeksu|BREADSU}} doesnt sleep"], // {{old|new}} = red pencil correction
+      doodles: ["smile"],
+      foot_scribble: "# NORMS\nterrorist",
       about: "Hello, my name is Dylannn. I play Fighters and chuds till they buff abigail.",
       coaching: "This is my first time coaching a full team, so I’m still figuring out my style. I expect to be fairly hands-on and guide players closely, but I’ll also be blunt: if something is bad or I don’t like it, I’ll say so. I’ll also repeat feedback as many times as it takes for it to stick.",
       games: ["Epic Seven (i need a mentor)"],
@@ -136,7 +138,8 @@ window.PTG = {
       playstyle: "Melee chungus.\n\nLowkey tho as long as its not triple ranged should be chill.",
       pool: ["Hyunwoo", "Shoichi"],
       pool_note: "(lol)",
-      history: ["Some ercs wins"],
+      history: ["Some ercs wins[[!]]"], // [[…]] = added by hand in red pencil
+      doodles: ["chibi", "fries"],
       about: "Sometimes plays rank.\nSometimes stream.\nMaster of sleeping.",
       coaching: "Opposite of whatever fwitchu put here.\n\nI will say though I dont like sugarcoating things.",
       games: ["JRPGs", "League", "Single Player Games", "Turn based", "etc"],

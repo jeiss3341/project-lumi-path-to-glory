@@ -3,6 +3,10 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-05
+- Faculty: red pencil doodles on Chibiarc's file, redrawn to follow the designer's sketch closely: uneven cat ears on the name with a chibi face under it (N-shaped bangs, big oval eyes, cat mouth, blush ticks), a hand-added "!" after "Some ercs wins", and a tipped-over fries carton with a zigzag and spilling fries by the character pool.
+  - New content options: `"chibi"` and `"fries"` in `doodles`, and `[[…]]` in comp history for something added by hand (`[[!]]` draws a pencil exclamation mark).
+- Faculty: red pencil scribbles on Dylan's file: "^_^" by the character pool, "baeksu" struck through and corrected to "BREADSU" in comp history, and "# NORMS terrorist" by the buttons.
+  - New content options: `{{old|new}}` in comp history for a struck-through correction, `"smile"` in `doodles`, and `foot_scribble` for a handwritten note in the file's footer.
 - Faculty: red pencil doodles on Actor's file (burst by the name, sparkle + crosses around the character pool, a burger by the comp history, and a pencil underline under "engage tank"). Drawn as SVG with the `#pencil` filter.
   - Per mentor: add `doodles: ["burst", "sparkles", "burger"]` (any of them) in `site/content.js`, and wrap words in `~~…~~` in playstyle / about / coaching for the pencil underline. The demo needs "Reset data" to pick up changes.
 - Faculty: mentor 02 is **Dylan** (team Trigger) and mentor 03 is **Chibiarc** (team uberman), filled in from the Coach Infographic form (responses 1 and 3) the same way as Actor, front and back.
