@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Path to Glory · Project Lumi</title>
+<meta name="description" content="Path to Glory, Project Lumi's pre-season mentor event for the Eternal Return competitive scene. Nov 9–22, 2026.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23d6403a'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='14' fill='%23f3f2ee'%3EPTG%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="code" href="index.html">PATH*TO*GLORY—(11)-(22)</a>
+    <nav aria-label="Sections">
+      <a href="#brief">Brief</a><a href="#signup">Sign up</a><a href="#schedule">Schedule</a><a href="#faculty">Faculty</a><a href="#book">Office hours</a><a href="#rosters">Rosters</a><a href="#notes">Field notes</a><a href="#channels">Channels</a>
+    </nav>
+    <div class="auth" id="auth"></div>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap" aria-label="Path to Glory">
+    <div class="folder">
+      <div class="file-id"><span class="pill">PTG</span><br>MENTOR FILE<br>NO.1116</div>
+      <div class="folder-tape" aria-hidden="true"><span>PATH*TO*GLORY—(11)-(22)</span><span>PRE-SEASON MENTOR EVENT</span><span>*</span></div>
+      <article class="sheet hero-sheet">
+        <span class="tape-bit" aria-hidden="true"></span>
+        <svg class="clip" viewBox="0 0 44 112" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M30 40 V96 a10 10 0 0 1 -20 0 V22 a14 14 0 0 1 28 0 V88 a4 4 0 0 1 -8 0 V40"/></svg>
+        <h1 class="title">Path to<br>Glory</h1>
+        <span class="pill-lg">MENTOR EVENT</span>
+        <p class="kicker">(01) Pre-season mentor event:</p>
+        <p class="lede" id="lede"></p>
+        <div class="range" aria-label="November 9 to November 22"><span>11/09</span><i></i><span>11/22</span></div>
+      </article>
+      <a class="ticket" href="#signup">
+        <span class="stub" id="ticket-stub"><span>ADMIT ONE</span></span>
+        <span class="t-main">
+          <span class="t-label" id="ticket-status">Class starts</span>
+          <span class="t-date">NOV 9<sup>TH</sup> – 22<sup>ND</sup></span>
+          <span class="t-cta">SIGNUPS OPEN NOW!</span>
+        </span>
+      </a>
+    </div>
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="98" fill="#d6403a"/>
+        <circle cx="100" cy="100" r="60" fill="none" stroke="#f3f2ee" stroke-width="2.5"/>
+        <g class="ring">
+          <path id="sealpath" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" fill="none"/>
+          <text fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="16" textLength="486" lengthAdjust="spacing"><textPath href="#sealpath">SIGNUPS OPEN NOW ★ SIGNUPS OPEN NOW ★</textPath></text>
+        </g>
+        <text x="100" y="96" text-anchor="middle" fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="21">PATH TO</text>
+        <text x="100" y="119" text-anchor="middle" fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="21">GLORY</text>
+      </svg>
+    </div>
+    <aside class="hero-side">
+      <div class="lanyard">
+        <div class="strap" aria-hidden="true">PATH TO GLORY · PATH TO GLORY</div>
+        <div class="clasp" aria-hidden="true"></div>
+        <div id="hero-badge"></div>
+      </div>
+      <form class="goals" id="goals" onsubmit="return false">
+        <h3>Check your goals</h3>
+        <div id="goal-list"></div>
+        <small>ER COMP SCENE // 2026</small>
+      </form>
+    </aside>
+  </section>
+
+  <section class="sec wrap" id="brief">
+    <div class="sec-head"><span class="no">(02)</span><h2>The brief</h2></div>
+    <div class="brief">
+      <article class="sheet memo">
+        <dl class="memo-head">
+          <dt>TO</dt><dd>Developing ER players and teams</dd>
+          <dt>FROM</dt><dd>Project Lumi tournament staff</dd>
+          <dt>RE</dt><dd>Path to Glory, pre-season mentor event</dd>
+          <dt>WHEN</dt><dd>Mon Nov 9 – Sun Nov 22, 2026</dd>
+        </dl>
+        <p class="goal-line" id="goal-line"></p>
+        <p id="pitch"></p>
+        <h3>How it runs</h3>
+        <ol class="steps" id="steps"></ol>
+        <div class="prio"><span class="stamp">Priority</span><p id="prio"></p></div>
+      </article>
+      <aside class="index roles-card" aria-label="Roles">
+        <h3>Who's who</h3>
+        <div id="roles"></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="signup">
+    <div class="sec-head"><span class="no">(03)</span><h2>Sign up</h2><p>Two ways in. Bring your own roster, or come solo and staff place you on a team. Log in with Discord to apply; one application per account.</p></div>
+    <div class="apply" id="apply"></div>
+    <div class="after" id="after"></div>
+  </section>
+
+  <section class="sec wrap" id="schedule">
+    <div class="sec-head"><span class="no">(04)</span><h2>Schedule</h2><p>Two weeks, two Sundays that count. Days marked with a dashed tag are tentative until staff lock the scrim days.</p></div>
+    <div class="sched">
+      <div class="sheet planner">
+        <div class="planner-top"><h3>November 2026</h3><span>Two-week planner</span></div>
+        <div class="dows" id="dows"></div>
+        <div id="weeks"></div>
+        <div class="legend"><span class="chip kickoff">Day 1</span><span class="chip">Scrim</span><span class="chip tbc">Tentative</span><span class="chip mock">Mock</span><span class="chip final">Final</span></div>
+      </div>
+      <aside class="sheet dd" id="day-detail" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="faculty">
+    <div class="sec-head"><span class="no">(05)</span><h2>Faculty</h2><p>Eight main mentors, one per team. Each file carries their playstyle, character pool, competitive history and a short about-me.</p></div>
+    <div class="fac" id="fac">
+      <div class="fac-badge" id="fac-badge"></div>
+      <article class="sheet info" id="fac-info"></article>
+    </div>
+    <div class="fac-nav">
+      <div class="fac-tabs" role="tablist" aria-label="Mentors" id="fac-tabs"></div>
+      <div class="arrows"><button class="arrow" id="prev" aria-label="Previous mentor">←</button><button class="arrow" id="next" aria-label="Next mentor">→</button></div>
+    </div>
+    <div class="assist">
+      <div class="assist-head"><h3>Assistant &amp; role coaches</h3><p>On standby for players on any team. Ask them about your character or role, request an individual session, or join the topic sessions they run.</p></div>
+      <div class="assist-grid" id="assist"></div>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="book">
+    <div class="sec-head"><span class="no">(06)</span><h2>Office hours</h2><p>Mentors post the hours they're free. Pick an hour in and an hour out inside those hours and send a request; the mentor accepts or declines it. Times are in your time zone (<span id="tz"></span>).</p></div>
+    <div class="book">
+      <form class="sheet book-ctl" id="book-form">
+        <div><label class="k" for="bk-who">Coach</label><select id="bk-who"></select></div>
+        <fieldset id="bk-kind-f"><legend>Session</legend><div class="seg">
+          <input type="radio" name="bk-kind" id="bk-team" value="team" checked><label for="bk-team">Team review</label>
+          <input type="radio" name="bk-kind" id="bk-ind" value="individual"><label for="bk-ind">Individual</label>
+        </div></fieldset>
+        <div><label class="k" for="bk-note">What do you want to work on?</label><textarea id="bk-note" class="ta" rows="4" maxlength="500" placeholder="Review our mock checkpoint VOD, trio rotations, ..."></textarea></div>
+        <p class="hint" id="bk-hint"></p>
+      </form>
+      <div class="sheet ledger">
+        <div class="ledger-top"><h3>Appointment book</h3><span class="mono-label" style="color:var(--ink-soft)" id="bk-label"></span></div>
+        <div class="ldays" id="bk-days"></div>
+        <ul class="rows" id="bk-rows" aria-label="Time slots"></ul>
+      </div>
+      <aside class="appt" id="bk-card" aria-live="polite"></aside>
+    </div>
+    <div class="mine" id="my-req"></div>
+  </section>
+
+  <section class="sec wrap" id="rosters">
+    <div class="sec-head"><span class="no">(07)</span><h2>Rosters</h2><p>Coaches and participants, one folder tab per team.</p></div>
+    <div class="rost-tabs" role="tablist" aria-label="Teams" id="rost-tabs"></div>
+    <div class="rost-body">
+      <article class="sheet form" id="rost-form" role="tabpanel"></article>
+      <p class="rost-sum" id="rost-sum"></p>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="notes">
+    <div class="sec-head"><span class="no">(08)</span><h2>Field notes</h2><p>Everything from the event is open to the public, so the whole scene can learn from it.</p></div>
+    <div class="notes">
+      <div class="cards" id="res"></div>
+      <article class="sheet oblig">
+        <span class="mono-label" style="color:var(--red-deep)">Mentor obligations</span>
+        <h3>What coaches sign up for</h3>
+        <ul id="expect"></ul>
+        <p class="fine">Availability works like booking a doctor's appointment: a mentor posts free hours, players request a slot inside them, and the mentor accepts or declines.</p>
+      </article>
+    </div>
+    <div class="notice">
+      <div><span class="mono-label">Notice board</span><h3>Open seminars</h3><p id="sem-format"></p><p>Topics come from the applications, so tell us what you want covered.</p></div>
+      <div class="slots" id="sem"></div>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="channels">
+    <div class="sec-head"><span class="no">(09)</span><h2>Channels</h2></div>
+    <div class="links" id="links"></div>
+  </section>
+
+  <footer class="wrap foot">
+    <span>Path to Glory * ( pre-season mentor event )</span>
+    <a href="#signup">Signups open now →</a>
+  </footer>
+</main>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="content.js"></script>
+<script src="api.js"></script>
+<script src="ui.js"></script>
+<script src="home.js"></script>
+</body>
+</html>

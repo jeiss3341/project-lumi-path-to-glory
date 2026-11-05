@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Path to Glory Design Handoff</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<!-- This page sits in the top folder; the site lives in site/. -->
+<link rel="stylesheet" href="site/styles.css">
+<link rel="stylesheet" href="site/app.css">
+<style>
+/* Layout: the handoff is itself a page of the mentor file. Paper sheets on the desk, same tokens as the site
+   (site/styles.css), plus a few handoff-only pieces: swatches, type specimens, spec slips, a file map. */
+:root{color-scheme:dark}
+.h-wrap{max-width:1200px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.h-top{padding-block:48px 8px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px;align-items:start}
+.h-cover{padding:clamp(24px,4vw,48px);transform:rotate(-.5deg)}
+.h-cover h1{font:900 clamp(44px,7vw,92px)/.86 var(--f-display);letter-spacing:-.055em;text-transform:uppercase;margin:14px 0 18px}
+.h-cover .lede{font-size:clamp(17px,1.8vw,21px);line-height:1.45;max-width:46ch;margin:0 0 22px}
+.h-cta{display:flex;flex-wrap:wrap;gap:10px}
+.h-cta .btn{font-size:13px;padding:14px 16px}
+.h-memo{margin-top:22px}
+.h-side{display:grid;gap:22px}
+.h-note{padding:22px 22px 24px}
+.h-note h2{font:900 22px/1 var(--f-display);text-transform:uppercase;letter-spacing:-.02em;margin:0 0 12px}
+.h-note ul{margin:0;padding-left:18px;display:grid;gap:8px}
+.h-note p{margin:0 0 10px}
+.h-sec{padding-block:clamp(64px,8vw,104px) 0}
+.h-lead{max-width:64ch;color:var(--muted);margin:-14px 0 28px}
+
+/* art requests */
+.specs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.spec{padding:22px 22px 20px;display:grid;gap:12px;align-content:start}
+.spec:nth-child(odd){transform:rotate(-.5deg)}
+.spec:nth-child(even){transform:rotate(.5deg)}
+.spec-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.spec h3{font:900 clamp(22px,2.4vw,28px)/1 var(--f-display);letter-spacing:-.035em;text-transform:uppercase;margin:0}
+.spec p{margin:0}
+.spec dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;margin:0;padding-top:12px;border-top:1px dashed #b9b5ac}
+.spec dt{font:600 10px/1.6 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.spec dd{margin:0;font:700 15px/1.4 var(--f-type);overflow-wrap:anywhere}
+.prio-tag{font:600 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:6px 8px;white-space:nowrap}
+.prio-tag.p1{background:var(--red);color:#fff}
+.prio-tag.p2{background:var(--ink);color:var(--paper)}
+.prio-tag.p3{box-shadow:inset 0 0 0 1.5px var(--ink-soft);color:var(--ink-soft)}
+.prio-tag.done{background:var(--green);color:#fff}
+.skinlist{display:flex;flex-wrap:wrap;gap:6px}
+.skinlist span{font:600 12px/1 var(--f-display);border:1.5px solid var(--ink);border-radius:999px;padding:5px 9px}
+.skinlist span.done{background:var(--green);border-color:var(--green);color:#fff}
+
+/* art window diagram */
+.awin{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:clamp(22px,4vw,48px);align-items:center}
+.awin-box{position:relative;aspect-ratio:4/5;background-color:#151517;background-image:linear-gradient(#24242a 1px,transparent 1px),linear-gradient(90deg,#24242a 1px,transparent 1px);background-size:20px 20px;max-width:100%}
+.awin-box::before,.awin-box::after{content:"";position:absolute;width:30px;height:30px;border:0 solid var(--red)}
+.awin-box::before{top:10px;right:10px;border-width:3px 3px 0 0}
+.awin-box::after{bottom:10px;left:10px;border-width:0 0 3px 3px}
+.awin-face{position:absolute;left:12%;right:12%;top:6%;height:36%;border:2px dashed #f2c94c;display:grid;place-items:center;font:600 11px/1.3 var(--f-mono);color:#f2c94c;text-align:center;letter-spacing:.08em;text-transform:uppercase}
+.awin-safe{position:absolute;inset:8%;border:1.5px dashed rgba(255,255,255,.35)}
+.awin-kz{position:absolute;width:56px;height:56px;background:repeating-linear-gradient(45deg,rgba(214,64,58,.35) 0 6px,transparent 6px 12px)}
+.awin-kz.tr{top:0;right:0}.awin-kz.bl{bottom:0;left:0}
+.awin ul{margin:0;padding-left:18px;display:grid;gap:10px;color:var(--paper)}
+.awin li b{color:#fff}
+.key{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:6px}
+
+/* visual system */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.sw{background:var(--paper);color:var(--ink);box-shadow:var(--lift)}
+.sw i{display:block;height:84px;border-bottom:1px solid rgba(0,0,0,.12)}
+.sw div{padding:10px 12px 12px;display:grid;gap:3px}
+.sw b{font:800 15px/1.1 var(--f-display)}
+.sw code{font:500 12px/1.3 var(--f-mono);color:var(--ink-soft)}
+.sw span{font-size:13px;line-height:1.35;color:var(--ink-soft)}
+.types{display:grid;gap:18px;margin-top:30px}
+.type{padding:22px 24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,260px);gap:20px;align-items:center}
+.type .meta{font:500 12px/1.6 var(--f-mono);color:var(--ink-soft)}
+.type .meta b{display:block;font:800 16px/1.2 var(--f-display);color:var(--ink);margin-bottom:4px}
+.t-display{font:900 clamp(40px,6vw,72px)/.86 var(--f-display);letter-spacing:-.055em;text-transform:uppercase}
+.t-mono{font:600 13px/1.5 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--red-deep)}
+.t-type{font:700 22px/1.35 var(--f-type);letter-spacing:.06em}
+.rules{margin-top:26px;columns:2 320px;column-gap:34px;color:var(--paper)}
+.rules p{margin:0 0 12px;break-inside:avoid}
+.rules b{color:#fff}
+
+/* gallery */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.g{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);padding:26px 22px 18px;display:grid;gap:18px;align-content:space-between;min-width:0}
+.g-stage{display:grid;place-items:center;min-height:140px}
+.g-cap{border-top:1px solid rgba(255,255,255,.12);padding-top:12px;display:grid;gap:4px}
+.g-cap b{font:800 16px/1.2 var(--f-display);text-transform:uppercase;color:#fff}
+.g-cap code{font:500 12px/1.4 var(--f-mono);color:var(--muted)}
+.g-cap span{font-size:14px;color:var(--muted)}
+.g .ticket{position:relative;left:auto;bottom:auto;width:100%;transform:rotate(1deg)}
+.g .badge{width:min(280px,100%)}
+.g .b-role{font-size:29px}
+.g .goals{width:100%}
+.g .index{width:100%}
+.g .appt{width:100%;transform:rotate(1deg)}
+.g .mini-badge{width:min(240px,100%)}
+.g-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
+.g-paper{background:var(--paper);padding:16px;width:100%;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
+
+/* files */
+.files{padding:clamp(20px,3.4vw,34px)}
+.files table{border-collapse:collapse;width:100%;min-width:620px}
+.files th{font:600 10px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);text-align:left;padding:10px 8px;border-bottom:2px solid var(--ink)}
+.files td{padding:11px 8px;border-bottom:1px solid var(--paper-rule);vertical-align:top;font-size:15px}
+.files td:first-child{font:600 13px/1.4 var(--f-mono);white-space:nowrap}
+.own{font:600 10px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;padding:5px 7px;white-space:nowrap}
+.own.yours{background:var(--green);color:#fff}
+.own.shared{background:var(--kraft);color:#2f2416}
+.own.dev{box-shadow:inset 0 0 0 1.5px var(--ink-soft);color:var(--ink-soft)}
+.scroll{overflow-x:auto}
+.cmd{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--badge);color:#f4f4f2;padding:14px 16px;margin-top:14px}
+.cmd code{font:500 13px/1.5 var(--f-mono);flex:1;min-width:0;overflow-wrap:anywhere}
+.cmd button{appearance:none;border:1.5px solid #f4f4f2;background:transparent;color:#f4f4f2;font:600 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;cursor:pointer}
+.cmd button:hover{background:#f4f4f2;color:var(--badge)}
+.steps2{margin:0;padding-left:20px;display:grid;gap:10px}
+.qs{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.q{padding:20px}
+.q h3{font:900 19px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:-.02em;margin:0 0 8px}
+.q p{margin:0;font-size:15px}
+.concepts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.concept{display:grid;gap:4px;padding:16px 18px;background:#f8f7f4;color:var(--ink);text-decoration:none;box-shadow:var(--lift);border-top:8px solid var(--kraft-shade)}
+.concept.pick{border-top-color:var(--red)}
+.concept b{font:900 20px/1 var(--f-display);text-transform:uppercase;letter-spacing:-.02em}
+.concept span{font-size:14px;color:var(--ink-soft)}
+.concept:hover{transform:translateY(-3px)}
+@media (max-width:900px){.h-top,.awin,.type{grid-template-columns:minmax(0,1fr)}.awin-box{max-width:300px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="topbar">
+  <div class="wrap">
+    <span class="code">PATH*TO*GLORY—(11)-(22) · DESIGN HANDOFF</span>
+    <nav aria-label="Sections"><a href="#art">Art needed</a><a href="#system">Visual system</a><a href="#parts">Components</a><a href="#files">Files</a><a href="#decide">Decisions</a></nav>
+  </div>
+</header>
+
+<main>
+  <section class="h-wrap h-top">
+    <article class="sheet h-cover">
+      <span class="mono-label" style="color:var(--red-deep)">Mentor file no.1116 · design handoff</span>
+      <h1>Path to Glory</h1>
+      <p class="lede">The site for Project Lumi's pre-season mentor event (Nov 9–22) is built and working. Before any more code work, the whole design is yours: art, styles, layout, page structure and wording. Change anything you want.</p>
+      <div class="h-cta">
+        <a class="btn" href="site/index.html">Open the live demo</a>
+        <a class="btn ghost" href="site/desk.html">Open the desk demo</a>
+      </div>
+      <dl class="memo-head h-memo">
+        <dt>TO</dt><dd>Graphics</dd>
+        <dt>FROM</dt><dd>Jeiss</dd>
+        <dt>RE</dt><dd>The full design of the Path to Glory site</dd>
+        <dt>STYLE</dt><dd>Concept A, the mentor file (case file on a desk)</dd>
+      </dl>
+    </article>
+    <div class="h-side">
+      <aside class="index h-note">
+        <h3>Using the demo</h3>
+        <p>The demo runs on sample data in your browser. Use the yellow bar at the bottom to view the site as a player, a mentor (Neotep) or staff.</p>
+        <p>Use your browser's Back button to return here.</p>
+      </aside>
+      <aside class="goals" style="transform:rotate(2deg)">
+        <h3>Your checklist</h3>
+        <div id="todo"></div>
+        <small>Ticks are saved in this browser only</small>
+      </aside>
+    </div>
+  </section>
+
+  <section class="h-wrap h-sec" id="concepts">
+    <div class="sec-head"><span class="no">(01)</span><h2>Where it came from</h2></div>
+    <p class="h-lead">Four directions were made from the event poster. Concept A was picked and built out. The others are for reference. You can open these links only once Jeiss shares them with you.</p>
+    <div class="concepts">
+      <a class="concept pick" href="concepts/a-mentor-file.html"><b>A · Mentor file</b><span>Picked. Folder, ID badges, tickets, typewriter.</span></a>
+      <a class="concept" href="concepts/b-academy.html"><b>B · Academy</b><span>School prospectus, yearbook, crest.</span></a>
+      <a class="concept" href="concepts/c-access-terminal.html"><b>C · Access terminal</b><span>Dark HUD built off the badge.</span></a>
+      <a class="concept" href="concepts/d-broadcast.html"><b>D · Broadcast</b><span>Giant type, ticker, magazine cards.</span></a>
+    </div>
+  </section>
+
+  <section class="h-wrap h-sec" id="art">
+    <div class="sec-head"><span class="no">(02)</span><h2>Art needed</h2></div>
+    <p class="h-lead">Listed in priority order. The site already shows placeholders in every spot, so each piece can drop in as soon as it's ready.</p>
+    <div class="specs">
+      <article class="sheet spec">
+        <div class="spec-top"><span class="mono-label" style="color:var(--red-deep)">Need 1</span><span class="prio-tag p1">Before launch</span></div>
+        <h3>Mentor display art</h3>
+        <p>The character in each mentor's ID badge. Mentor 01 already uses Katja, cropped from the poster. Seven more are needed.</p>
+        <div class="skinlist" id="skins"></div>
+        <dl><dt>Ratio</dt><dd>4:5 portrait</dd><dt>Size</dt><dd>800 × 1000 px or larger</dd><dt>Format</dt><dd>WebP or PNG, under 400 KB</dd><dt>Name</dt><dd>m2.webp … m8.webp</dd><dt>Shows</dt><dd>ID badge in the hero, faculty slideshow</dd></dl>
+      </article>
+      <article class="sheet spec">
+        <div class="spec-top"><span class="mono-label" style="color:var(--red-deep)">Need 2</span><span class="prio-tag done">Image done</span></div>
+        <h3>Link preview image</h3>
+        <p>The picture Discord shows when someone pastes the site link. The image is finished. Discord won't show it until the preview tags are added to <code>index.html</code>, and those need the site's live address.</p>
+        <dl><dt>Size</dt><dd>1200 × 630 px</dd><dt>File</dt><dd>site/art/og.png</dd><dt>Made from</dt><dd>og-source.html (top folder)</dd><dt>Still to do</dt><dd>og: and twitter: tags in index.html</dd></dl>
+      </article>
+      <article class="sheet spec">
+        <div class="spec-top"><span class="mono-label" style="color:var(--red-deep)">Need 3</span><span class="prio-tag p2">Week 1</span></div>
+        <h3>Mentor infographics</h3>
+        <p>One social card per mentor to post on Discord, following the staff ID idea: name in white, team on a green tag, main character as the display. The site version builds itself from each mentor's file.</p>
+        <dl><dt>Count</dt><dd>8</dd><dt>Size</dt><dd>1080 × 1350 px</dd><dt>Content</dt><dd>Playstyle, character pool, comp history, about me</dd></dl>
+      </article>
+      <article class="sheet spec">
+        <div class="spec-top"><span class="mono-label" style="color:var(--red-deep)">Need 4</span><span class="prio-tag p3">Nice to have</span></div>
+        <h3>Site icon</h3>
+        <p>The tab icon is a plain red "PTG" square for now. A proper mark would help, like the seal or the badge strip.</p>
+        <dl><dt>Size</dt><dd>512 × 512 px PNG, plus SVG if possible</dd><dt>Name</dt><dd>icon.png / icon.svg</dd></dl>
+      </article>
+      <article class="sheet spec">
+        <div class="spec-top"><span class="mono-label" style="color:var(--red-deep)">Need 5</span><span class="prio-tag p3">Nice to have</span></div>
+        <h3>Assistant coach art</h3>
+        <p>The four role coaches show small badges with no picture. If you want art there, it needs a small layout change first.</p>
+        <dl><dt>Count</dt><dd>4</dd><dt>Size</dt><dd>Same as mentor art</dd><dt>Name</dt><dd>a1.webp … a4.webp</dd></dl>
+      </article>
+      <article class="sheet spec">
+        <div class="spec-top"><span class="mono-label" style="color:var(--red-deep)">Need 6</span><span class="prio-tag p3">When topics land</span></div>
+        <h3>Seminar cards</h3>
+        <p>Announcement cards for the Discord Stage seminars. Topics come from the signup applications, so these wait until staff pick them.</p>
+        <dl><dt>Size</dt><dd>1080 × 1080 px</dd><dt>Count</dt><dd>3 or so</dd></dl>
+      </article>
+    </div>
+
+    <div class="h-sec" style="padding-top:56px">
+      <div class="awin">
+        <div class="awin-box" aria-label="Diagram of the badge art window">
+          <span class="awin-kz tr"></span><span class="awin-kz bl"></span>
+          <span class="awin-safe"></span>
+          <span class="awin-face">Face and hat<br>top third</span>
+        </div>
+        <ul>
+          <li><b>The window is 4:5</b> and the image fills it, cropped from the top-center. Anything far outside a 4:5 frame gets cut.</li>
+          <li><span class="key" style="background:repeating-linear-gradient(45deg,rgba(214,64,58,.6) 0 3px,transparent 3px 6px)"></span><b>Red corner brackets</b> sit on top of the art at the top-right and bottom-left. Keep faces and hands out of those corners.</li>
+          <li><span class="key" style="border:2px dashed #f2c94c"></span><b>Put the face in the top third</b>, like the Katja crop. Upper body is ideal.</li>
+          <li><b>The background shows through as near-black (#141416)</b> with a faint grid. Transparent or dark art blends best; light backgrounds look pasted on.</li>
+          <li><b>The badge shows at about 260 × 325 px</b>, so 800 × 1000 leaves room for sharp screens and recropping.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="h-wrap h-sec" id="system">
+    <div class="sec-head"><span class="no">(03)</span><h2>Visual system</h2></div>
+    <p class="h-lead">Everything on the site comes from these colors and three typefaces. They're set once at the top of <code>site/styles.css</code>. Change a value there and it changes everywhere.</p>
+    <div class="swatches" id="swatches"></div>
+    <div class="types">
+      <div class="sheet type"><div class="t-display">Path to Glory</div><div class="meta"><b>Archivo, weight 900</b>Headlines and names. Uppercase, tracking −5%, line height 0.86. Variable width axis available (62–125).</div></div>
+      <div class="sheet type"><div class="t-mono">(04) Pre-season mentor event:</div><div class="meta"><b>IBM Plex Mono, 500–600</b>Labels, file numbers, tabs and buttons. Uppercase, tracking 10–16%, 10–13 px.</div></div>
+      <div class="sheet type"><div class="t-type">Learn from the best players</div><div class="meta"><b>Courier Prime, 700</b>Anything "filled in by hand": form answers, the goals card, appointment cards, rosters.</div></div>
+    </div>
+    <div class="rules">
+      <p><b>Everything is a physical object.</b> Paper sheets, a kraft folder, ID badges on lanyards, tickets, index cards, stamps and red tape. Nothing is a floating rounded box.</p>
+      <p><b>Objects sit slightly crooked.</b> Rotations stay between 0.5° and 4°, alternating direction between neighbors.</p>
+      <p><b>Red is for tape, stamps and the one action that matters.</b> Green only appears on team tags and confirmed states.</p>
+      <p><b>Paper has grain.</b> A light noise texture is laid over paper, kraft and the desk. It's generated in CSS, so it needs no image files.</p>
+      <p><b>Shadows are deep and soft</b>, like paper lifted off a dark desk. Use the <code>--lift</code> shadow instead of making new ones.</p>
+      <p><b>Brackets and numbers mean something.</b> [Brackets] mark placeholder text, and (01)–(09) are the page numbers of the file.</p>
+    </div>
+  </section>
+
+  <section class="h-wrap h-sec" id="parts">
+    <div class="sec-head"><span class="no">(04)</span><h2>Components</h2></div>
+    <p class="h-lead">These are rendered live with the site's own styles, so they're exactly what ships. Each one lists its CSS class, so you or your Claude can find it in the code.</p>
+    <div class="gallery">
+      <div class="g"><div class="g-stage" id="g-badge1"></div><div class="g-cap"><b>Instructor ID badge</b><code>.badge · ui.js UI.badge()</code><span>Name in white, team on the green tag, display art in the window.</span></div></div>
+      <div class="g"><div class="g-stage" id="g-badge2"></div><div class="g-cap"><b>Badge, art missing</b><code>.ph-art</code><span>What a mentor without art shows.</span></div></div>
+      <div class="g"><div class="g-stage"><a class="ticket" href="#parts"><span class="stub" id="g-stub"><span>ADMIT ONE</span></span><span class="t-main"><span class="t-label">Class starts</span><span class="t-date">NOV 9<sup>TH</sup> – 22<sup>ND</sup></span><span class="t-cta">SIGNUPS OPEN NOW!</span></span></a></div><div class="g-cap"><b>Ticket</b><code>.ticket</code><span>The main "sign up" call to action in the hero.</span></div></div>
+      <div class="g"><div class="g-stage"><div class="g-paper"><span class="stamp">Priority</span><span class="stamp open">Slot open</span><span class="stamp">Draft</span></div></div><div class="g-cap"><b>Stamps</b><code>.stamp · .stamp.open</code><span>Status on paper: priority teams, open slots, application states.</span></div></div>
+      <div class="g"><div class="g-stage"><div class="g-paper"><span class="chip kickoff">Day 1</span><span class="chip">Scrim</span><span class="chip tbc">Tentative</span><span class="chip mock">Mock</span><span class="chip final">Final</span></div></div><div class="g-cap"><b>Schedule chips</b><code>.chip.kickoff / .mock / .final / .tbc</code><span>Event types on the two-week planner.</span></div></div>
+      <div class="g"><div class="g-stage"><div class="g-paper"><span class="chip-st st-pending">Waiting</span><span class="chip-st st-accepted">Accepted</span><span class="chip-st st-declined">Declined</span><span class="chip-st st-cancelled">Cancelled</span></div></div><div class="g-cap"><b>Request status</b><code>.chip-st.st-*</code><span>Session requests on the player and mentor desks.</span></div></div>
+      <div class="g"><div class="g-stage"><div class="goals"><h3>Check your goals</h3><label for="g-goal"><input type="checkbox" id="g-goal" checked><span>2 Tourney Days</span></label><small>ER COMP SCENE // 2026</small></div></div><div class="g-cap"><b>Goals card</b><code>.goals</code><span>Straight from the poster's red card. Ticks are saved per visitor.</span></div></div>
+      <div class="g"><div class="g-stage"><div class="index"><h3>Open seminars</h3><p>Hour-long talks on a Discord Stage, followed by open Q&amp;A.</p></div></div><div class="g-cap"><b>Index card</b><code>.index</code><span>Field notes and the who's who card.</span></div></div>
+      <div class="g"><div class="g-stage"><aside class="appt"><h3>Request card</h3><dl><div><dt>With</dt><dd>Neotep</dd></div><div><dt>On</dt><dd>Wednesday, Nov 11</dd></div><div><dt>At</dt><dd>9:00–10:00 PM</dd></div></dl><span class="btn" style="margin-top:16px">Send request</span></aside></div><div class="g-cap"><b>Request card</b><code>.appt</code><span>The hour-in / hour-out booking card in Office hours.</span></div></div>
+      <div class="g"><div class="g-stage"><div class="mini-badge"><div class="b-strip"><span>ROLE COACH · PTG</span></div><div class="mb-body"><div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>AST-0511-RC</span></div><div class="mb-role">Assistant</div><div class="mb-name">[Assistant 01]</div><div class="mb-focus">[Role focus]</div><div class="mb-foot"><span class="b-team">Any team</span><a href="#parts">Request ›</a></div></div></div></div><div class="g-cap"><b>Role coach badge</b><code>.mini-badge</code><span>The smaller badge for assistant coaches.</span></div></div>
+    </div>
+  </section>
+
+  <section class="h-wrap h-sec" id="files">
+    <div class="sec-head"><span class="no">(05)</span><h2>Files</h2></div>
+    <p class="h-lead">The project lives in the <code>site</code> folder. It's plain HTML, CSS and JavaScript with no build step: edit a file, refresh the page, and see the change. Every file is yours to change. Every change is saved in the GitHub history, so nothing can be lost.</p>
+    <div class="sheet files">
+      <div class="scroll"><table>
+        <thead><tr><th>File</th><th>What it controls</th><th>Yours?</th></tr></thead>
+        <tbody>
+          <tr><td>site/art/</td><td>Images for the site. It already holds <code>og.png</code>, the link preview. Put your mentor art here too, then add one line per image in <code>content.js</code> under <code>art</code>, like <code>m2: "art/m2.webp"</code>.</td><td><span class="own yours">You</span></td></tr>
+          <tr><td>site/styles.css</td><td>The whole Concept A look: colors (top of file), fonts, folder, badge, ticket, seal, sheets, planner, faculty, rosters.</td><td><span class="own yours">You</span></td></tr>
+          <tr><td>site/app.css</td><td>Newer pieces: login button, application forms, office-hours booking, desk, mentor calendar, staff tables, demo bar.</td><td><span class="own yours">You</span></td></tr>
+          <tr><td>site/poster.webp</td><td>The event poster. The Katja badge art is cropped from it, so a new poster changes Mentor 01's crop too.</td><td><span class="own yours">You</span></td></tr>
+          <tr><td>site/content.js</td><td>All the words that don't change: schedule, roles, resources, seminar slots, Discord links, the art list.</td><td><span class="own yours">You</span></td></tr>
+          <tr><td>site/index.html, desk.html</td><td>Page structure, section order and the link preview tags.</td><td><span class="own yours">You</span></td></tr>
+          <tr><td>site/home.js, desk.js, ui.js</td><td>Build most of the page markup: badges, forms, the booking card, the mentor calendar. Layout changes often happen here.</td><td><span class="own yours">You</span></td></tr>
+          <tr><td>site/api.js</td><td>Login and data. Rarely needs design changes.</td><td><span class="own shared">You, rarely</span></td></tr>
+          <tr><td>supabase/schema.sql</td><td>Database and booking rules. Only for changes to what gets saved.</td><td><span class="own shared">You, rarely</span></td></tr>
+        </tbody>
+      </table></div>
+      <h3 class="mono-label" style="color:var(--red-deep);margin:26px 0 0">Run it on your computer</h3>
+      <ol class="steps2" style="margin-top:12px">
+        <li>Open a terminal in the folder this page is in (the one that holds <code>site</code>).</li>
+        <li>Run the command below (it needs Python), then open <b>http://localhost:8766</b>.</li>
+        <li>Edit a CSS file, save, and refresh the browser.</li>
+      </ol>
+      <div class="cmd"><code id="cmd">py -m http.server 8766 --directory site</code><button type="button" id="copy">Copy</button></div>
+      <p class="muted small" style="margin-top:12px">On a Mac, use <code>python3</code> instead of <code>py</code>.</p>
+    </div>
+  </section>
+
+  <section class="h-wrap h-sec" id="decide">
+    <div class="sec-head"><span class="no">(06)</span><h2>Decisions waiting on you</h2></div>
+    <div class="qs">
+      <article class="sheet q"><h3>Display art: mains or theme skins?</h3><p>The plan says the badge shows each mentor's main. Placeholders use the Academy and Season 9 theme skins for now. Pick one rule for all eight.</p></article>
+      <article class="sheet q"><h3>Team tag color</h3><p>The staff ID spec asked for a green tag. Everything else is red, ink and kraft. Keep the green, or bring it into the red family?</p></article>
+      <article class="sheet q"><h3>Poster as hero?</h3><p>The site and the link preview both rebuild the poster in the site's style. Do you want the actual poster art shown anywhere?</p></article>
+      <article class="sheet q"><h3>Mobile</h3><p>Check the demo on your phone. The folder, ticket and badge stack in one column, and some rotations are reduced. Flag anything that feels off.</p></article>
+    </div>
+  </section>
+
+  <footer class="wrap foot"><span>Path to Glory * ( design handoff )</span><a href="site/index.html">Open the live demo →</a></footer>
+</main>
+
+<script src="site/content.js"></script>
+<script src="site/ui.js"></script>
+<script>
+(function () {
+  var C = window.PTG, $ = function (s) { return document.querySelector(s); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+
+  // live badges from the site's own code. ui.js writes image paths relative to the site
+  // (poster.webp, art/m2.webp), so point them at site/ from up here.
+  var site = function (html) { return html.replace(/src="(?!https?:|data:|\/)/g, 'src="site/'); };
+  if (window.UI) {
+    $("#g-badge1").innerHTML = site(UI.badge(C.coachSeed[0]));
+    // the "art missing" example always shows the placeholder, even after m2 art lands
+    $("#g-badge2").innerHTML = site(UI.badge(Object.assign({}, C.coachSeed[1], { id: "no-art" })));
+    $("#g-stub").insertAdjacentHTML("afterbegin", UI.barcode("PTG-1116", 60, 40));
+  }
+
+  // which mentor art exists
+  $("#skins").innerHTML = C.coachSeed.filter(function (c) { return c.kind === "mentor"; }).map(function (c) {
+    var done = c.display_skin === "Training Director Katja" || (C.art && C.art[c.id]);
+    return '<span class="' + (done ? "done" : "") + '">M' + c.slot + " · " + esc(c.display_skin) + "</span>";
+  }).join("");
+
+  // palette, read from the site's own tokens
+  var toks = [
+    ["--desk", "Desk", "Page background"], ["--paper", "Paper", "Sheets, forms, cards"], ["--kraft", "Kraft", "Folder, tabs, notice board"],
+    ["--ink", "Ink", "Text, buttons"], ["--red", "Signal red", "Tape, stamps, main action"], ["--red-deep", "Deep red", "Labels on paper"],
+    ["--badge", "Badge black", "ID badges, desk header"], ["--green", "Team green", "Team tag, confirmed"], ["--kraft-shade", "Kraft shade", "Inactive tabs"],
+    ["--ink-soft", "Soft ink", "Secondary text"], ["--muted", "Desk text", "Notes on the desk"], ["--paper-rule", "Rule", "Planner lines"]
+  ];
+  var cs = getComputedStyle(document.documentElement);
+  $("#swatches").innerHTML = toks.map(function (t) {
+    var v = cs.getPropertyValue(t[0]).trim();
+    return '<div class="sw"><i style="background:var(' + t[0] + ')"></i><div><b>' + esc(t[1]) + "</b><code>" + esc(t[0]) + " · " + esc(v) + "</code><span>" + esc(t[2]) + "</span></div></div>";
+  }).join("");
+
+  // checklist
+  var todo = ["Look through the live demo", "Mentor art m2–m8", "Link preview tags in index.html", "Mentor infographics", "Answer the open decisions"];
+  var done = [];
+  try { done = JSON.parse(localStorage.getItem("ptg-handoff")) || []; } catch (e) { done = []; }
+  $("#todo").innerHTML = todo.map(function (t, i) {
+    return '<label for="td-' + i + '"><input type="checkbox" id="td-' + i + '"' + (done.indexOf(i) > -1 ? " checked" : "") + "><span>" + esc(t) + "</span></label>";
+  }).join("");
+  $("#todo").addEventListener("change", function () {
+    var v = todo.map(function (_, i) { return i; }).filter(function (i) { return document.getElementById("td-" + i).checked; });
+    try { localStorage.setItem("ptg-handoff", JSON.stringify(v)); } catch (e) { /* storage blocked */ }
+  });
+
+  // copy command
+  $("#copy").addEventListener("click", function () {
+    var b = this, text = $("#cmd").textContent;
+    var ok = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1600); };
+    var fallback = function () { var r = document.createRange(); r.selectNodeContents($("#cmd")); var s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "Press Ctrl+C"; };
+    try { navigator.clipboard.writeText(text).then(ok, fallback); } catch (e) { fallback(); }
+  });
+})();
+</script>

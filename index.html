@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Path to Glory · Project files</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23d6403a'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='14' fill='%23f3f2ee'%3EPTG%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site/styles.css">
+<link rel="stylesheet" href="site/app.css">
+<style>
+.hub{max-width:1100px;margin-inline:auto;padding:48px max(16px,env(safe-area-inset-right,0px)) 80px max(16px,env(safe-area-inset-left,0px));display:grid;gap:30px}
+.hub-head{padding:clamp(24px,4vw,44px);transform:rotate(-.5deg)}
+.hub-head h1{font:900 clamp(44px,8vw,96px)/.86 var(--f-display);letter-spacing:-.055em;text-transform:uppercase;margin:12px 0 16px}
+.hub-head p{margin:0;max-width:52ch;font-size:18px}
+.drawer{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}
+.card{display:grid;gap:6px;padding:20px 20px 22px;background:#f8f7f4;color:var(--ink);text-decoration:none;box-shadow:var(--lift);border-top:10px solid var(--kraft-shade);transition:transform .2s}
+.card:hover{transform:translateY(-4px) rotate(-.4deg)}
+.card.main{border-top-color:var(--red)}
+.card b{font:900 24px/1 var(--f-display);text-transform:uppercase;letter-spacing:-.03em}
+.card span{color:var(--ink-soft);font-size:15px}
+.card small{font:600 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--red-deep);margin-top:6px}
+.label{font:600 12px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:10px 0 -6px}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+<main class="hub">
+  <header class="sheet hub-head">
+    <span class="mono-label" style="color:var(--red-deep)">PTG · Mentor file no.1116 · project files</span>
+    <h1>Path to Glory</h1>
+    <p>Project Lumi's pre-season mentor event site for the Eternal Return comp scene, Nov 9–22, 2026. Everything for the project is linked from here.</p>
+  </header>
+
+  <p class="label">The site</p>
+  <div class="drawer">
+    <a class="card main" href="site/index.html"><b>Live demo</b><span>The full site with sample data. Switch between player, mentor and staff with the yellow bar.</span><small>site/index.html</small></a>
+    <a class="card main" href="site/desk.html"><b>Desk demo</b><span>Player file, mentor calendar with accept and decline, staff tools.</span><small>site/desk.html</small></a>
+  </div>
+
+  <p class="label">Design</p>
+  <div class="drawer">
+    <a class="card" href="design-handoff.html"><b>Design handoff</b><span>Art specs, colors, fonts, live components and the file map.</span><small>design-handoff.html</small></a>
+    <a class="card" href="poster.webp"><b>Event poster</b><span>The original poster the whole design comes from.</span><small>poster.webp</small></a>
+    <a class="card" href="site/art/og.png"><b>Link preview</b><span>The 1200 × 630 image Discord shows for the site link.</span><small>site/art/og.png</small></a>
+  </div>
+
+  <p class="label">Original concepts</p>
+  <div class="drawer">
+    <a class="card main" href="concepts/a-mentor-file.html"><b>A · Mentor file</b><span>The chosen direction.</span><small>concepts/a-mentor-file.html</small></a>
+    <a class="card" href="concepts/b-academy.html"><b>B · Academy</b><span>School prospectus and yearbook.</span><small>concepts/b-academy.html</small></a>
+    <a class="card" href="concepts/c-access-terminal.html"><b>C · Access terminal</b><span>Dark HUD built off the badge.</span><small>concepts/c-access-terminal.html</small></a>
+    <a class="card" href="concepts/d-broadcast.html"><b>D · Broadcast</b><span>Giant type, ticker and magazine cards.</span><small>concepts/d-broadcast.html</small></a>
+  </div>
+</main>
+</body>
+</html>

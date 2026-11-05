@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PTG link preview source</title>
+<!--
+  Source for site/art/og.png (1200 × 630 link preview).
+  Built from the site's own styles.css, content.js and ui.js, so it picks up any token or badge change.
+  Re-render: see the command in the comment at the bottom of this file.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site/styles.css">
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+  * { animation: none !important; transition: none !important; }
+  .og { position: relative; width: 1200px; height: 630px; overflow: hidden; }
+
+  /* kraft folder, running off the bottom edge */
+  .og .folder { position: absolute; left: 34px; top: 58px; width: 790px; height: 640px; margin: 0; padding: 0; }
+  .og .folder-tape { top: 24px; left: 150px; right: -10px; font-size: 13px; }
+  .og .file-id { top: 16px; left: 26px; font-size: 13px; }
+
+  /* title sheet */
+  .og .hero-sheet { position: absolute; left: 44px; top: 118px; width: 640px; padding: 40px 46px 46px; transform: rotate(-.7deg); box-sizing: border-box; }
+  .og .hero-sheet .tape-bit { top: -10px; left: -30px; }
+  .og .hero-sheet .clip { right: 12%; }
+  .og .kicker { margin: 0 0 18px; font-size: 15px; }
+  .og .title { font-size: 122px; margin: 0 0 26px; white-space: nowrap; }
+  .og .pill-lg { font-size: 28px; }
+
+  /* ticket: dates + call to action */
+  .og .ticket { left: 410px; top: 432px; bottom: auto; width: 450px; grid-template-columns: 74px minmax(0,1fr); transform: rotate(1.6deg); }
+  .og .t-main { padding: 16px 20px 20px; }
+  .og .t-date { font-size: 50px; white-space: nowrap; }
+  .og .t-cta { font-size: 21px; }
+
+  /* signups seal */
+  .og .seal { left: -34px; top: 492px; width: 158px; height: 158px; }
+
+  /* lanyard + Mentor 01 badge */
+  .og .lanyard { position: absolute; left: 878px; top: -26px; margin: 0; transform: rotate(4deg); z-index: 3; }
+  .og .strap { height: 64px; margin-top: 0; }
+  .og .badge { width: 300px; }
+  .og .b-role { font-size: 31px; }
+</style>
+</head>
+<body>
+<div class="og">
+  <div class="folder">
+    <div class="file-id"><span class="pill">PTG</span><br>MENTOR FILE<br>NO.1116</div>
+    <div class="folder-tape"><span>PATH*TO*GLORY—(11)-(22)</span><span>PRE-SEASON MENTOR EVENT</span><span>*</span></div>
+  </div>
+
+  <article class="sheet hero-sheet">
+    <span class="tape-bit"></span>
+    <svg class="clip" viewBox="0 0 44 112" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M30 40 V96 a10 10 0 0 1 -20 0 V22 a14 14 0 0 1 28 0 V88 a4 4 0 0 1 -8 0 V40"/></svg>
+    <p class="kicker">(01) Pre-season mentor event:</p>
+    <h1 class="title">Path to<br>Glory</h1>
+    <span class="pill-lg">MENTOR EVENT</span>
+  </article>
+
+  <div class="ticket">
+    <span class="stub" id="stub"><span>ADMIT ONE</span></span>
+    <span class="t-main">
+      <span class="t-label">Class starts</span>
+      <span class="t-date">NOV 9<sup>TH</sup> – 22<sup>ND</sup></span>
+      <span class="t-cta">SIGNUPS OPEN NOW!</span>
+    </span>
+  </div>
+
+  <div class="seal">
+    <svg viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="98" fill="#d6403a"/>
+      <circle cx="100" cy="100" r="60" fill="none" stroke="#f3f2ee" stroke-width="2.5"/>
+      <path id="sealpath" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" fill="none"/>
+      <text fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="16" textLength="486" lengthAdjust="spacing"><textPath href="#sealpath">SIGNUPS OPEN NOW ★ SIGNUPS OPEN NOW ★</textPath></text>
+      <text x="100" y="96" text-anchor="middle" fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="21">PATH TO</text>
+      <text x="100" y="119" text-anchor="middle" fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="21">GLORY</text>
+    </svg>
+  </div>
+
+  <div class="lanyard">
+    <div class="strap">PATH TO GLORY · PATH TO GLORY</div>
+    <div class="clasp"></div>
+    <div id="badge"></div>
+  </div>
+
+</div>
+
+<script src="site/content.js"></script>
+<script src="site/ui.js"></script>
+<script>
+  document.getElementById("badge").innerHTML = UI.badge(PTG.coachSeed[0]);
+  document.getElementById("stub").insertAdjacentHTML("afterbegin", UI.barcode("PTG-1116", 60, 40));
+</script>
+<!--
+  Render (PowerShell, from this folder):
+  & "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1200,630 --virtual-time-budget=8000 --screenshot="$PWD\site\art\og.png" "file:///$($PWD -replace '\\','/')/og-source.html"
+-->
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Path to Glory Access Terminal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@600;800;900&family=Martian+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: a faculty access terminal. HUD panels with red corner brackets on a fine grid,
+   every block reads as a system readout. Single committed dark look, taken from the poster's ID badge. */
+:root{
+  --void:#0a0a0c; --panel:#121215; --panel-2:#19191d; --line:#2a2a31; --grid:rgba(255,255,255,.034);
+  --text:#ecebe6; --dim:#8d8d96; --red:#e5483d; --red-deep:#7c2019; --green:#3dcf86; --amber:#f0b240;
+  --f-display:"Big Shoulders Display","Oswald","Arial Narrow",sans-serif;
+  --f-mono:"Martian Mono",ui-monospace,Consolas,monospace;
+  --f-body:"Barlow","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{overflow-x:clip;scroll-behavior:smooth}
+body{background-color:var(--void);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;color:var(--text);font:400 17px/1.55 var(--f-body);overflow-x:clip}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+h1,h2,h3{text-wrap:balance}
+.wrap{max-width:1240px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.red{color:var(--red)} .dim{color:var(--dim)} .grn{color:var(--green)}
+.ph{color:var(--dim);font-style:italic}
+.panel{position:relative;background:var(--panel);border:1px solid var(--line);padding:clamp(18px,2.6vw,28px)}
+.panel::before,.panel::after{content:"";position:absolute;width:16px;height:16px;border:0 solid var(--red);pointer-events:none}
+.panel::before{top:-1px;left:-1px;border-width:2px 0 0 2px}
+.panel::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+.btn{display:inline-flex;align-items:center;gap:10px;font:600 13px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:15px 20px;border:1px solid var(--red);background:var(--red);color:#fff;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));transition:background .15s,color .15s}
+.btn:hover{background:#fff;color:var(--void);border-color:#fff}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--line);clip-path:none}
+.btn.ghost:hover{border-color:var(--text);background:transparent;color:var(--text)}
+
+/* status bar */
+.bar{border-bottom:1px solid var(--line);background:rgba(10,10,12,.92);position:sticky;top:env(safe-area-inset-top,0px);z-index:20;backdrop-filter:blur(6px)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--void);z-index:21}
+.bar .wrap{display:flex;align-items:center;gap:22px;padding-block:12px}
+.bar .id{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.bar .id i{display:flex;gap:3px}.bar .id i b{display:block;height:4px;width:6px;background:var(--red)}.bar .id i b:first-child{width:18px}
+.bar nav{display:flex;gap:20px;margin-left:auto}
+.bar nav a{text-decoration:none;color:var(--dim)}
+.bar nav a:hover{color:var(--text)}
+.live{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 1.6s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+@media (max-width:1060px){.bar nav{display:none}.live{margin-left:auto}}
+@media (max-width:520px){.bar #clock{display:none}.bar .id,.live{font-size:10px;letter-spacing:.03em}.bar .wrap{gap:12px}}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:clamp(24px,4vw,56px);align-items:center;padding-block:clamp(40px,6vw,84px) clamp(48px,6vw,84px)}
+.hero h1{font:900 clamp(78px,13.5vw,196px)/.8 var(--f-display);letter-spacing:-.005em;text-transform:uppercase;margin:18px 0 22px}
+.hero h1 span{display:block}
+.hero h1 .r{color:var(--red)}
+.hero .pitch{font-size:clamp(18px,1.7vw,21px);max-width:44ch;color:#d4d3ce;margin:0 0 26px}
+.count{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 26px;align-items:center;margin-bottom:26px}
+.count .big{font:800 clamp(52px,6vw,78px)/.85 var(--f-display);font-variant-numeric:tabular-nums;grid-row:span 2}
+.count .big small{font-size:.4em;color:var(--dim);margin-left:6px;letter-spacing:.04em}
+.segs{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:3px;grid-column:1/-1;margin-top:10px}
+.segs span{height:10px;background:var(--line);position:relative}
+.segs span.done{background:var(--red)}
+.segs span.now{background:var(--green);animation:blink 1.6s steps(2) infinite}
+.segs span.mark::after{content:"";position:absolute;left:50%;top:-7px;width:5px;height:5px;background:var(--amber);transform:translateX(-50%) rotate(45deg)}
+.segs span.mark.final::after{background:var(--red)}
+.seg-legend{grid-column:1/-1;display:flex;justify-content:space-between;gap:10px;color:var(--dim);font:500 10px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase}
+.ctas{display:flex;flex-wrap:wrap;gap:12px}
+.hero-r{display:flex;justify-content:center;perspective:1100px;padding-top:20px}
+.tilt{transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) rotate(5deg);transition:transform .2s ease-out;transform-style:preserve-3d;width:min(360px,100%)}
+
+/* badge */
+.badge{width:100%;background:#18181b;color:#f4f4f2;border-radius:16px;display:grid;grid-template-columns:32px minmax(0,1fr);overflow:hidden;box-shadow:0 40px 70px -24px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.08);position:relative}
+.badge::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.13),transparent 30%);pointer-events:none}
+.b-strip{background:var(--red);display:flex;align-items:center;justify-content:center;position:relative}
+.b-strip span{writing-mode:vertical-rl;transform:rotate(180deg);font:600 9px/1 var(--f-mono);letter-spacing:.3em;color:#2a0906;white-space:nowrap}
+.b-strip::before,.b-strip::after{content:"";position:absolute;left:50%;width:8px;height:8px;border-radius:50%;background:#18181b;transform:translateX(-50%)}
+.b-strip::before{top:14px}.b-strip::after{bottom:14px}
+.b-body{padding:16px 16px 18px;display:grid;gap:10px;min-width:0}
+.b-top{display:flex;justify-content:space-between;align-items:center;font:500 10px/1 var(--f-mono);letter-spacing:.12em;color:#a9a9b0}
+.b-dash{display:flex;gap:4px}.b-dash i{height:4px;width:7px;background:var(--red);display:block}.b-dash i:first-child{width:22px}
+.b-role{font:900 46px/.82 var(--f-display);text-transform:uppercase;letter-spacing:.01em}
+.b-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.b-id{border:1.5px solid var(--red);font:500 10px/1 var(--f-mono);letter-spacing:.1em;padding:6px 8px;white-space:nowrap}
+.b-row .barcode{width:96px;height:24px;color:#f4f4f2;flex:none}
+.b-art{position:relative;aspect-ratio:4/5;background:#141416;overflow:hidden;container-type:inline-size}
+.b-art::before,.b-art::after{content:"";position:absolute;width:24px;height:24px;z-index:2;border:0 solid var(--red)}
+.b-art::before{top:8px;right:8px;border-width:2px 2px 0 0}
+.b-art::after{bottom:8px;left:8px;border-width:0 0 2px 2px}
+.ph-art{position:absolute;inset:0;display:grid;place-items:center;background-color:#141417;background-image:linear-gradient(#25252b 1px,transparent 1px),linear-gradient(90deg,#25252b 1px,transparent 1px);background-size:20px 20px}
+.ph-art .L{font:900 66cqw/1 var(--f-display);color:transparent;-webkit-text-stroke:2px var(--red);opacity:.8}
+.ph-art .cap{position:absolute;left:14px;right:14px;bottom:14px;font:500 9.5px/1.5 var(--f-mono);letter-spacing:.08em;color:#9a9aa2;text-transform:uppercase}
+.b-name small{display:block;font:500 9.5px/1 var(--f-mono);letter-spacing:.22em;color:#a5a5ac;margin-bottom:6px}
+.b-name b{display:block;font:800 26px/1 var(--f-display);letter-spacing:.02em;text-transform:uppercase;color:#fff;overflow-wrap:anywhere}
+.b-team{justify-self:start;background:var(--green);color:#06140c;font:600 11px/1 var(--f-mono);letter-spacing:.08em;padding:7px 9px;text-transform:uppercase}
+
+/* sections */
+.sec{padding-block:clamp(60px,8vw,104px) 0}
+.sh{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.sh code{font:500 12px/1 var(--f-mono);letter-spacing:.1em;color:var(--red);padding-bottom:8px}
+.sh h2{font:800 clamp(38px,5.6vw,68px)/.86 var(--f-display);text-transform:uppercase;margin:0;letter-spacing:.005em}
+.sh .rule{flex:1;height:1px;background:var(--line);margin-bottom:10px;min-width:40px}
+.sh p{flex-basis:100%;margin:6px 0 0;color:var(--dim);max-width:62ch}
+
+.brief{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px}
+.brief .lead{font:700 clamp(24px,2.6vw,32px)/1.15 var(--f-body);margin:12px 0 14px}
+.brief p{margin:0 0 12px;color:#d4d3ce}
+.flow{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:0;border-top:1px solid var(--line)}
+.flow li{display:grid;grid-template-columns:70px minmax(0,1fr);gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.flow li code{font:500 12px/1.7 var(--f-mono);color:var(--red)}
+.flow b{display:block;font-weight:700;color:var(--text)}
+.flow span{color:var(--dim);font-size:16px}
+.obj h3{margin:10px 0 16px;font:800 30px/1 var(--f-display);text-transform:uppercase}
+.obj label{display:grid;grid-template-columns:24px minmax(0,1fr);gap:14px;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line);cursor:pointer;font:500 13px/1.4 var(--f-mono);letter-spacing:.04em;text-transform:uppercase}
+.obj input{appearance:none;-webkit-appearance:none;width:22px;height:22px;border:1.5px solid var(--red);margin:0;display:grid;place-content:center;background:transparent;cursor:pointer}
+.obj input:checked{background:var(--red)}
+.obj input:checked::after{content:"";width:10px;height:6px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.obj input:checked+span{color:var(--dim);text-decoration:line-through}
+.prio{margin-top:20px;padding:14px;border:1px solid var(--amber);color:var(--amber);font:500 12px/1.6 var(--f-mono);letter-spacing:.02em}
+.prio b{display:block;letter-spacing:.12em;margin-bottom:4px}
+
+.clear{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.lvl{display:grid;gap:10px;align-content:start}
+.lvl .code{display:flex;justify-content:space-between;align-items:center}
+.lvl .code b{font:600 11px/1 var(--f-mono);letter-spacing:.1em;color:#06140c;background:var(--green);padding:6px 8px}
+.lvl .bars{display:flex;gap:3px}.lvl .bars i{width:6px;height:14px;background:var(--line)}.lvl .bars i.on{background:var(--red)}
+.lvl h3{font:800 34px/.9 var(--f-display);text-transform:uppercase;margin:6px 0 0}
+.lvl p{margin:0;color:var(--dim);font-size:16px}
+.lvl .alt{font:500 11px/1.5 var(--f-mono);color:var(--amber);letter-spacing:.04em;text-transform:uppercase}
+@media (max-width:980px){.clear{grid-template-columns:repeat(2,minmax(0,1fr))}.brief{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.clear{grid-template-columns:minmax(0,1fr)}}
+
+/* timeline */
+.track-wrap{overflow-x:auto;padding-bottom:6px}
+.track{min-width:760px;display:grid;grid-template-columns:repeat(14,minmax(0,1fr));position:relative;padding-top:6px}
+.track::before{content:"";position:absolute;left:0;right:0;top:67px;height:2px;background:var(--line)}
+.tday{display:grid;justify-items:center;gap:8px;text-align:center;position:relative;padding-bottom:6px;border-left:1px dashed rgba(255,255,255,.06)}
+.tday:first-child{border-left:0}
+.tday .dw{font:500 10px/1 var(--f-mono);letter-spacing:.1em;color:var(--dim);text-transform:uppercase}
+.tday .dn{font:800 30px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.tday .node{width:12px;height:12px;border:2px solid var(--line);background:var(--void);transform:rotate(45deg);position:relative;z-index:1}
+.tday.ev .node{border-color:var(--text);background:var(--text)}
+.tday.mock .node{border-color:var(--amber);background:var(--amber)}
+.tday.final .node{border-color:var(--red);background:var(--red);width:16px;height:16px}
+.tday.tbc .node{background:var(--void);border-style:dashed;border-color:var(--amber)}
+.tday.today .dn{color:var(--green)}
+.tday.today .node{box-shadow:0 0 0 5px rgba(61,207,134,.35)}
+.tday .lbl{font:600 10px/1.3 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;min-height:26px}
+.tday.final .lbl{color:var(--red)}.tday.mock .lbl{color:var(--amber)}
+.wk-band{grid-column:span 7;margin-top:6px;border-top:2px solid var(--red);padding-top:8px;font:500 10px/1 var(--f-mono);letter-spacing:.1em;color:var(--dim);text-transform:uppercase;text-align:left}
+.wk-band+.wk-band{border-top-color:var(--text);margin-left:4px}
+.log{margin-top:22px;display:grid;border-top:1px solid var(--line)}
+.log-row{display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:14px 20px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line)}
+.log-row .when{font:500 12px/1.4 var(--f-mono);letter-spacing:.06em;color:var(--dim);font-variant-numeric:tabular-nums}
+.log-row .what b{font:800 22px/1.05 var(--f-display);text-transform:uppercase;letter-spacing:.01em;display:block}
+.log-row .what span{color:var(--dim);font-size:15.5px}
+.tag{display:inline-block;font:600 10px/1 var(--f-mono);letter-spacing:.08em;padding:4px 6px;margin-left:8px;vertical-align:3px;border:1px solid currentColor}
+.tag.tbc{color:var(--amber)}
+.tag.fin{color:var(--red)}
+.gc{font:600 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--green);border:1px solid rgba(61,207,134,.4);padding:9px 10px;white-space:nowrap}
+.gc:hover{background:var(--green);color:#06140c}
+@media (max-width:640px){.log-row{grid-template-columns:minmax(0,1fr)}.log-row .gc{justify-self:start}}
+
+/* faculty */
+.fac{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:clamp(20px,4vw,48px);align-items:start}
+.dossier .head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.dossier h3{font:900 clamp(46px,6vw,80px)/.85 var(--f-display);text-transform:uppercase;margin:20px 0 14px;overflow-wrap:anywhere}
+.team-tag{display:inline-block;background:var(--green);color:#06140c;font:600 12px/1 var(--f-mono);letter-spacing:.08em;padding:8px 10px;text-transform:uppercase}
+.dgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:24px}
+.dgrid section{background:var(--panel);padding:16px 18px;min-width:0}
+.dgrid h4{margin:0 0 10px;font:500 10px/1 var(--f-mono);letter-spacing:.14em;color:var(--red);text-transform:uppercase}
+.dgrid p{margin:0}
+.dgrid ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.dgrid ul li::before{content:"› ";color:var(--red)}
+.pool{display:flex;flex-wrap:wrap;gap:6px}
+.pool span{border:1px solid var(--line);background:var(--panel-2);padding:6px 10px;font:500 12px/1 var(--f-mono)}
+.dfoot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px}
+.strip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin-top:22px}
+.mini{appearance:none;background:var(--panel);border:1px solid var(--line);color:var(--text);text-align:left;padding:10px;cursor:pointer;display:grid;gap:6px;min-width:0;font:inherit;position:relative}
+.mini:hover{border-color:var(--dim)}
+.mini[aria-selected="true"]{border-color:var(--red);background:var(--panel-2)}
+.mini[aria-selected="true"]::before{content:"";position:absolute;left:-1px;right:-1px;top:-1px;height:3px;background:var(--red)}
+.mini code{font:500 9px/1 var(--f-mono);color:var(--dim);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini b{font:800 18px/1 var(--f-display);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flip{animation:flip .35s ease}
+@keyframes flip{from{opacity:.2;transform:translateX(10px)}to{opacity:1;transform:none}}
+@media (max-width:900px){.fac{grid-template-columns:minmax(0,1fr)}.fac-card{max-width:360px;margin-inline:auto;width:100%}.strip{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:560px){.dgrid{grid-template-columns:minmax(0,1fr)}}
+
+/* manifest */
+.tbl{overflow-x:auto;border:1px solid var(--line);background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font:500 10px/1 var(--f-mono);letter-spacing:.12em;color:var(--dim);text-transform:uppercase;background:var(--panel-2)}
+td{font-size:16px}
+td.sq{font:800 22px/1 var(--f-display);text-transform:uppercase}
+td.n{font:500 12px/1 var(--f-mono);color:var(--dim);font-variant-numeric:tabular-nums}
+td.open{color:var(--dim);font-style:italic}
+.st{font:600 10px/1 var(--f-mono);letter-spacing:.08em;padding:5px 7px;text-transform:uppercase}
+.st.ok{background:var(--green);color:#06140c}
+.st.op{border:1px solid var(--line);color:var(--dim)}
+tbody tr:hover td{background:var(--panel-2)}
+.tbl-note{margin:12px 0 0;color:var(--dim);font-size:15px}
+
+/* archive + protocol */
+.arch{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px}
+.ls{display:grid;gap:0;margin-top:8px}
+.ls div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px dashed var(--line)}
+.ls code{font:500 12px/1.6 var(--f-mono);color:var(--red)}
+.ls b{display:block;font-weight:700}
+.ls span{color:var(--dim);font-size:16px}
+.proto ol{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:0}
+.proto li{display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;padding:13px 0;border-bottom:1px dashed var(--line);font-size:16px}
+.proto li code{font:500 11px/1.8 var(--f-mono);color:var(--green)}
+.proto .fine{margin:16px 0 0;color:var(--dim);font-size:15px}
+@media (max-width:900px){.arch{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.ls div{grid-template-columns:minmax(0,1fr);gap:4px}}
+
+/* comms */
+.comms{display:grid;gap:10px}
+.ch{display:grid;grid-template-columns:110px minmax(0,1fr) auto auto;gap:20px;align-items:center;text-decoration:none;background:var(--panel);border:1px solid var(--line);padding:18px 20px;transition:border-color .15s,background .15s}
+.ch:hover{border-color:var(--red);background:var(--panel-2)}
+.ch .tier{font:600 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--red);border:1px solid var(--red);padding:7px 8px;text-align:center}
+.ch b{display:block;font:800 clamp(24px,2.8vw,32px)/1 var(--f-display);text-transform:uppercase}
+.ch span.d{color:var(--dim);font-size:15.5px}
+.sig{display:flex;gap:3px;align-items:flex-end;height:18px}.sig i{width:4px;background:var(--green);display:block}
+.ch .go{font:500 18px/1 var(--f-mono);color:var(--dim)}
+.ch:hover .go{color:var(--red)}
+@media (max-width:640px){.ch{grid-template-columns:minmax(0,1fr) auto}.ch .tier{justify-self:start}.ch .sig{display:none}}
+.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:80px 36px;color:var(--dim)}
+@media (max-width:900px){.hero{grid-template-columns:minmax(0,1fr)}.hero-r{order:-1;padding-top:0}.tilt{width:min(300px,82%)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.tilt{transform:rotate(5deg)!important}}
+</style>
+
+<header class="bar">
+  <div class="wrap">
+    <span class="id mono"><i><b></b><b></b><b></b></i>PTG://ACCESS-TERMINAL</span>
+    <nav class="mono" aria-label="Sections"><a href="#brief">Brief</a><a href="#clearance">Clearance</a><a href="#ops">Ops</a><a href="#faculty">Faculty</a><a href="#manifest">Manifest</a><a href="#archive">Archive</a><a href="#comms">Comms</a></nav>
+    <span class="live mono" id="live">Signups open</span>
+    <span class="mono dim" id="clock"></span>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <div>
+      <p class="mono red">Pre-season mentor event // ID 2026 // Nov 09 – Nov 22</p>
+      <h1><span>Path to</span><span class="r">Glory</span></h1>
+      <p class="pitch" id="pitch"></p>
+      <div class="panel count">
+        <span class="big" id="cd-big"></span>
+        <span class="mono dim" id="cd-sub"></span>
+        <span class="mono" id="cd-phase"></span>
+        <div class="segs" id="segs" aria-hidden="true"></div>
+        <div class="seg-legend"><span>Nov 09</span><span>◆ Mock 11/15</span><span>◆ Final 11/22</span></div>
+      </div>
+      <div class="ctas"><a class="btn js-signup" href="#">Sign up · team or solo →</a><a class="btn ghost" href="#faculty">View faculty</a></div>
+    </div>
+    <div class="hero-r" id="hero-r"><div class="tilt" id="tilt"></div></div>
+  </section>
+
+  <section class="sec wrap" id="brief">
+    <div class="sh"><code>SYS.BRIEF</code><h2>Mission brief</h2><span class="rule"></span></div>
+    <div class="brief">
+      <div class="panel">
+        <span class="mono red">Objective</span>
+        <p class="lead" id="goal"></p>
+        <p id="pitch2"></p>
+        <ol class="flow" id="flow"></ol>
+      </div>
+      <div class="panel obj">
+        <span class="mono red">Check your goals</span>
+        <h3>Objectives</h3>
+        <div id="goals"></div>
+        <div class="prio"><b>Priority queue</b><span id="prio"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="clearance">
+    <div class="sh"><code>SYS.CLEARANCE</code><h2>Access levels</h2><span class="rule"></span></div>
+    <div class="clear" id="clear"></div>
+  </section>
+
+  <section class="sec wrap" id="ops">
+    <div class="sh"><code>SYS.OPS</code><h2>Operations timeline</h2><span class="rule"></span><p>Two weeks, each ending in a Sunday checkpoint. Amber dashed nodes are scrim days that aren't locked yet.</p></div>
+    <div class="panel">
+      <div class="track-wrap"><div class="track" id="track"></div></div>
+      <div class="log" id="log"></div>
+      <div style="margin-top:18px"><a class="btn ghost" id="cal-sub" href="#" target="_blank" rel="noopener">Subscribe to the full calendar</a></div>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="faculty">
+    <div class="sh"><code>SYS.FACULTY</code><h2>Faculty roster</h2><span class="rule"></span><p>Eight main mentors with faculty access. Use the cards below or your arrow keys to cycle through.</p></div>
+    <div class="fac">
+      <div class="fac-card" id="fac-card"></div>
+      <article class="panel dossier" id="dossier" aria-live="polite"></article>
+    </div>
+    <div class="strip" role="tablist" aria-label="Mentors" id="strip"></div>
+  </section>
+
+  <section class="sec wrap" id="manifest">
+    <div class="sh"><code>SYS.MANIFEST</code><h2>Squad manifest</h2><span class="rule"></span></div>
+    <div class="tbl"><table><thead><tr><th>#</th><th>Squad</th><th>Mentor</th><th>Player 1</th><th>Player 2</th><th>Player 3</th><th>Player 4</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <p class="tbl-note" id="tbl-note"></p>
+  </section>
+
+  <section class="sec wrap" id="archive">
+    <div class="sh"><code>SYS.ARCHIVE</code><h2>Public archive</h2><span class="rule"></span><p>Everything recorded during the event is open to the public as a learning resource.</p></div>
+    <div class="arch">
+      <div class="panel"><span class="mono dim">/ptg/archive</span><div class="ls" id="ls"></div></div>
+      <div class="panel proto"><span class="mono dim">Mentor protocol</span><ol id="proto"></ol>
+        <p class="fine">Recording consent: coaches ask before recording a player's voice. If the player declines, they're muted on Discord and the coach restates their questions for the VOD.</p></div>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="comms">
+    <div class="sh"><code>SYS.COMMS</code><h2>Comms channels</h2><span class="rule"></span></div>
+    <div class="comms" id="ch"></div>
+  </section>
+
+  <footer class="wrap foot mono"><span>Path to Glory * ( pre-season mentor event )</span><span>End of file // ER comp scene 2026</span></footer>
+</main>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  const $ = s => document.querySelector(s);
+  const E = PTG.esc;
+  const T = s => /^\[.*\]$/.test(s) ? '<span class="ph">' + E(s) + "</span>" : E(s);
+  const bare = s => String(s).replace(/^\[|\]$/g, "");
+  const pad = n => String(n).padStart(2, "0");
+
+  document.querySelectorAll(".js-signup").forEach(a => a.href = PTG.event.signupUrl);
+  $("#cal-sub").href = PTG.event.calendarUrl;
+  $("#pitch").textContent = PTG.event.pitch;
+  $("#pitch2").textContent = PTG.event.pitch;
+  $("#goal").textContent = PTG.event.goal;
+  $("#prio").textContent = PTG.priority;
+
+  /* clock */
+  const tick = () => { $("#clock").textContent = new Date().toLocaleTimeString("en-US", { hour12: false }); };
+  tick(); setInterval(tick, 1000);
+
+  /* countdown */
+  const st = PTG.status(), days = PTG.days(), todayIso = PTG.ymd(PTG.today());
+  if (st.phase === "before") {
+    $("#cd-big").innerHTML = "T–" + pad(st.days) + "<small>" + (st.days === 1 ? "DAY" : "DAYS") + "</small>";
+    $("#cd-sub").textContent = "Until day 1 · Mon Nov 09";
+    $("#cd-phase").innerHTML = '<span class="grn">Status: signups open</span>';
+  } else if (st.phase === "live") {
+    $("#cd-big").innerHTML = pad(st.day) + "<small>/ 14</small>";
+    $("#cd-sub").textContent = "Event day";
+    $("#cd-phase").innerHTML = '<span class="red">Status: in session</span>';
+    $("#live").textContent = "Live";
+  } else {
+    $("#cd-big").innerHTML = "END";
+    $("#cd-sub").textContent = "Event complete";
+    $("#cd-phase").innerHTML = '<span class="dim">Archive open</span>';
+    $("#live").textContent = "Archive";
+  }
+  $("#segs").innerHTML = days.map(d => {
+    const k = d.events.find(e => e.kind === "mock" || e.kind === "final");
+    const cls = (d.iso < todayIso ? "done" : d.iso === todayIso ? "now" : "") + (k ? " mark " + k.kind : "");
+    return '<span class="' + cls + '"></span>';
+  }).join("");
+
+  /* badge + tilt */
+  function art(m) {
+    return m.hasArt ? PTG.art(m) : '<div class="ph-art"><span class="L">' + E(m.base[0]) + '</span><span class="cap">Display art<br>' + E(m.display) + "</span></div>";
+  }
+  function badge(m) {
+    return '<div class="badge"><div class="b-strip"><span>FACULTY ACCESS · PATH TO GLORY</span></div><div class="b-body">' +
+      '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>ID // 2026</span></div>' +
+      '<div class="b-role">Instructor</div>' +
+      '<div class="b-row"><span class="b-id">' + E(m.id) + "</span>" + PTG.barcode(m.id, 96, 24) + "</div>" +
+      '<div class="b-art">' + art(m) + "</div>" +
+      '<div class="b-name"><small>NAME</small><b>[' + E(bare(m.name)) + "]</b></div>" +
+      '<span class="b-team">' + E(bare(m.team)) + "</span></div></div>";
+  }
+  $("#tilt").innerHTML = badge(PTG.mentors[0]);
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduce) {
+    const host = $("#hero-r"), tilt = $("#tilt");
+    host.addEventListener("pointermove", e => {
+      const r = host.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      tilt.style.setProperty("--ry", (x * 14).toFixed(2) + "deg");
+      tilt.style.setProperty("--rx", (-y * 10).toFixed(2) + "deg");
+    });
+    host.addEventListener("pointerleave", () => { tilt.style.setProperty("--ry", "0deg"); tilt.style.setProperty("--rx", "0deg"); });
+  }
+
+  /* brief */
+  $("#flow").innerHTML = PTG.steps.map((s, i) => "<li><code>STEP " + pad(i + 1) + "</code><div><b>" + E(s.t) + "</b><span>" + E(s.d) + "</span></div></li>").join("");
+  const done = PTG.store.get("c-goals", []);
+  $("#goals").innerHTML = PTG.goals.map((g, i) => '<label for="g' + i + '"><input type="checkbox" id="g' + i + '"' + (done.includes(i) ? " checked" : "") + "><span>" + E(g) + "</span></label>").join("");
+  $("#goals").addEventListener("change", () => PTG.store.set("c-goals", PTG.goals.map((_, i) => i).filter(i => document.getElementById("g" + i).checked)));
+
+  /* clearance */
+  const lv = { staff: 4, mentor: 3, assistant: 2, player: 1 };
+  $("#clear").innerHTML = PTG.roles.map(r => '<div class="panel lvl"><div class="code"><b>LVL-0' + lv[r.key] + '</b><span class="bars">' +
+    [1, 2, 3, 4].map(k => "<i" + (k <= lv[r.key] ? ' class="on"' : "") + "></i>").join("") + "</span></div><h3>" + E(r.name) + "</h3><p>" + E(r.d) + "</p>" +
+    (r.alt ? '<span class="alt">Field note: ' + E(r.alt) + "</span>" : "") + "</div>").join("");
+
+  /* ops timeline */
+  $("#track").innerHTML = days.map(d => {
+    const ev = d.events[0];
+    const cls = "tday" + (ev ? " ev " + ev.kind + (ev.tentative ? " tbc" : "") : "") + (d.iso === todayIso ? " today" : "");
+    return '<div class="' + cls + '"><span class="dw">' + d.dow + '</span><span class="dn">' + pad(d.n) + '</span><span class="node"></span><span class="lbl">' + (ev ? E(ev.short) : "") + "</span></div>";
+  }).join("") + '<div class="wk-band">Week 1 · scrims → mock checkpoint</div><div class="wk-band">Week 2 · prio scrims → real checkpoint</div>';
+  $("#log").innerHTML = PTG.schedule.map(ev => {
+    const d = PTG.D(ev.date);
+    return '<div class="log-row"><span class="when">' + pad(d.getMonth() + 1) + "." + pad(d.getDate()) + " · " + d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase() + "</span>" +
+      '<div class="what"><b>' + E(ev.title) + (ev.tentative ? '<span class="tag tbc">TBC</span>' : "") + (ev.kind === "final" ? '<span class="tag fin">Final</span>' : "") + "</b><span>" + E(ev.note) + "</span></div>" +
+      '<a class="gc" href="' + E(PTG.gcal(ev)) + '" target="_blank" rel="noopener">+ Google Cal</a></div>';
+  }).join("");
+
+  /* faculty */
+  let fi = 0;
+  $("#strip").innerHTML = PTG.mentors.map((m, i) => '<button class="mini" role="tab" id="mini-' + i + '" data-i="' + i + '" aria-controls="dossier"><code>' + E(m.id) + "</code><b>" + E(bare(m.name)) + "</b></button>").join("");
+  function show(i, focus) {
+    fi = (i + 8) % 8;
+    const m = PTG.mentors[fi];
+    $("#fac-card").innerHTML = badge(m);
+    $("#dossier").innerHTML = '<div class="head mono"><span class="red">Dossier // ' + E(m.id) + '</span><span class="dim">File ' + pad(m.n) + " / 08</span></div>" +
+      "<h3>" + T(m.name) + '</h3><span class="team-tag">' + E(bare(m.team)) + "</span>" +
+      '<div class="dgrid">' +
+        "<section><h4>Playstyle</h4><p>" + T(m.style) + "</p></section>" +
+        '<section><h4>Character pool</h4><div class="pool">' + m.pool.map(p => "<span>" + T(p) + "</span>").join("") + "</div></section>" +
+        "<section><h4>Competitive history</h4><ul>" + m.history.map(h => "<li>" + T(h) + "</li>").join("") + "</ul></section>" +
+        "<section><h4>About me</h4><p>" + T(m.about) + "</p></section>" +
+      "</div>" +
+      '<div class="dfoot"><span class="mono dim">Display: ' + E(m.display) + '</span><a class="btn ghost" href="#archive">Request a session</a></div>';
+    if (animOK) ["#fac-card", "#dossier"].forEach(s => { const el = $(s); el.classList.remove("flip"); void el.offsetWidth; el.classList.add("flip"); });
+    document.querySelectorAll(".mini").forEach((b, j) => { b.setAttribute("aria-selected", String(j === fi)); b.tabIndex = j === fi ? 0 : -1; });
+    if (focus) document.getElementById("mini-" + fi).focus();
+  }
+  $("#strip").addEventListener("click", e => { const b = e.target.closest(".mini"); if (b) show(+b.dataset.i); });
+  $("#strip").addEventListener("keydown", e => {
+    if (e.key === "ArrowRight") { e.preventDefault(); show(fi + 1, true); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); show(fi - 1, true); }
+  });
+  let animOK = false;
+  show(0);
+  animOK = true;
+
+  /* manifest */
+  $("#rows").innerHTML = PTG.teams.map((t, i) => {
+    const ps = [0, 1, 2, 3].map(k => t.players[k]);
+    return "<tr><td class=\"n\">" + pad(i + 1) + '</td><td class="sq">' + T(t.name) + "</td><td>" + T(t.coach) + "</td>" +
+      ps.map(p => p ? "<td>" + E(p) + "</td>" : '<td class="open">open</td>').join("") +
+      "<td>" + (t.status === "confirmed" ? '<span class="st ok">Confirmed</span>' : '<span class="st op">Open</span>') + "</td></tr>";
+  }).join("");
+  const c = PTG.teams.filter(t => t.status === "confirmed").length;
+  $("#tbl-note").textContent = c + " of 8 squads confirmed. Solo signups are placed into open squads by staff.";
+
+  /* archive + protocol + comms */
+  const paths = ["/vod-reviews", "/tldr-notes", "/seminars", "/role-coaches"];
+  $("#ls").innerHTML = PTG.resources.map((r, i) => "<div><code>" + paths[i] + "</code><p style=\"margin:0\"><b>" + E(r.t) + "</b><span>" + E(r.d) + "</span></p></div>").join("");
+  $("#proto").innerHTML = PTG.expectations.map((x, i) => "<li><code>P-" + pad(i + 1) + "</code><span>" + E(x) + "</span></li>").join("");
+  const sig = [4, 3, 3, 4];
+  $("#ch").innerHTML = PTG.links.map((l, i) =>
+    '<a class="ch" href="' + E(l.url) + '" target="_blank" rel="noopener"><span class="tier">' + E(l.tag) + "</span><div><b>" + E(l.name) + '</b><span class="d">' + E(l.d) + "</span></div>" +
+    '<span class="sig" aria-hidden="true">' + [6, 10, 14, 18].map((h, k) => '<i style="height:' + h + "px;opacity:" + (k < sig[i] ? 1 : .2) + '"></i>').join("") + '</span><span class="go">↗</span></a>').join("");
+})();
+</script>
