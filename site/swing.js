@@ -285,8 +285,10 @@
     if (played) return;
     played = true;
     if (reduce) { setPending(false); return; }
-    // wait for a painted frame so the badge has layout, then start
-    const go = () => requestAnimationFrame(() => requestAnimationFrame(() => { if (!start(chosen)) setPending(false); }));
+    // on a first visit the card art and web fonts can still be downloading; if they land mid-swing, decoding the
+    // art and swapping the fonts costs frames. So wait until they're ready (at most 1 s), then a painted frame.
+    const ready = assetsReady(1000);
+    const go = () => ready.then(() => requestAnimationFrame(() => requestAnimationFrame(() => { if (!start(chosen)) setPending(false); })));
     // start when the lanyard is actually on screen (at load on desktop; on phones, when scrolled to)
     const lan = document.querySelector(".lanyard");
     if (!lan || !("IntersectionObserver" in window)) return go();
@@ -294,6 +296,12 @@
       if (entries.some(en => en.isIntersecting)) { io.disconnect(); clearTimeout(safety); go(); }
     }, { rootMargin: "0px 0px -25% 0px" });
     io.observe(lan);
+  }
+  // resolves once the hero card's images are decoded and the fonts are loaded, or after `cap` ms, whichever is first
+  function assetsReady(cap) {
+    const waits = Array.from(document.querySelectorAll("#hero-badge img"), img => img.decode ? img.decode().catch(() => {}) : null);
+    if (document.fonts && document.fonts.ready) waits.push(document.fonts.ready.catch(() => {}));
+    return Promise.race([Promise.all(waits), new Promise(r => setTimeout(r, cap))]);
   }
   // safety net: if the page never asks for the entrance (an error, no badge), show the lanyard anyway
   const safety = setTimeout(() => { if (!played) setPending(false); }, 5000);
