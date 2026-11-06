@@ -74,7 +74,10 @@ h1,h2,h3,h4{text-wrap:balance}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 .hero-side{position:relative;display:grid;gap:30px;align-content:start;justify-items:center;z-index:4}
-.lanyard{display:flex;flex-direction:column;align-items:center;transform:rotate(6deg);transform-origin:top center;margin-left:-70px}
+.lanyard{position:relative;display:flex;flex-direction:column;align-items:center;transform:rotate(6deg);transform-origin:top center;margin-left:-70px}
+/* swing-in (swing.js): the lanyard stays hidden until its entrance starts; the moving strap is drawn as an SVG path */
+@media (prefers-reduced-motion:no-preference){.swing-pending .lanyard{visibility:hidden}}
+.swing-strap{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none}
 .strap{width:28px;height:104px;background:var(--red);color:#3a0d0a;font:600 9px/1 var(--f-mono);letter-spacing:.32em;writing-mode:vertical-rl;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap;margin-top:-60px}
 /* lanyard hardware (markup in index.html): a 40 x 110 drawing whose last 20px overlap the card.
    Stacking inside .lanyard: .clasp-back (0) < hero badge (1) < .clasp (2), so the clasp's back leg is hidden by
@@ -83,6 +86,9 @@ h1,h2,h3,h4{text-wrap:balance}
 .hook svg{display:block;width:40px;height:110px}
 .clasp{position:relative;z-index:2;filter:drop-shadow(0 2px 2px rgba(0,0,0,.55))}
 .clasp-back{position:absolute;inset:0;z-index:0}
+/* the hero card always gets its own GPU layer: it keeps the card's text a touch heavier (the look it has while
+   swinging in), and since it never switches on or off, the text can't change weight when the swing lands */
+.lanyard #hero-badge{will-change:transform}
 /* the punched slot: a real 16 x 7 hole cut 8px below the hero card's top edge */
 .lanyard .badge{z-index:1;
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='7'%3E%3Crect width='16' height='7' rx='3.5'/%3E%3C/svg%3E"),linear-gradient(#000,#000);

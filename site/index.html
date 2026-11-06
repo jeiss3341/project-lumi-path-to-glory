@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=Reenie+Beanie&display=swap">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="app.css">
+<!-- keeps the hero lanyard hidden until swing.js swings it in (swing.js clears this; it also clears itself after 5 s) -->
+<script>document.documentElement.classList.add("swing-pending")</script>
 </head>
 <body>
 <!-- shared SVG filters: rubber-stamp ink that bleeds at the edges and skips in spots -->
@@ -259,6 +261,7 @@
 <script src="content.js"></script>
 <script src="api.js"></script>
 <script src="ui.js"></script>
+<script src="swing.js"></script>
 <script src="home.js"></script>
 </body>
 </html>

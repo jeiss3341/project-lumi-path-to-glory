@@ -25,6 +25,7 @@
     S.signup = S.me ? await API.mySignup().catch(() => null) : null;
     S.editing = false;
     renderHeroBadge(); renderFaculty(); renderAssist(); renderRosters(); renderApply(); initBooking();
+    if (window.PTGSwing) PTGSwing.play();   // hero lanyard swings in once the badge is on the page
     if (!watching) {
       watching = true;
       API.watch("requests", () => refreshBooking());
