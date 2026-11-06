@@ -80,7 +80,56 @@
     <aside class="hero-side">
       <div class="lanyard">
         <div class="strap" aria-hidden="true">PATH TO GLORY · PATH TO GLORY</div>
-        <div class="clasp" aria-hidden="true"></div>
+        <!-- Lanyard hardware, matte black: strap stitched through an O-ring, small knurled swivel, lobster clasp.
+             Drawn in a 40 x 110 window; the card's top edge is at y 180 and its punched slot at y 188-195.
+             The clasp's back leg runs behind the card: .clasp-back sits under the badge and only shows through the slot. -->
+        <div class="hook" aria-hidden="true">
+          <svg class="clasp-back" viewBox="140 90 40 110"><use href="#hw-claw"/></svg>
+          <svg class="clasp" viewBox="140 90 40 110">
+            <defs>
+              <linearGradient id="hw-blk"><stop offset="0" stop-color="#050506"/><stop offset=".12" stop-color="#1e2024"/><stop offset=".22" stop-color="#4a4e55"/><stop offset=".3" stop-color="#2b2d32"/><stop offset=".5" stop-color="#141518"/><stop offset=".7" stop-color="#26282c"/><stop offset=".82" stop-color="#3d4046"/><stop offset="1" stop-color="#050506"/></linearGradient>
+              <linearGradient id="hw-blkF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4d5158"/><stop offset=".35" stop-color="#1d1f23"/><stop offset=".6" stop-color="#2b2e33"/><stop offset="1" stop-color="#0a0a0c"/></linearGradient>
+              <radialGradient id="hw-dome" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#8d929a"/><stop offset=".4" stop-color="#2e3136"/><stop offset="1" stop-color="#070708"/></radialGradient>
+              <pattern id="hw-knurl" width="2.2" height="2.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.2" height="2.2" fill="rgba(255,255,255,.08)"/><path d="M0 0H2.2M0 0V2.2" stroke="rgba(0,0,0,.6)" stroke-width=".6"/></pattern>
+              <linearGradient id="hw-shade"><stop offset="0" stop-opacity=".6"/><stop offset=".18" stop-opacity="0"/><stop offset=".82" stop-opacity="0"/><stop offset="1" stop-opacity=".65"/></linearGradient>
+              <!-- below the card's top edge, only the front (left) half of the clasp is in front of the card -->
+              <clipPath id="hw-front"><path d="M100 50H220V180H160V240H100Z"/></clipPath>
+              <!-- lobster clasp at 80% wide x 60% tall, scaled around its bottom so the bend sits in the slot -->
+              <g id="hw-claw" transform="translate(160 194) scale(.8 .6) translate(-160 -194)">
+                <path d="M160 131C168 133 172.5 146 172.5 160C172.5 178 168 194 160 194C152 194 147.5 180 147.5 164C147.5 148 151 134 160 131Z M160 138C165 140 167.5 150 167.5 161C167.5 175 164.5 188 160 188C155.5 188 152.5 177 152.5 165C152.5 151 155 141 160 138Z" fill-rule="evenodd" fill="url(#hw-blkF)" stroke="rgba(0,0,0,.55)" stroke-width=".7"/>
+                <path d="M160 138C165 140 167.5 150 167.5 161C167.5 175 164.5 188 160 188C155.5 188 152.5 177 152.5 165C152.5 151 155 141 160 138Z" fill="none" stroke="rgba(255,255,255,.4)" stroke-width=".6"/>
+                <path d="M164.6 141.6L171.2 139.8M166.6 172L171.6 173.6" stroke="rgba(0,0,0,.7)" stroke-width=".8"/>
+                <path d="M171.6 145L177.4 147.2Q179 148.7 177.4 150.2L172 152.6Z" fill="url(#hw-blkF)" stroke="rgba(0,0,0,.55)" stroke-width=".6"/>
+                <path d="M174 147.4L174.6 151.2M175.8 148L176.3 150.8" stroke="rgba(0,0,0,.35)" stroke-width=".4"/>
+                <circle cx="167.6" cy="140" r="1.1" fill="url(#hw-dome)"/>
+              </g>
+            </defs>
+            <!-- rim of the punched slot -->
+            <rect x="152" y="188" width="16" height="7" rx="3.5" fill="none" stroke="rgba(255,255,255,.14)" stroke-width=".7"/>
+            <!-- everything above the clasp, moved down 25.2 to meet the shorter clasp -->
+            <g transform="translate(0 25.2)">
+              <!-- O-ring, then the strap folded through it and stitched -->
+              <path d="M147 88.5A13 13 0 1 0 173 88.5A13 13 0 1 0 147 88.5Z" fill="none" stroke="url(#hw-blkF)" stroke-width="2.4"/>
+              <path d="M147 88.5A13 13 0 1 0 173 88.5A13 13 0 1 0 147 88.5Z" fill="none" stroke="rgba(255,255,255,.18)" stroke-width=".5" transform="translate(-.5 -.6)"/>
+              <rect x="146" y="60" width="28" height="20" fill="#d6403a"/>
+              <rect x="146" y="71" width="28" height="9" fill="rgba(0,0,0,.12)"/>
+              <path d="M148 71.5H172" stroke="rgba(255,236,230,.6)" stroke-width=".8" stroke-dasharray="2 1.5"/>
+              <path d="M146 79H174V84Q174 89 169 89H151Q146 89 146 84Z" fill="#b5332e"/>
+              <rect x="146" y="79" width="28" height="1.2" fill="rgba(0,0,0,.35)"/>
+              <!-- jump ring -->
+              <circle cx="160" cy="104" r="3" fill="none" stroke="url(#hw-blk)" stroke-width="1.8"/>
+              <!-- swivel (the part that spins): caps, barrel, knurled band -->
+              <rect x="157" y="107" width="6" height="2.5" fill="url(#hw-blk)"/>
+              <rect x="155.5" y="109.5" width="9" height="12" fill="url(#hw-blk)"/><rect x="155.5" y="109.5" width="9" height=".6" fill="rgba(255,255,255,.45)"/><rect x="155.5" y="120.9" width="9" height=".6" fill="rgba(0,0,0,.5)"/>
+              <g class="hw-knurl"><rect x="155.3" y="112" width="9.4" height="6.5" fill="url(#hw-blk)"/><rect x="155.3" y="112" width="9.4" height="6.5" fill="url(#hw-knurl)"/><rect x="155.3" y="112" width="9.4" height="6.5" fill="url(#hw-shade)"/></g>
+              <rect x="157" y="121.5" width="6" height="2.5" fill="url(#hw-blk)"/>
+              <rect x="158.5" y="124" width="3" height="2" fill="url(#hw-blk)"/>
+              <!-- clasp eye -->
+              <circle cx="160" cy="128.2" r="2.8" fill="none" stroke="url(#hw-blkF)" stroke-width="2"/>
+            </g>
+            <use href="#hw-claw" clip-path="url(#hw-front)"/>
+          </svg>
+        </div>
         <div id="hero-badge"></div>
       </div>
       <form class="goals" id="goals" onsubmit="return false">
