@@ -58,12 +58,12 @@
         <p class="lede" id="lede"></p>
         <div class="range" aria-label="November 9 to November 22"><span>11/09</span><i></i><span>11/22</span></div>
       </article>
-      <a class="ticket" href="#brief">
+      <a class="ticket" href="#schedule">
         <span class="stub" id="ticket-stub"><span>ADMIT ONE</span></span>
         <span class="t-main">
           <span class="t-label" id="ticket-status">Class starts</span>
           <span class="t-date">NOV 9<sup>TH</sup> – 22<sup>ND</sup></span>
-          <span class="t-cta">SIGNUPS OPEN NOW!</span>
+          <span class="t-cta" id="ticket-cta">NOW IN SESSION</span>
         </span>
       </a>
     </div>
@@ -73,7 +73,7 @@
         <circle cx="100" cy="100" r="60" fill="none" stroke="#f3f2ee" stroke-width="2.5"/>
         <g class="ring">
           <path id="sealpath" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" fill="none"/>
-          <text fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="16" textLength="486" lengthAdjust="spacing"><textPath href="#sealpath">SIGNUPS OPEN NOW ★ SIGNUPS OPEN NOW ★</textPath></text>
+          <text fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="16" textLength="486" lengthAdjust="spacing"><textPath href="#sealpath">NOW IN SESSION ★ NOW IN SESSION ★</textPath></text>
         </g>
         <text x="100" y="96" text-anchor="middle" fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="21">PATH TO</text>
         <text x="100" y="119" text-anchor="middle" fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="21">GLORY</text>
@@ -156,7 +156,6 @@
         <p id="pitch"></p>
         <h3>How it runs</h3>
         <ol class="steps" id="steps"></ol>
-        <div class="prio"><span class="stamp">Priority</span><p id="prio"></p></div>
       </article>
       <div class="brief-side">
         <aside class="index roles-card" aria-label="Roles">
@@ -198,7 +197,7 @@
   </section>
 
   <section class="sec wrap" id="book">
-    <div class="sec-head"><span class="no">(05)</span><h2>Office hours</h2><p>Mentors post the hours they're free. Pick an hour in and an hour out inside those hours and send a request; the mentor accepts or declines it. Times are in your time zone (<span id="tz"></span>).</p></div>
+    <div class="sec-head"><span class="no">(05)</span><h2>Office hours</h2><p>Mentors post the hours they're free. Pick an hour in and an hour out inside those hours and send a request; the mentor accepts or declines it. Times are in your time zone (<span id="tz"></span>); days and hours follow Eastern time, 8 AM to 4 AM.</p></div>
     <div class="book">
       <form class="sheet book-ctl" id="book-form">
         <div><label class="k" for="bk-who">Coach</label><select id="bk-who"></select></div>
@@ -220,12 +219,15 @@
   </section>
 
   <section class="sec wrap" id="rosters">
-    <div class="sec-head"><span class="no">(06)</span><h2>Rosters</h2><p>Coaches and participants, one folder tab per team.</p></div>
-    <div class="rost-tabs" role="tablist" aria-label="Teams" id="rost-tabs"></div>
-    <div class="rost-body">
-      <article class="sheet form" id="rost-form" role="tabpanel"></article>
+    <div class="sec-head"><span class="no">(06)</span><h2>Rosters</h2><p>Every team, its mentor, and the checkpoint standings.</p></div>
+    <article class="sheet roster">
+      <div class="roster-top">
+        <div><span class="mono-label" style="color:var(--ink-soft)">Form PTG-R · Nov 9–22</span><h3 id="rost-title">Team rosters</h3></div>
+        <div class="rost-seg" role="tablist" aria-label="Rosters or standings" id="rost-seg"></div>
+      </div>
+      <div id="rost-view" role="tabpanel" aria-labelledby="rost-title"></div>
       <p class="rost-sum" id="rost-sum"></p>
-    </div>
+    </article>
   </section>
 
   <section class="sec wrap" id="notes">
@@ -234,13 +236,13 @@
       <div class="cards" id="res"></div>
       <article class="sheet oblig">
         <span class="mono-label" style="color:var(--red-deep)">Mentor obligations</span>
-        <h3>What coaches sign up for</h3>
+        <h3>What coaches commit to</h3>
         <ul id="expect"></ul>
         <p class="fine">Availability works like booking a doctor's appointment: a mentor posts free hours, players request a slot inside them, and the mentor accepts or declines.</p>
       </article>
     </div>
     <div class="notice">
-      <div><span class="mono-label">Notice board</span><h3>Open seminars</h3><p id="sem-format"></p><p>Topics come from the applications, so tell us what you want covered.</p></div>
+      <div><span class="mono-label">Notice board</span><h3>Open seminars</h3><p id="sem-format"></p><p>Want a topic covered? Tell your mentor or post it in the Discord.</p></div>
       <div class="slots" id="sem"></div>
     </div>
   </section>
@@ -252,7 +254,7 @@
 
   <footer class="wrap foot">
     <span>Path to Glory * ( pre-season mentor event )</span>
-    <a href="#brief">Signups open now →</a>
+    <a href="#schedule">See the schedule →</a>
   </footer>
 </main>
 
@@ -262,6 +264,7 @@
 <script src="api.js"></script>
 <script src="ui.js"></script>
 <script src="swing.js"></script>
+<script src="scroll.js"></script>
 <script src="home.js"></script>
 </body>
 </html>

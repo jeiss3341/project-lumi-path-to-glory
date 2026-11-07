@@ -3,10 +3,10 @@
   "use strict";
   const { $, $$, esc, pad } = UI;
   const C = window.PTG;
-  const S = { me: null, coaches: [], teams: [], signup: null, editing: false, myReqs: [] };
+  const S = { me: null, coaches: [], teams: [], myReqs: [] };
   const BK = { coach: null, day: null, start: null, end: null, blocks: [], busy: [] };
   const HALF = 30 * 6e4;
-  let watching = false, bookingWired = false, fi = 0, ri = 0, animOK = false;
+  let watching = false, bookingWired = false, fi = 0, rv = null, animOK = false;
 
   renderStatic();
   boot();
@@ -22,9 +22,7 @@
       API.teams().catch(() => [])
     ]);
     S.coaches = res[0]; S.teams = res[1];
-    S.signup = S.me ? await API.mySignup().catch(() => null) : null;
-    S.editing = false;
-    renderHeroBadge(); renderFaculty(); renderAssist(); renderRosters(); renderApply(); initBooking();
+    renderHeroBadge(); renderFaculty(); renderAssist(); renderRosters(); initBooking();
     if (window.PTGSwing) PTGSwing.play();   // hero lanyard swings in once the badge is on the page
     if (!watching) {
       watching = true;
@@ -110,22 +108,27 @@
     if (file) return '<img src="' + esc(file) + '" alt="' + esc(name) + '">';
     return '<span class="pfp-ph" aria-hidden="true">' + esc((name || "?").charAt(0)) + "</span>";
   }
-  // same text with the marks removed, for places that show it plain
-  function plain(t) {
-    return t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/(^|[^\w])_(.+?)_(?=[^\w]|$)/g, "$1$2");
-  }
-
   /* ================================================== static content */
   function renderStatic() {
     $("#lede").textContent = C.event.pitch;
     $("#goal-line").textContent = C.event.goal;
     $("#pitch").textContent = C.event.pitch;
-    $("#prio").innerHTML = marks(C.priority);
     $("#tz").textContent = UI.tz;
     $("#ticket-stub").insertAdjacentHTML("afterbegin", UI.barcode("PTG-1116", 60, 40));
     const st = UI.status();
     $("#ticket-status").textContent = st.phase === "before" ? "Class starts in " + st.days + (st.days === 1 ? " day" : " days")
       : st.phase === "live" ? "In session · day " + st.day + " of 14" : "Class dismissed";
+    // ticket button counts down to the next checkpoint Sunday
+    const big = C.schedule.find(e => (e.kind === "mock" || e.kind === "final") && e.date >= UI.todayYmd());
+    let cta = "NOW IN SESSION";
+    if (st.phase === "after") cta = "GGS · THANKS FOR PLAYING";
+    else if (st.phase === "before") cta = "DAY 1 · MON NOV 9";
+    else if (big) {
+      const name = big.kind === "mock" ? "MOCK CHECKPOINT SERIES" : "FINAL CHECKPOINT SERIES";
+      const n = Math.round((new Date(big.date + "T12:00:00") - new Date(UI.todayYmd() + "T12:00:00")) / 864e5);
+      cta = name + "\n" + (n === 0 ? "TODAY" : n === 1 ? "TOMORROW" : "IN " + n + " DAYS");
+    }
+    $("#ticket-cta").textContent = cta;
 
     let done = [];
     try { done = JSON.parse(localStorage.getItem("ptg:goals")) || []; } catch (e) { /* storage blocked */ }
@@ -137,7 +140,6 @@
 
     $("#steps").innerHTML = C.steps.map(s => "<li><span><b>" + marks(s.t) + "</b>" + marks(s.d) + "</span></li>").join("");
     $("#roles").innerHTML = C.roles.map(r => "<p><b>" + (r.icon ? '<span class="role-dot" aria-hidden="true">' + r.icon + "</span>" : "") + esc(r.name) + "</b><br>" + esc(r.d) + (r.alt ? ' <span class="alt">(aka ' + esc(r.alt.replace(/\.$/, "")) + ")</span>" : "") + "</p>").join("");
-    if ($("#after")) $("#after").innerHTML = "<b>After you apply</b>" + C.signupAfter.map(s => "<span>" + esc(s) + "</span>").join("<i>→</i>");
 
     renderSchedule();
 
@@ -153,7 +155,7 @@
     const days = UI.eventDays(), todayY = UI.todayYmd();
     let sel = (C.schedule.find(e => e.date >= todayY) || C.schedule[C.schedule.length - 1]).date;
     $("#dows").innerHTML = days.slice(0, 7).map(d => "<span>" + d.dow + "</span>").join("");
-    const label = ["", "Week 1 · Scrims → Mock checkpoint", "Week 2 · Prio scrims → Real checkpoint"];
+    const label = ["", "Week 1 · Scrims → Mock Checkpoint Series", "Week 2 · Prio scrims → Final Checkpoint Series"];
     // scrim days get the Project Lumi SCRIM sticker instead of a text tag,
     // slapped on at a random-looking spot and angle (seeded by the date, so it stays put between visits)
     const stickerSpot = ymd => {
@@ -314,156 +316,68 @@
       '<div class="mb-foot"><span class="b-team">Any team</span><a href="#book" data-book="' + esc(a.id) + '">Request ›</a></div></div></div>').join("");
   }
 
+  /* Rosters: every team in two columns. The Standings view unlocks once staff enter the first
+     Mock Checkpoint Series placements (staff desk → Teams), and turns into final standings, with
+     the champions on top, once Final Checkpoint Series placements are in. */
   function renderRosters() {
-    const n = Math.max(8, S.teams.length);
-    const slots = Array.from({ length: n }, (_, i) => S.teams[i] || null);
-    $("#rost-tabs").innerHTML = slots.map((t, i) => '<button class="tab" role="tab" id="rt-' + i + '" aria-controls="rost-form" data-i="' + i + '">' + esc(t ? t.name : "Team " + pad(i + 1)) + "</button>").join("");
-    function show(i, focus) {
-      ri = (i + n) % n;
-      const t = slots[ri];
-      const coach = t && t.coach_id ? coachById(t.coach_id) : null;
-      const players = t ? (t.players || []) : [];
-      const rows = Array.from({ length: Math.max(4, players.length) }, (_, k) => players[k]);
-      $("#rost-form").innerHTML =
-        '<div class="form-top"><div><span class="mono-label" style="color:var(--ink-soft)">Team roster · ' + pad(ri + 1) + " / " + pad(n) + "</span><h3>" + (t ? esc(t.name) : '<span class="ph">[Team ' + pad(ri + 1) + "]</span>") + "</h3></div>" +
-        (t ? '<span class="stamp">Confirmed</span>' : '<span class="stamp open">Slot open</span>') + "</div>" +
-        '<div class="fields">' +
-          '<div class="field coach"><span class="k">Coach</span><span class="v' + (coach && coach.name ? "" : " empty") + '">' + esc(coach ? UI.coachName(coach) : "To be assigned") + "</span></div>" +
-          '<div class="field"><span class="k">Status</span><span class="v">' + (t ? "Locked in" : '<span class="ph">Awaiting signups</span>') + "</span></div>" +
-          rows.map((p, k) => '<div class="field"><span class="k">Player ' + (k + 1) + (p && p.discord ? " · @" + esc(p.discord) : "") + '</span><span class="v' + (p ? "" : " empty") + '">' + (p ? esc(p.ign) : "open slot") + "</span></div>").join("") +
-        "</div>";
-      $$("#rost-tabs .tab").forEach((b, j) => { b.setAttribute("aria-selected", String(j === ri)); b.tabIndex = j === ri ? 0 : -1; });
-      if (focus) document.getElementById("rt-" + ri).focus();
-    }
-    $("#rost-tabs").onclick = e => { const t = e.target.closest(".tab"); if (t) show(+t.dataset.i); };
-    $("#rost-tabs").onkeydown = e => {
-      if (e.key === "ArrowRight") { e.preventDefault(); show(ri + 1, true); }
-      if (e.key === "ArrowLeft") { e.preventDefault(); show(ri - 1, true); }
+    const teams = S.teams;
+    const mock = teams.some(t => t.mock_place), fin = teams.some(t => t.final_place);
+    if (!mock) rv = "rosters";
+    else if (!rv) rv = "standings";   // once results exist, open on standings
+    const ev = k => C.schedule.find(e => e.kind === k);
+    const day = (k, o) => { const e = ev(k); return e ? UI.date(e.date + "T12:00:00", o || { month: "short", day: "numeric" }).replace(",", "") : ""; };
+    const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+    const mentor = t => {
+      const c = t.coach_id ? coachById(t.coach_id) : null;
+      return c ? '<a class="rost-coach" data-id="' + esc(c.id) + '" href="?coach=' + encodeURIComponent(c.id) + '#book">' + esc(UI.bare(UI.coachName(c))) + "</a>" : '<span class="tba">To be assigned</span>';
     };
-    $("#rost-sum").textContent = S.teams.length + " of " + n + " teams confirmed · open slots fill from team and solo applications";
-    show(Math.min(ri, n - 1));
-  }
+    const standings = rv === "standings";
 
-  /* ================================================== sign up */
-  const TEAM_Q = ["Team name", "Captain (your Discord account)", "Players 1–4 + sub (in-game name · Discord)", "Played ERCS/ERCC qualifiers with 3/4 of this lineup?", "T2 events played", "Mentor preferences: 1st, 2nd, 3rd", "Seminar topics you want covered"];
-  const SOLO_Q = ["In-game name", "Main role and characters", "Availability Nov 9–22", "Comp experience, if any", "Seminar topics you want covered"];
-  const blanks = arr => '<ol class="blanks">' + arr.map((f, i) => "<li><span>" + pad(i + 1) + "</span><span>" + esc(f) + "</span></li>").join("") + "</ol>";
-  const appTop = (code, title) => '<div class="app-top"><div><span class="mono-label" style="color:var(--red-deep)">' + code + "</span><h3>" + title + '</h3></div><span class="form-no">FILE NO.1116<br>ID // 2026</span></div>';
+    $("#rost-title").textContent = !standings ? "Team rosters" : fin ? "Final standings" : "Team standings";
+    $("#rost-seg").innerHTML =
+      '<button type="button" role="tab" data-v="rosters" aria-selected="' + !standings + '">Rosters</button>' +
+      '<button type="button" role="tab" data-v="standings" aria-selected="' + standings + '"' + (mock ? "" : " disabled") + ">" +
+        (mock ? 'Standings<span class="dot" aria-hidden="true"></span>' : "Standings · opens " + day("mock")) + "</button>";
 
-  function renderApply() {
-    const box = $("#apply");
-    if (!box) return; // Sign up section removed from the page (2026-11-05); forms kept here in case it comes back
-    box.classList.remove("single");
-    if (!S.me) {
-      box.innerHTML =
-        '<article class="sheet app">' + appTop("Form PTG-T", "Team application") + '<p class="who">For full rosters. ' + esc(plain(C.priority)) + "</p>" + blanks(TEAM_Q) +
-        '<div class="app-foot"><button type="button" class="btn js-login">Log in with Discord to apply</button></div></article>' +
-        '<article class="sheet app">' + appTop("Form PTG-S", "Solo application") + '<p class="who">For individual players. Staff place solo signups together on a team, under one of the eight mentors.</p>' + blanks(SOLO_Q) +
-        '<div class="app-foot"><button type="button" class="btn js-login">Log in with Discord to apply</button></div></article>';
-      $$(".js-login", box).forEach(b => b.onclick = () => UI.login(b));
-      return;
+    if (!standings) {
+      $("#rost-view").innerHTML = teams.length
+        ? '<div class="rost-cards">' + teams.map((t, i) =>
+            '<div class="rc"><span class="n">' + pad(i + 1) + "</span><b>" + esc(t.name) + '</b><span class="co">Mentor · ' + mentor(t) + "</span>" +
+            '<span class="pl">' + (t.players || []).map(p => esc(p.ign)).join(" · ") + "</span></div>").join("") + "</div>"
+        : '<p class="rost-none">Teams are posted here on Day 1.</p>';
+      $("#rost-sum").textContent = !teams.length ? "" : !mock
+        ? teams.length + (teams.length === 1 ? " team" : " teams") + " · standings unlock after the Mock Checkpoint Series, " + day("mock", { weekday: "short", month: "short", day: "numeric" })
+        : (fin ? "Final results are in" : "Mock results are in") + " · switch to Standings to see placements";
+    } else {
+      const key = fin ? "final_place" : "mock_place";
+      const rows = teams.slice().sort((a, b) => (a[key] || 99) - (b[key] || 99) || (a.mock_place || 99) - (b.mock_place || 99));
+      const res = n => '<td class="res' + (n === 1 ? " win" : n ? "" : " blank") + '">' + (n ? ord(n) : "—") + "</td>";
+      const champ = fin && teams.find(t => t.final_place === 1);
+      $("#rost-view").innerHTML =
+        (champ ? '<div class="champ"><span class="champ-stamp">Champions</span><div><b>' + esc(champ.name) + "</b><span>Mentor · " +
+          esc(champ.coach_id && coachById(champ.coach_id) ? UI.bare(UI.coachName(coachById(champ.coach_id))) : "To be assigned") + " · " +
+          (champ.players || []).map(p => esc(p.ign)).join(" · ") + "</span></div></div>" : "") +
+        '<table class="stable"><thead><tr><th>Place</th><th>Team</th><th class="mcol">Mentor</th><th class="c">Mock · ' + day("mock") + '</th><th class="c">Final · ' + day("final") + "</th></tr></thead><tbody>" +
+        rows.map(t => '<tr><td class="n' + (t[key] === 1 ? " win" : "") + '">' + (t[key] ? ord(t[key]) : "—") + "</td>" +
+          '<td class="tm">' + esc(t.name) + '<span class="m-in">Mentor · ' + mentor(t) + '</span></td><td class="co mcol">' + mentor(t) + "</td>" +
+          res(t.mock_place) + res(t.final_place) + "</tr>").join("") + "</tbody></table>";
+      $("#rost-sum").textContent = fin ? "Final standings · sorted by Final Checkpoint Series placement"
+        : "Sorted by Mock Checkpoint Series placement · Final Checkpoint Series " + day("final", { weekday: "short", month: "short", day: "numeric" });
     }
-    const s = S.signup;
-    if (s && s.status !== "withdrawn" && !S.editing) {
-      box.classList.add("single");
-      box.innerHTML = statusSheet(s);
-      const ed = $("#app-edit", box), wd = $("#app-withdraw", box);
-      if (ed) ed.onclick = () => { S.editing = true; renderApply(); };
-      if (wd) wd.onclick = () => UI.act(wd, async () => { S.signup = await API.setSignupStatus(s.id, "withdrawn"); renderApply(); }, "Application withdrawn.");
-      return;
-    }
-    const lockTeam = s && S.editing && s.kind === "solo", lockSolo = s && S.editing && s.kind === "team";
-    box.innerHTML = teamForm(s && s.kind === "team" ? s : null, lockTeam) + soloForm(s && s.kind === "solo" ? s : null, lockSolo);
-    wireForm("#f-team", "team");
-    wireForm("#f-solo", "solo");
-    $$(".js-cancel-edit", box).forEach(b => b.onclick = () => { S.editing = false; renderApply(); });
-  }
 
-  function mentorOptions(sel) {
-    return '<option value="">No preference</option>' + mentors().map(m => '<option value="' + esc(m.id) + '"' + (sel === m.id ? " selected" : "") + ">" + esc(UI.bare(UI.coachName(m))) + " · " + esc(UI.bare(UI.coachTeam(m))) + "</option>").join("");
-  }
-  const val = (s, k) => s && s[k] != null ? esc(s[k]) : "";
-
-  function teamForm(s, locked) {
-    const players = (s && s.players) || [];
-    const prefs = (s && s.mentor_prefs) || [];
-    if (locked) return '<article class="sheet app locked">' + appTop("Form PTG-T", "Team application") + '<p class="who">You applied solo. Withdraw that application first if you want to apply as a team instead.</p>' + blanks(TEAM_Q) + "</article>";
-    return '<form class="sheet app" id="f-team" novalidate>' + appTop("Form PTG-T", "Team application") +
-      '<p class="who">Applying as <b>@' + esc(S.me.username || UI.who(S.me)) + "</b>, team captain. " + esc(plain(C.priority)) + "</p>" +
-      '<div class="fgrid">' +
-        '<label class="fld wide"><span class="k">01 Team name</span><input name="team_name" maxlength="40" required value="' + val(s, "team_name") + '"></label>' +
-        '<div class="fld wide"><span class="k">02 Players (in-game name · Discord username)</span><div class="prows">' +
-          [0, 1, 2, 3, 4].map(i => '<div class="prow"><span class="pn">' + (i < 4 ? "P" + (i + 1) : "Sub") + '</span><input name="ign' + i + '" maxlength="40" placeholder="In-game name" aria-label="Player ' + (i + 1) + ' in-game name" value="' + esc((players[i] || {}).ign || "") + '"><input name="dc' + i + '" maxlength="40" placeholder="Discord" aria-label="Player ' + (i + 1) + ' Discord username" value="' + esc((players[i] || {}).discord || "") + '"></div>').join("") +
-        "</div></div>" +
-        '<fieldset class="fld"><legend class="k">03 Played ERCS/ERCC qualifiers with 3/4 of this lineup?</legend><div class="yn">' +
-          '<label><input type="radio" name="pq" value="yes"' + (s && s.played_qualifier === true ? " checked" : "") + "> Yes</label>" +
-          '<label><input type="radio" name="pq" value="no"' + (s && s.played_qualifier === false ? " checked" : "") + "> No</label></div></fieldset>" +
-        '<label class="fld"><span class="k">04 T2 events played</span><input name="t2_events" maxlength="200" placeholder="Lumia Rumble, ..." value="' + val(s, "t2_events") + '"></label>' +
-        '<div class="fld wide"><span class="k">05 Mentor preferences</span><div class="prefs">' +
-          [0, 1, 2].map(i => '<label><span>' + ["1st", "2nd", "3rd"][i] + '</span><select name="pref' + i + '">' + mentorOptions(prefs[i]) + "</select></label>").join("") + "</div></div>" +
-        '<label class="fld wide"><span class="k">06 Seminar topics you want covered</span><textarea name="seminar_topics" rows="2" maxlength="500">' + val(s, "seminar_topics") + "</textarea></label>" +
-      "</div>" +
-      '<div class="app-foot"><button class="btn" type="submit">' + (s ? "Save team application" : "Submit team application") + "</button>" + (S.editing ? '<button type="button" class="btn ghost js-cancel-edit">Cancel</button>' : "") + "</div></form>";
-  }
-
-  function soloForm(s, locked) {
-    if (locked) return '<article class="sheet app locked">' + appTop("Form PTG-S", "Solo application") + '<p class="who">You applied as a team. Withdraw that application first if you want to apply solo instead.</p>' + blanks(SOLO_Q) + "</article>";
-    return '<form class="sheet app" id="f-solo" novalidate>' + appTop("Form PTG-S", "Solo application") +
-      '<p class="who">Applying as <b>@' + esc(S.me.username || UI.who(S.me)) + "</b>. Staff place solo players together on a team under one of the mentors.</p>" +
-      '<div class="fgrid">' +
-        '<label class="fld wide"><span class="k">01 In-game name</span><input name="ign" maxlength="40" required value="' + val(s, "ign") + '"></label>' +
-        '<label class="fld wide"><span class="k">02 Main role and characters</span><input name="main_role" maxlength="120" placeholder="Support · Elena, Bianca" value="' + val(s, "main_role") + '"></label>' +
-        '<label class="fld wide"><span class="k">03 Availability Nov 9–22</span><input name="availability" maxlength="200" placeholder="Weeknights after 8 PM" value="' + val(s, "availability") + '"></label>' +
-        '<label class="fld wide"><span class="k">04 Comp experience, if any</span><input name="experience" maxlength="300" value="' + val(s, "experience") + '"></label>' +
-        '<label class="fld wide"><span class="k">05 Seminar topics you want covered</span><textarea name="seminar_topics" rows="2" maxlength="500">' + val(s, "seminar_topics") + "</textarea></label>" +
-      "</div>" +
-      '<div class="app-foot"><button class="btn" type="submit">' + (s ? "Save solo application" : "Submit solo application") + "</button>" + (S.editing ? '<button type="button" class="btn ghost js-cancel-edit">Cancel</button>' : "") + "</div></form>";
-  }
-
-  function wireForm(sel, kind) {
-    const f = $(sel);
-    if (!f) return;
-    f.onsubmit = e => {
+    $("#rost-seg").onclick = e => {
+      const b = e.target.closest("button[data-v]");
+      if (b && !b.disabled) { rv = b.dataset.v; renderRosters(); }
+    };
+    // a mentor's name jumps to office hours with that mentor picked, without reloading the page
+    $("#rost-view").onclick = e => {
+      const a = e.target.closest(".rost-coach");
+      const sel = $("#bk-who");
+      if (!a || !sel || !coachById(a.dataset.id)) return;
       e.preventDefault();
-      const fd = new FormData(f), g = k => String(fd.get(k) || "").trim();
-      let data;
-      if (kind === "team") {
-        const players = [0, 1, 2, 3, 4].map(i => ({ ign: g("ign" + i), discord: g("dc" + i).replace(/^@/, "") })).filter(p => p.ign);
-        if (!g("team_name")) return UI.toast("Give your team a name.", "bad");
-        if (players.length < 3) return UI.toast("Add at least 3 players' in-game names.", "bad");
-        const prefs = [g("pref0"), g("pref1"), g("pref2")].filter((v, i, a) => v && a.indexOf(v) === i);
-        data = { kind, team_name: g("team_name"), players, played_qualifier: g("pq") === "yes" ? true : g("pq") === "no" ? false : null, t2_events: g("t2_events"), mentor_prefs: prefs, seminar_topics: g("seminar_topics") };
-      } else {
-        if (!g("ign")) return UI.toast("Add your in-game name.", "bad");
-        data = { kind, ign: g("ign"), main_role: g("main_role"), availability: g("availability"), experience: g("experience"), seminar_topics: g("seminar_topics") };
-      }
-      if (S.signup && S.signup.status === "withdrawn") data.status = "pending";
-      UI.act(f.querySelector('[type="submit"]'), async () => {
-        S.signup = await API.saveSignup(data);
-        S.editing = false;
-        renderApply();
-        $("#signup").scrollIntoView({ behavior: "smooth", block: "start" });
-      }, "Application sent. Staff will review it.");
+      sel.value = a.dataset.id; sel.dispatchEvent(new Event("change"));
+      if (window.PTGScroll) PTGScroll.to($("#book")); else $("#book").scrollIntoView({ behavior: "smooth" });
     };
-  }
-
-  function statusSheet(s) {
-    const label = { pending: "Under review", waitlist: "Waitlist", accepted: "Accepted", declined: "Not this time" }[s.status] || s.status;
-    const open = ["pending", "waitlist"].includes(s.status);
-    const prefs = (s.mentor_prefs || []).map(id => UI.bare(UI.coachName(coachById(id)))).join(", ");
-    const rows = s.kind === "team"
-      ? [["Team", s.team_name], ["Players", (s.players || []).map(p => p.ign + (p.discord ? " (@" + p.discord + ")" : "")).join(", ")], ["Qualifier lineup", s.played_qualifier == null ? "" : s.played_qualifier ? "Yes" : "No"], ["T2 events", s.t2_events], ["Mentor preferences", prefs], ["Seminar topics", s.seminar_topics]]
-      : [["In-game name", s.ign], ["Role and characters", s.main_role], ["Availability", s.availability], ["Experience", s.experience], ["Seminar topics", s.seminar_topics]];
-    return '<article class="sheet app status-app">' + appTop(s.kind === "team" ? "Form PTG-T" : "Form PTG-S", s.kind === "team" ? "Team application" : "Solo application") +
-      '<div class="st-row"><span class="stamp ' + (s.status === "accepted" ? "" : s.status === "declined" ? "" : "open") + '">' + esc(label) + "</span><p>" +
-        (s.status === "accepted" ? "You're in. Your team and mentor show on your desk once staff assign them." :
-         s.status === "declined" ? "Staff couldn't fit this application in. Message staff on Discord with questions." :
-         s.status === "waitlist" ? "You're on the waitlist. Staff will move you in if a spot opens." :
-         "Staff will review it. You can edit it until they decide.") + "</p></div>" +
-      '<dl class="kv">' + rows.map(r => "<dt>" + esc(r[0]) + "</dt><dd>" + UI.ph(r[1], "—") + "</dd>").join("") +
-        (s.staff_note ? "<dt>Note from staff</dt><dd>" + esc(s.staff_note) + "</dd>" : "") + "</dl>" +
-      '<div class="app-foot">' + (open ? '<button type="button" class="btn" id="app-edit">Edit application</button><button type="button" class="btn ghost" id="app-withdraw">Withdraw</button>' : "") +
-        '<a class="btn ghost" href="desk.html">Open your desk</a></div></article>';
   }
 
   /* ================================================== office hours */

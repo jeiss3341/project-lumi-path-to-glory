@@ -12,16 +12,45 @@
   // Show a value, or a [placeholder] when it's empty.
   UI.ph = (v, placeholder) => (v != null && String(v).trim()) ? UI.esc(v) : '<span class="ph">' + UI.esc(placeholder) + "</span>";
 
-  /* ---------- time (always the viewer's own time zone) ---------- */
+  /* ---------- time ----------
+     The event runs on Eastern time. Each event day is an Eastern date, and coaches post hours
+     from 8:00 AM to 4:00 AM the next morning, Eastern. Times are always shown to each viewer in
+     their own time zone; only the day boundaries and the hours window are fixed to Eastern. */
+  UI.EVENT_TZ = "America/New_York";
+  UI.DAY_START = 8 * 60;    // 8:00 AM Eastern, minutes after midnight
+  UI.DAY_END = 28 * 60;     // 4:00 AM Eastern the next morning
   UI.tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || "your time zone").replace(/_/g, " ");
   UI.ymd = d => d.getFullYear() + "-" + UI.pad(d.getMonth() + 1) + "-" + UI.pad(d.getDate());
-  UI.dayOf = iso => UI.ymd(new Date(iso));
   UI.time = iso => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   UI.date = (iso, o) => new Date(iso).toLocaleDateString("en-US", o || { weekday: "short", month: "short", day: "numeric" });
   UI.range = (a, b) => UI.date(a) + " · " + UI.time(a) + "–" + UI.time(b);
-  UI.atMin = (ymd, mins) => { const p = ymd.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2], 0, mins, 0, 0); };
-  UI.minOf = d => d.getHours() * 60 + d.getMinutes();
-  UI.minLabel = m => m >= 1440 ? "12:00 AM (next day)" : new Date(2000, 0, 1, 0, m).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const tzParts = (d, tz) => {
+    const p = {};
+    new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
+      .formatToParts(d).forEach(x => { p[x.type] = x.value; });
+    return p;
+  };
+  // minutes a time zone is ahead of UTC at that moment (Eastern in November: -300)
+  const tzOffset = (d, tz) => { const p = tzParts(d, tz); return Math.round((Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute) - Math.floor(d.getTime() / 6e4) * 6e4) / 6e4); };
+  // the moment `mins` minutes after midnight Eastern on `ymd` (past 1440 runs into the next morning)
+  UI.etAt = (ymd, mins) => {
+    const [y, m, d] = ymd.split("-").map(Number);
+    const guess = Date.UTC(y, m - 1, d, 0, mins);
+    let t = guess - tzOffset(new Date(guess), UI.EVENT_TZ) * 6e4;
+    t = guess - tzOffset(new Date(t), UI.EVENT_TZ) * 6e4;   // second pass settles daylight-saving edges
+    return new Date(t);
+  };
+  UI.etYmd = d => { const p = tzParts(d, UI.EVENT_TZ); return p.year + "-" + p.month + "-" + p.day; };
+  // the event day a moment belongs to: a day runs 4:00 AM to 4:00 AM Eastern, so 1 AM belongs to the evening before
+  UI.dayOf = iso => UI.etYmd(new Date(new Date(iso).getTime() - (UI.DAY_END - 1440) * 6e4));
+  // is the viewer on Eastern time right now (any zone that matches it, e.g. Toronto)?
+  UI.onEastern = (d = new Date()) => d.getTimezoneOffset() === -tzOffset(d, UI.EVENT_TZ);
+  // an Eastern time for a picker, plus the viewer's own time when they're elsewhere
+  UI.etLabel = (ymd, mins) => {
+    const d = UI.etAt(ymd, mins);
+    const et = d.toLocaleTimeString("en-US", { timeZone: UI.EVENT_TZ, hour: "numeric", minute: "2-digit" });
+    return UI.onEastern(d) ? et : et + " ET · " + UI.time(d) + " yours";
+  };
   UI.dur = (a, b) => { const m = Math.round((new Date(b) - new Date(a)) / 6e4); return m % 60 ? (m >= 60 ? Math.floor(m / 60) + " h " : "") + (m % 60) + " min" : (m / 60) + (m === 60 ? " hour" : " hours"); };
   UI.eventDays = () => {
     const s = new Date(C.event.start + "T12:00:00"), out = [];
@@ -31,13 +60,16 @@
     }
     return out;
   };
-  UI.todayYmd = () => UI.ymd(new Date());
+  // ?today=2026-11-18 previews the site as of that date (testing only)
+  const FAKE = (location.search.match(/[?&]today=(\d{4}-\d\d-\d\d)/) || [])[1];
+  // today's event day (Eastern, rolling over at 4 AM)
+  UI.todayYmd = () => FAKE || UI.dayOf(new Date());
+  const dayNum = ymd => { const [y, m, d] = ymd.split("-").map(Number); return Math.round(Date.UTC(y, m - 1, d) / DAY); };
   UI.status = () => {
-    const t = new Date(); t.setHours(12, 0, 0, 0);
-    const s = new Date(C.event.start + "T12:00:00"), e = new Date(C.event.end + "T12:00:00");
-    if (t < s) return { phase: "before", days: Math.round((s - t) / DAY) };
+    const t = dayNum(UI.todayYmd()), s = dayNum(C.event.start), e = dayNum(C.event.end);
+    if (t < s) return { phase: "before", days: s - t };
     if (t > e) return { phase: "after" };
-    return { phase: "live", day: Math.round((t - s) / DAY) + 1 };
+    return { phase: "live", day: t - s + 1 };
   };
   UI.gcal = ev => {
     const next = new Date(new Date(ev.date + "T12:00:00").getTime() + DAY);

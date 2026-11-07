@@ -2,7 +2,7 @@
 
 The website for **Path to Glory**, Project Lumi's pre-season mentor event for the Eternal Return competitive scene (Nov 9–22, 2026).
 
-It has Discord login, team and solo signups, a calendar for each mentor, and session requests that mentors accept or decline. The design is "the mentor file": a case file on a desk, with ID badges, red tape and typewriter text.
+It is the event site for the two weeks of the event (signups happen beforehand on Google Forms and Discord). It has Discord login, team rosters with checkpoint standings, a calendar for each mentor, and session requests that mentors accept or decline. The design is "the mentor file": a case file on a desk, with ID badges, red tape and typewriter text.
 
 ## What's where
 

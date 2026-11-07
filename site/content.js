@@ -1,5 +1,5 @@
 /* Path to Glory · static event content (things that don't change at run time).
-   People, teams, applications, hours and requests live in the database. */
+   People, teams, hours and requests live in the database. */
 window.PTG = {
   event: {
     org: "Project Lumi",
@@ -15,36 +15,32 @@ window.PTG = {
 
   /* Step text marks: **words** = yellow highlighter, _words_ = red squiggle underline, \n = line break. */
   steps: [
-    { t: "Sign Up!", d: "Register as a **full team**, or _sign up solo_ and get placed on a team with other individual players." },
-    { t: "Teams are Chosen.", d: "Teams will be picked and released!" },
-    { t: "Pick your Coach", d: "Chosen teams rank the mentors they want.\nStaff then distribute the 8 main mentors across the teams." },
+    { t: "Meet your Mentor.", d: "Day 1, **Mon Nov 9**: every team meets the mentor coaching them for the two weeks." },
     { t: "Book Sessions...", d: "Mentors post their availability.\nPlayers book 30–60 minute team or individual reviews, like booking an office hour!" },
-    { t: "Play and Compete!", d: "Designated scrim days each week, **a Mock Checkpoint on Sunday Nov 15,** then **the Real Checkpoint on Sunday Nov 22.**" }
+    { t: "Play and Compete!", d: "Designated scrim days each week, **the Mock Checkpoint Series on Sunday Nov 15,** then **the Final Checkpoint Series on Sunday Nov 22.**" }
   ],
-
-  priority: "Teams who played _ERCS/ERCC qualifiers_ with ¾ of their original lineup, or who played T2 events, are prioritized.",
 
   schedule: [
     { date: "2026-11-09", kind: "kickoff", short: "Day 1", title: "Event begins", note: "Teams meet their mentors and session requests open." },
     { date: "2026-11-11", kind: "scrim", short: "Scrim", title: "Scrim Day 1", note: "Weekday scrim block. Exact weekday to be confirmed.", tentative: true },
     { date: "2026-11-14", kind: "scrim", short: "Scrim", title: "Scrim Day 2", note: "Saturday scrim block. Mentors watch live or review after.", tentative: true },
-    { date: "2026-11-15", kind: "mock", short: "Mock", title: "Mock Checkpoint Tournament", note: "A full practice run of the checkpoint format. Mentors review the games with their teams afterwards." },
+    { date: "2026-11-15", kind: "mock", short: "Mock", title: "Mock Checkpoint Series", note: "A full practice run of the checkpoint format. Mentors review the games with their teams afterwards." },
     { date: "2026-11-18", kind: "scrim", short: "Prio", title: "Prio Scrim Day 1", note: "Priority scrim block. Exact weekday to be confirmed.", tentative: true },
-    { date: "2026-11-21", kind: "scrim", short: "Prio", title: "Prio Scrim Day 2", note: "Saturday priority scrims, the last practice before the real checkpoint.", tentative: true },
-    { date: "2026-11-22", kind: "final", short: "Final", title: "Real Checkpoint Tournament", note: "The checkpoint that counts. Closes out the event." }
+    { date: "2026-11-21", kind: "scrim", short: "Prio", title: "Prio Scrim Day 2", note: "Saturday priority scrims, the last practice before the Final Checkpoint Series.", tentative: true },
+    { date: "2026-11-22", kind: "final", short: "Final", title: "Final Checkpoint Series", note: "The checkpoint that counts. Closes out the event." }
   ],
 
   roles: [
     { key: "staff", icon: "⚫", name: "Staff", d: "Oversee everything, monitor interactions, and keep the event moving smoothly." },
     { key: "mentor", icon: "🔴", name: "Mentors", d: "The 8 team coaches. Group review sessions, character-specific help, and any other questions from their team." },
     { key: "assistant", icon: "⭕", name: "Assistant Coaches", d: "Role and character specialists on standby. Individual coaching and general help for players on any team." },
-    { key: "player", icon: "⚪", name: "Players", d: "Developing players here to learn the game.", alt: "Chuds learning the game." }
+    { key: "player", icon: "⚪", name: "Players", d: "Developing players here to learn the game." }
   ],
 
   resources: [
     { t: "Recorded VOD reviews", d: "Mentors record team review sessions and share them publicly. Players are asked before their voice is recorded. If they say no, the coach mutes them and restates each question on the recording." },
     { t: "TL;DR notes", d: "Every review comes with a short written summary of what was covered, so players can come back to it later." },
-    { t: "Open seminars", d: "Hour-long talks on a Discord Stage, followed by open Q&A. Tell us which topics you want covered on your application." },
+    { t: "Open seminars", d: "Hour-long talks on a Discord Stage, followed by open Q&A. Suggest topics to your mentor or in the Discord." },
     { t: "Role coach help", d: "Assistant coaches take questions from any team about their character or role, and run topic sessions of their own." }
   ],
 
@@ -68,13 +64,11 @@ window.PTG = {
 
   // TODO: paste real Discord invite links.
   links: [
-    { name: "Project Lumi", tag: "Main Hub", d: "Announcements, signups and team channels.", url: "#" },
+    { name: "Project Lumi", tag: "Main Hub", d: "Announcements, schedules and team channels.", url: "#" },
     { name: "Scrim Cord", tag: "Practice", d: "Scrim scheduling and lobbies.", url: "#" },
     { name: "Lumia Rumble", tag: "T2", d: "Tier 2 tournament circuit.", url: "#" },
     { name: "Eternal Return Challengers Hub", tag: "T1", d: "Tier 1 competitive hub.", url: "#" }
   ],
-
-  signupAfter: ["Staff review applications", "Teams chosen", "Mentors assigned", "Day 1 · Mon Nov 9"],
 
   // Coach art: drop an image in site/art/ and map the coach slot to it here.
   // It fills the 4:5 art window on the ID badge (cropped to fit, anchored near the top).

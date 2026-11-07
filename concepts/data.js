@@ -71,7 +71,7 @@
   ];
 
   PTG.teams = [
-    { name: "NeoChair", coach: "Neotep", players: ["Rustska", "Jeiss", "Jast107", "Fwitchu"], status: "confirmed" }
+    { name: "NeoChair", coach: "Neotep", players: ["Irem-chan", "Jeiss", "Lumi-chan", "Fwitchu"], status: "confirmed" }
   ];
   for (let i = 2; i <= 8; i++) {
     PTG.teams.push({ name: "[Team " + String(i).padStart(2, "0") + "]", coach: PTG.mentors[i - 1].name, players: [], status: "open" });

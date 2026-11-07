@@ -67,31 +67,10 @@
     API.updateCoach = (id, patch) => q(sb.from("coaches").update(patch).eq("id", id).select().single());
 
     API.teams = () => q(sb.from("teams").select("*").order("sort").order("created_at"));
-    API.saveTeam = t => {
-      const body = { name: t.name, coach_id: t.coach_id || null, players: t.players || [], member_ids: t.member_ids || [], sort: t.sort || 0, signup_id: t.signup_id || null };
-      return t.id ? q(sb.from("teams").update(body).eq("id", t.id).select().single())
-                  : q(sb.from("teams").insert(body).select().single());
-    };
-    API.deleteTeam = id => q(sb.from("teams").delete().eq("id", id));
-
-    API.mySignup = async () => {
-      const me = await API.session();
-      if (!me) return null;
-      return q(sb.from("signups").select("*").eq("user_id", me.id).maybeSingle());
-    };
-    API.saveSignup = async d => {
-      const mine = await API.mySignup();
-      return mine ? q(sb.from("signups").update(d).eq("id", mine.id).select().single())
-                  : q(sb.from("signups").insert(d).select().single());
-    };
-    API.setSignupStatus = (id, status, staff_note) => {
-      const body = { status };
-      if (staff_note !== undefined) body.staff_note = staff_note;
-      return q(sb.from("signups").update(body).eq("id", id).select().single());
-    };
-    API.signups = () => q(sb.from("signups").select("*, profile:profiles(" + PROFILE + ")").order("created_at"));
+    // teams are read only from the site: the organiser sets them (supabase/schema.sql)
 
     API.availability = coachId => q(sb.from("availability").select("*").eq("coach_id", coachId).order("starts_at"));
+    API.allAvailability = () => q(sb.from("availability").select("*").order("starts_at"));
     API.addBlocks = async blocks => {
       const added = [], failed = [];
       for (const b of blocks) {
@@ -101,6 +80,7 @@
       return { added, failed };
     };
     API.deleteBlock = id => q(sb.from("availability").delete().eq("id", id));
+    API.saveHours = (c, b, s, e) => q(sb.rpc("save_hours", { c, b: b || null, s, e }));   // post or change hours; overlaps join (see schema.sql)
     API.busy = coachId => q(sb.rpc("coach_busy", { c: coachId }));
 
     API.myRequests = async () => {
@@ -120,44 +100,59 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v1";
+    const KEY = "ptg-demo-v3";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
     let S = load();
 
     function seed() {
-      const at = (ymd, h, m) => { const [y, mo, d] = ymd.split("-").map(Number); return new Date(y, mo - 1, d, h, m || 0).toISOString(); };
-      const days = [];
+      // sample hours in Eastern time (the event is after daylight saving ends on Nov 1, so Eastern = UTC−5)
+      const at = (ymd, h, m) => { const [y, mo, d] = ymd.split("-").map(Number); return new Date(Date.UTC(y, mo - 1, d, h + 5, m || 0)).toISOString(); };
+      const all = [];   // the 14 event days, with weekday (0 = Sun)
       const s0 = new Date(C.event.start + "T12:00:00");
-      for (let i = 0; i < 14; i++) { const d = new Date(s0.getTime() + i * 864e5); const dow = d.getDay(); if (dow !== 0 && dow !== 6) days.push(d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0")); }
+      for (let i = 0; i < 14; i++) { const d = new Date(s0.getTime() + i * 864e5); all.push({ ymd: d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"), dow: d.getDay() }); }
+      const on = dows => all.filter(d => dows.includes(d.dow)).map(d => d.ymd);
+      const days = on([1, 2, 3, 4, 5]);   // weekdays
       const availability = [];
-      ["m1", "m2", "a1"].forEach((c, k) => days.forEach(ymd => availability.push({ id: rid(), coach_id: c, starts_at: at(ymd, 20 - k), ends_at: at(ymd, 23 - k) })));
+      const hours = (coach, ymds, h1, h2) => ymds.forEach(ymd => availability.push({ id: rid(), coach_id: coach, starts_at: at(ymd, h1), ends_at: at(ymd, h2) }));
+      hours("m1", days, 20, 23);                 // Actor: weeknights 8–11 PM
+      hours("m2", days, 19, 22);                 // Dylan: weeknights 7–10 PM
+      hours("m3", on([1, 3, 5]), 21, 25);        // Chibiarc: Mon / Wed / Fri, 9 PM–1 AM
+      hours("a1", days, 18, 21);                 // weeknight early evenings
+      hours("a2", on([2, 4]), 13, 17);           // Tue / Thu afternoons
+      hours("a3", on([0, 6]), 12, 16);           // weekends
+      const sent = d => new Date(Date.UTC(2026, 10, d, 18)).toISOString();
       return {
-        v: 1, me: null,
+        v: 3, me: null,
         profiles: [
           { id: "u-staff", discord_id: "1001", username: "lumi.staff", display_name: "Lumi Staff", avatar_url: "", role: "staff" },
           { id: "u-neotep", discord_id: "1002", username: "actor", display_name: "Actor", avatar_url: "", role: "player" },
           { id: "u-jeiss", discord_id: "1003", username: "jeiss", display_name: "Jeiss", avatar_url: "", role: "player" },
-          { id: "u-rustska", discord_id: "1004", username: "rustska", display_name: "Rustska", avatar_url: "", role: "player" },
+          { id: "u-irem", discord_id: "1004", username: "irem-chan", display_name: "Irem-chan", avatar_url: "", role: "player" },
+          { id: "u-lumi", discord_id: "1006", username: "lumi-chan", display_name: "Lumi-chan", avatar_url: "", role: "player" },
           { id: "u-solo", discord_id: "1005", username: "newplayer", display_name: "New Player", avatar_url: "", role: "player" }
         ],
         coaches: C.coachSeed.map(c => Object.assign({ profile_id: c.id === "m1" ? "u-neotep" : null, focus: "", main_character: "", pool: [], playstyle: "", history: [], about: "" }, c)),
-        teams: [{ id: "t-neochair", name: "NeoChair", coach_id: "m1", players: [{ ign: "Rustska" }, { ign: "Jeiss" }, { ign: "Jast107" }, { ign: "Fwitchu" }], member_ids: ["u-jeiss", "u-rustska"], signup_id: "s-1", sort: 1 }],
-        signups: [
-          { id: "s-1", user_id: "u-rustska", kind: "team", team_name: "NeoChair", players: [{ ign: "Rustska", discord: "rustska" }, { ign: "Jeiss", discord: "jeiss" }, { ign: "Jast107", discord: "" }, { ign: "Fwitchu", discord: "" }], played_qualifier: true, t2_events: "Lumia Rumble", mentor_prefs: ["m1"], seminar_topics: "Late-game rotations", status: "accepted", created_at: new Date(2026, 10, 1).toISOString() },
-          { id: "s-2", user_id: "u-solo", kind: "solo", ign: "NewPlayer", main_role: "Support · Elena, Bianca", availability: "Weeknights after 8 PM", experience: "First comp event", seminar_topics: "Vision and warding", status: "pending", players: [], mentor_prefs: [], created_at: new Date(2026, 10, 3).toISOString() }
-        ],
+        teams: [{ id: "t-neochair", name: "NeoChair", coach_id: "m1", players: [{ ign: "Irem-chan" }, { ign: "Jeiss" }, { ign: "Lumi-chan" }, { ign: "Fwitchu" }], member_ids: ["u-jeiss", "u-irem", "u-lumi"], sort: 1 }],
         availability,
         requests: [
-          { id: "r-1", coach_id: "m1", requester_id: "u-jeiss", kind: "team", starts_at: at(days[1], 20), ends_at: at(days[1], 21), note: "Review our mock checkpoint plan", status: "pending", created_at: new Date().toISOString() },
-          { id: "r-2", coach_id: "m1", requester_id: "u-rustska", kind: "individual", starts_at: at(days[3], 21), ends_at: at(days[3], 22), note: "", status: "accepted", created_at: new Date().toISOString() }
+          { id: "r-1", coach_id: "m1", requester_id: "u-jeiss", kind: "team", starts_at: at(days[1], 20), ends_at: at(days[1], 21), note: "Review our mock checkpoint plan", status: "pending", created_at: sent(8) },
+          { id: "r-2", coach_id: "m1", requester_id: "u-irem", kind: "individual", starts_at: at(days[3], 21), ends_at: at(days[3], 22), note: "", status: "accepted", created_at: sent(9) },
+          { id: "r-3", coach_id: "m2", requester_id: "u-lumi", kind: "team", starts_at: at(days[2], 19), ends_at: at(days[2], 20, 30), note: "Draft priorities for the mock checkpoint", status: "accepted", created_at: sent(9) },
+          { id: "r-4", coach_id: "m3", requester_id: "u-jeiss", kind: "individual", starts_at: at(days[0], 21, 30), ends_at: at(days[0], 22, 30), note: "Laning into Bianca", status: "declined", created_at: sent(8) },
+          { id: "r-5", coach_id: "a1", requester_id: "u-solo", kind: "individual", starts_at: at(days[4], 18), ends_at: at(days[4], 19), note: "Vision and warding basics", status: "pending", created_at: sent(10) },
+          { id: "r-6", coach_id: "a2", requester_id: "u-irem", kind: "individual", starts_at: at(days[1], 14), ends_at: at(days[1], 15), note: "Kiting practice", status: "cancelled", created_at: sent(8) },
+          { id: "r-7", coach_id: "m3", requester_id: "u-lumi", kind: "team", starts_at: at(days[2], 23), ends_at: at(days[2], 24, 30), note: "Late-night scrim review", status: "pending", created_at: sent(10) },
+          { id: "r-8", coach_id: "m2", requester_id: "u-jeiss", kind: "team", starts_at: at(days[6], 20), ends_at: at(days[6], 21), note: "Final checkpoint plan", status: "accepted", created_at: sent(15) },
+          { id: "r-9", coach_id: "a3", requester_id: "u-solo", kind: "individual", starts_at: at(on([6])[0], 13), ends_at: at(on([6])[0], 14), note: "", status: "accepted", created_at: sent(12) }
         ]
       };
     }
     function rid() { return Math.random().toString(36).slice(2, 10); }
     function load() {
-      try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 1) return s; } catch (e) { /* storage blocked */ }
+      try { localStorage.removeItem("ptg-demo-v1"); localStorage.removeItem("ptg-demo-v2"); } catch (e) { /* storage blocked */ }   // old sample data
+      try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 3) return s; } catch (e) { /* storage blocked */ }
       return seed();
     }
     function save() {
@@ -191,51 +186,23 @@
     API.updateCoach = (id, patch) => {
       const c = S.coaches.find(x => x.id === id);
       if (!c) return fail("That coach doesn't exist.");
-      if (!isStaff() && !isCoach(id)) return fail("You don't have permission to do that.");
-      if (!isStaff() && ["id", "kind", "slot", "badge_id", "profile_id"].some(k => k in patch && patch[k] !== c[k])) return fail("Only staff can change coach slots or who a slot is linked to.");
+      if (!isStaff()) return fail("Only staff can edit coach slots and mentor files.");   // same rule as the database
       if ("profile_id" in patch && patch.profile_id && S.coaches.some(x => x.id !== id && x.profile_id === patch.profile_id)) return fail("That account is already linked to another coach slot.");
       Object.assign(c, patch); save(); return wait(c);
     };
 
     API.teams = () => wait(S.teams.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)));
-    API.saveTeam = t => {
-      if (!isStaff()) return fail("You don't have permission to do that.");
-      if (!t.name || !t.name.trim()) return fail("Give the team a name.");
-      let row = t.id && S.teams.find(x => x.id === t.id);
-      if (!row) { row = { id: rid() }; S.teams.push(row); }
-      Object.assign(row, { name: t.name, coach_id: t.coach_id || null, players: t.players || [], member_ids: t.member_ids || [], sort: t.sort || 0, signup_id: t.signup_id || null });
-      save(); return wait(row);
-    };
-    API.deleteTeam = id => { if (!isStaff()) return fail("You don't have permission to do that."); S.teams = S.teams.filter(t => t.id !== id); save(); return wait(null); };
-
-    API.mySignup = () => wait(S.me ? S.signups.find(s => s.user_id === S.me) || null : null);
-    API.saveSignup = d => {
-      if (!S.me) return fail("Log in with Discord first.");
-      if (d.kind === "team" && !(d.team_name || "").trim()) return fail("Give your team a name.");
-      if (d.kind === "solo" && !(d.ign || "").trim()) return fail("Add your in-game name.");
-      let s = S.signups.find(x => x.user_id === S.me);
-      if (s && ["accepted", "declined"].includes(s.status)) return fail("Staff have already decided this application. Message staff to change it.");
-      if (!s) { s = { id: rid(), user_id: S.me, created_at: new Date().toISOString(), status: "pending" }; S.signups.push(s); }
-      const status = d.status === "withdrawn" ? "withdrawn" : s.status === "withdrawn" ? "pending" : s.status;
-      Object.assign(s, d, { status, updated_at: new Date().toISOString() });
-      save(); return wait(s);
-    };
-    API.setSignupStatus = (id, status, staff_note) => {
-      const s = S.signups.find(x => x.id === id);
-      if (!s) return fail("That application doesn't exist.");
-      const own = s.user_id === S.me && status === "withdrawn" && ["pending", "waitlist"].includes(s.status);
-      if (!isStaff() && !own) return fail("Only staff can change an application's status.");
-      s.status = status; if (staff_note !== undefined) s.staff_note = staff_note;
-      save(); return wait(s);
-    };
-    API.signups = () => isStaff() ? wait(S.signups.map(s => Object.assign({}, s, { profile: prof(s.user_id) }))) : fail("You don't have permission to do that.");
 
     API.availability = coachId => wait(S.availability.filter(b => b.coach_id === coachId).sort((a, b) => a.starts_at.localeCompare(b.starts_at)));
+    API.allAvailability = () => wait(S.availability.slice().sort((a, b) => a.starts_at.localeCompare(b.starts_at)));
     API.addBlocks = async blocks => {
       const added = [], failed = [];
       for (const b of blocks) {
         if (!isStaff() && !isCoach(b.coach_id)) { failed.push({ block: b, error: "You don't have permission to do that." }); continue; }
         if (new Date(b.ends_at) <= new Date(b.starts_at)) { failed.push({ block: b, error: "Hour out has to be after hour in." }); continue; }
+        // same rule as the database: inside one event day, 8 AM to 4 AM Eastern
+        const UI = window.UI, day = UI && UI.dayOf(b.starts_at);
+        if (day && (new Date(b.starts_at) < UI.etAt(day, UI.DAY_START) || new Date(b.ends_at) > UI.etAt(day, UI.DAY_END))) { failed.push({ block: b, error: "Hours have to be between 8 AM and 4 AM Eastern." }); continue; }
         if (S.availability.some(x => x.coach_id === b.coach_id && overlap(x.starts_at, x.ends_at, b.starts_at, b.ends_at))) { failed.push({ block: b, error: "That time overlaps hours or a session that's already there." }); continue; }
         const row = Object.assign({ id: rid() }, b); S.availability.push(row); added.push(clone(row));
       }
@@ -247,6 +214,35 @@
       if (!isStaff() && !isCoach(b.coach_id)) return fail("You don't have permission to do that.");
       if (S.requests.some(r => r.coach_id === b.coach_id && r.status === "accepted" && new Date(r.starts_at) >= new Date(b.starts_at) && new Date(r.ends_at) <= new Date(b.ends_at))) return fail("These hours have booked sessions. Cancel those sessions first.");
       S.availability = S.availability.filter(x => x.id !== id); save(); return wait(null);
+    };
+    // same rules as the database's save_hours: post (blockId = null) or change a block; overlapping or
+    // touching hours join into one block, and booked sessions have to stay inside
+    API.saveHours = (coachId, blockId, starts_at, ends_at) => {
+      if (!isStaff() && !isCoach(coachId)) return fail("You don't have permission to do that.");
+      let s = new Date(starts_at), e = new Date(ends_at);
+      if (e <= s) return fail("Hour out has to be after hour in.");
+      const UI = window.UI, day = UI && UI.dayOf(starts_at);
+      if (day && (s < UI.etAt(day, UI.DAY_START) || e > UI.etAt(day, UI.DAY_END))) return fail("Hours have to be between 8 AM and 4 AM Eastern.");
+      const mine = S.availability.filter(x => x.coach_id === coachId);
+      const old = blockId ? mine.find(x => x.id === blockId) : null;
+      if (blockId && !old) return fail("Those hours don't exist anymore.");
+      const joined = [];
+      for (let grew = true; grew;) {
+        grew = false;
+        mine.forEach(x => {
+          if (x === old || joined.includes(x)) return;
+          const xs = new Date(x.starts_at), xe = new Date(x.ends_at);
+          if (xs <= e && s <= xe) { joined.push(x); if (xs < s) s = xs; if (xe > e) e = xe; grew = true; }
+        });
+      }
+      const gone = (old ? [old] : []).concat(joined);
+      const inside = (r, a, b) => new Date(r.starts_at) >= a && new Date(r.ends_at) <= b;
+      if (S.requests.some(r => r.coach_id === coachId && r.status === "accepted" && !inside(r, s, e) && gone.some(x => inside(r, new Date(x.starts_at), new Date(x.ends_at)))))
+        return fail("A booked session would be outside the new hours. Cancel it first, or keep it inside.");
+      S.availability = S.availability.filter(x => !gone.includes(x));
+      const row = { id: rid(), coach_id: coachId, starts_at: s.toISOString(), ends_at: e.toISOString() };
+      S.availability.push(row); save();
+      return wait(Object.assign({ joined: joined.length }, row));
     };
     API.busy = coachId => wait(S.requests.filter(r => r.coach_id === coachId && ["pending", "accepted"].includes(r.status)).map(r => ({ starts_at: r.starts_at, ends_at: r.ends_at, status: r.status })));
 

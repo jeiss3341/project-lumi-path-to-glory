@@ -3,10 +3,10 @@
 The Project Lumi pre-season mentor event site (Nov 9–22, 2026), in the Concept A "mentor file" design, with:
 
 - **Discord login** for players, mentors and staff
-- **Team and solo applications** (one per Discord account), reviewed by staff
-- **A calendar for each mentor and assistant coach**: they post the hours they're free (hour in → hour out)
+- **Team rosters and checkpoint standings**: teams, players and Mock and Final Checkpoint Series placements are set by the organiser in the database (signups happen beforehand on Google Forms and Discord); the site shows them read only
+- **A calendar for each mentor and assistant coach** (Hours | Sessions): they post the hours they're free, 8 AM to 4 AM Eastern, then edit or delete them; overlapping hours join into one block, and booked sessions are always kept
 - **Session requests**: players pick an hour in and an hour out inside those hours; the coach **accepts or declines** each one
-- **A staff desk** to review applications, build teams, link coach slots to Discord accounts, and see every session
+- **A staff desk** to see the teams, every coach's hours and every request, link coach slots to Discord accounts, and edit mentor files
 - Optional **Discord pings**: the coach is pinged when a request arrives, and the player when it's answered
 
 No Google Calendar involved. Everything runs on your own Supabase project (free tier is plenty).
@@ -55,7 +55,7 @@ You need: a free [Supabase](https://supabase.com) account, a Discord account, an
    update public.profiles set role = 'staff' where username = 'your-discord-username';
    ```
    After that, staff can promote others from *Desk → Staff → People*.
-9. **Link the mentors.** Each mentor and assistant coach logs in once. Then in *Desk → Staff → Coaches*, pick their Discord account for their slot. They now get the calendar on their desk and can fill in their own mentor file (playstyle, pool, history, about me).
+9. **Link the mentors.** Each mentor and assistant coach logs in once. Then in *Desk → Staff → Coaches*, pick their Discord account for their slot. They now get the calendar on their desk. Staff fill in each mentor file (playstyle, pool, history, about me).
 
 ### Optional: Discord pings
 
@@ -89,11 +89,11 @@ All times are stored in UTC and shown in each viewer's own time zone.
 ## Editing content
 
 - **Schedule, links, seminars, roles, resources**: `site/content.js`. Paste the real Discord invite links into `links`.
-- **Mentor files**: each mentor edits their own on their desk; staff can edit names and teams in *Staff → Coaches*.
-- **Teams and rosters**: *Staff → Applications → Make team*, or *Staff → Teams*.
+- **Mentor files**: staff edit them in *Staff → Coaches → Edit file* (mentors can't edit their own).
+- **Teams, rosters and standings**: set by the organiser in Supabase (Table editor → `teams`): name, mentor (`coach_id`), `players`, linked accounts (`member_ids`), `sort`, and `mock_place` / `final_place` after each checkpoint. Staff see them read only in *Staff → Teams*; the Standings view on the rosters page unlocks once a mock placement is in.
 
 ## Known limits
 
-- Teammates in a team application are typed in by the captain, not verified. Staff link real accounts to a team under *Staff → Teams → Linked accounts*, which is what makes requests show as *Your team*.
+- Player names on a team are typed in by the organiser, not verified. Linking real accounts (`member_ids`) is what makes requests show as *Your team*.
 - The calendars cover the 14 event days (Nov 9–22).
 - There are no email notifications. Use the Discord webhook for pings.

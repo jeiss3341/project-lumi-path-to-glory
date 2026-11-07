@@ -6,11 +6,10 @@
 --
 -- Who can do what (enforced here, not in the browser):
 --   anyone            reads coaches, teams, posted hours, busy times
---   signed-in player  sends one application, requests sessions, cancels own
---   mentor / assist.  posts own hours, accepts or declines own requests,
---                     edits own mentor file
---   staff             everything: reviews applications, builds teams,
---                     links coaches to Discord accounts, sets roles
+--   signed-in player  requests sessions, cancels own
+--   mentor / assist.  posts own hours, accepts or declines own requests
+--   staff             links coaches to Discord accounts, edits mentor files, sets roles,
+--                     sees every session (teams are set by the organiser, read only on the site)
 -- =====================================================================
 
 create extension if not exists btree_gist;
@@ -56,44 +55,24 @@ create table if not exists public.coaches (
   updated_at     timestamptz not null default now()
 );
 
--- Team and solo applications. One per Discord account.
-create table if not exists public.signups (
-  id               uuid primary key default gen_random_uuid(),
-  user_id          uuid not null unique default auth.uid() references public.profiles(id) on delete cascade,
-  kind             text not null check (kind in ('team', 'solo')),
-  team_name        text check (char_length(team_name) <= 40),
-  players          jsonb not null default '[]'::jsonb
-                   check (jsonb_typeof(players) = 'array' and jsonb_array_length(players) <= 6),
-  played_qualifier boolean,
-  t2_events        text check (char_length(t2_events) <= 200),
-  mentor_prefs     text[] not null default '{}' check (cardinality(mentor_prefs) <= 3),
-  ign              text check (char_length(ign) <= 40),
-  main_role        text check (char_length(main_role) <= 120),
-  availability     text check (char_length(availability) <= 200),
-  experience       text check (char_length(experience) <= 300),
-  seminar_topics   text check (char_length(seminar_topics) <= 500),
-  status           text not null default 'pending'
-                   check (status in ('pending', 'accepted', 'waitlist', 'declined', 'withdrawn')),
-  staff_note       text check (char_length(staff_note) <= 300),
-  created_at       timestamptz not null default now(),
-  updated_at       timestamptz not null default now(),
-  check (kind <> 'team' or coalesce(btrim(team_name), '') <> ''),
-  check (kind <> 'solo' or coalesce(btrim(ign), '') <> '')
-);
-
--- Teams that staff build from applications.
+-- Event teams. Signups happen on Google Forms and Discord; the organiser enters the final teams here
+-- (read only from the site, staff can't change them).
 create table if not exists public.teams (
   id         uuid primary key default gen_random_uuid(),
   name       text not null check (char_length(name) <= 40),
   coach_id   text references public.coaches(id) on delete set null,
   players    jsonb not null default '[]'::jsonb check (jsonb_typeof(players) = 'array'),
   member_ids uuid[] not null default '{}',   -- logged-in accounts on this team
-  signup_id  uuid references public.signups(id) on delete set null,
   sort       int not null default 0,
   created_at timestamptz not null default now()
 );
+-- Checkpoint placements (1 = won), set by the organiser after each checkpoint. The rosters page unlocks
+-- its Standings view once any team has a mock placement, and shows final standings after that.
+alter table public.teams add column if not exists mock_place  smallint check (mock_place  between 1 and 99);
+alter table public.teams add column if not exists final_place smallint check (final_place between 1 and 99);
 
 -- Hours a coach is free: one row per block (hour in → hour out).
+-- Blocks sit inside one event day: 8:00 AM to 4:00 AM the next morning, Eastern (see availability_window).
 create table if not exists public.availability (
   id         uuid primary key default gen_random_uuid(),
   coach_id   text not null references public.coaches(id) on delete cascade,
@@ -101,7 +80,7 @@ create table if not exists public.availability (
   ends_at    timestamptz not null,
   created_at timestamptz not null default now(),
   check (ends_at > starts_at),
-  check (ends_at - starts_at <= interval '12 hours'),
+  check (ends_at - starts_at <= interval '20 hours'),
   constraint availability_no_overlap
     exclude using gist (coach_id with =, tstzrange(starts_at, ends_at) with &&)
 );
@@ -204,7 +183,8 @@ create trigger on_auth_user_updated
   after update of raw_user_meta_data on auth.users
   for each row execute function public.handle_user_update();
 
--- Coaches may edit their own file, but not their slot or who they're linked to.
+-- Only staff edit coach slots and mentor files (see the "coaches update" policy). This guard is a
+-- second lock on the slot fields and keeps updated_at current.
 create or replace function public.coaches_guard() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
@@ -222,46 +202,14 @@ drop trigger if exists coaches_guard on public.coaches;
 create trigger coaches_guard before update on public.coaches
   for each row execute function public.coaches_guard();
 
--- Players edit their own application while it's open; only staff decide it.
-create or replace function public.signups_guard() returns trigger
-language plpgsql security definer set search_path = public as $$
-begin
-  new.updated_at := now();
-  if auth.uid() is null or public.is_staff() then
-    return new;
-  end if;
-  if tg_op = 'INSERT' then
-    new.user_id := auth.uid();
-    new.status := 'pending';
-    new.staff_note := null;
-    return new;
-  end if;
-  if new.user_id <> old.user_id then
-    raise exception 'An application can''t move to another account.';
-  end if;
-  if new.staff_note is distinct from old.staff_note then
-    raise exception 'Only staff can add notes.';
-  end if;
-  if old.status in ('accepted', 'declined') then
-    raise exception 'Staff have already decided this application. Message staff to change it.';
-  end if;
-  if new.status <> old.status
-     and not (new.status = 'withdrawn' and old.status in ('pending', 'waitlist'))
-     and not (new.status = 'pending' and old.status = 'withdrawn') then
-    raise exception 'Only staff can change an application''s status.';
-  end if;
-  new.created_at := old.created_at;
-  return new;
-end $$;
-
-drop trigger if exists signups_guard on public.signups;
-create trigger signups_guard before insert or update on public.signups
-  for each row execute function public.signups_guard();
-
 -- A coach can't delete hours that already have booked sessions in them.
+-- (save_hours below switches this off for its own deletes, after checking the new hours still cover every session.)
 create or replace function public.availability_guard() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
+  if current_setting('ptg.saving_hours', true) = 'on' then
+    return old;
+  end if;
   if exists (
     select 1 from public.requests r
     where r.coach_id = old.coach_id and r.status = 'accepted'
@@ -275,6 +223,76 @@ end $$;
 drop trigger if exists availability_guard on public.availability;
 create trigger availability_guard before delete on public.availability
   for each row execute function public.availability_guard();
+
+-- Posted hours stay inside one event day: 8:00 AM to 4:00 AM the next morning, Eastern time.
+-- (An event day runs 4 AM to 4 AM Eastern, so 1 AM counts as the evening before.)
+create or replace function public.availability_window() returns trigger
+language plpgsql set search_path = public as $$
+declare
+  s   timestamp := new.starts_at at time zone 'America/New_York';
+  e   timestamp := new.ends_at   at time zone 'America/New_York';
+  day timestamp := date_trunc('day', s - interval '4 hours');
+begin
+  if s < day + interval '8 hours' or e > day + interval '28 hours' then
+    raise exception 'Hours have to be between 8 AM and 4 AM Eastern.';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists availability_window on public.availability;
+create trigger availability_window before insert or update on public.availability
+  for each row execute function public.availability_window();
+
+-- Post new hours (b = null) or change a block (b = its id), all in one step:
+-- the hours join every block they overlap or touch, and booked sessions must stay inside.
+create or replace function public.save_hours(c text, b uuid, s timestamptz, e timestamptz)
+returns public.availability
+language plpgsql security definer set search_path = public as $$
+declare
+  s2 timestamptz := s;
+  e2 timestamptz := e;
+  ms timestamptz;
+  me timestamptz;
+  n  int;
+  saved public.availability;
+begin
+  if not (public.is_staff() or public.is_coach(c)) then
+    raise exception 'You don''t have permission to do that.';
+  end if;
+  if e <= s then
+    raise exception 'Hour out has to be after hour in.';
+  end if;
+  if b is not null and not exists (select 1 from public.availability where id = b and coach_id = c) then
+    raise exception 'Those hours don''t exist anymore.';
+  end if;
+  -- grow to cover every block it overlaps or touches, until nothing more joins
+  loop
+    select count(*), min(a.starts_at), max(a.ends_at) into n, ms, me
+      from public.availability a
+     where a.coach_id = c and a.id is distinct from b
+       and a.starts_at <= e2 and a.ends_at >= s2
+       and (a.starts_at < s2 or a.ends_at > e2);
+    exit when n = 0;
+    s2 := least(s2, ms);
+    e2 := greatest(e2, me);
+  end loop;
+  -- every booked session in the hours being replaced has to fit in the new hours
+  if exists (
+    select 1 from public.requests r
+     where r.coach_id = c and r.status = 'accepted'
+       and not (r.starts_at >= s2 and r.ends_at <= e2)
+       and exists (select 1 from public.availability a
+                    where a.coach_id = c and (a.id = b or (a.starts_at <= e2 and a.ends_at >= s2))
+                      and r.starts_at >= a.starts_at and r.ends_at <= a.ends_at)
+  ) then
+    raise exception 'A booked session would be outside the new hours. Cancel it first, or keep it inside.';
+  end if;
+  perform set_config('ptg.saving_hours', 'on', true);
+  delete from public.availability a where a.coach_id = c and (a.id = b or (a.starts_at <= e2 and a.ends_at >= s2));
+  perform set_config('ptg.saving_hours', 'off', true);
+  insert into public.availability (coach_id, starts_at, ends_at) values (c, s2, e2) returning * into saved;
+  return saved;
+end $$;
 
 -- Validate a new request: inside posted hours, not booked, not in the past.
 create or replace function public.requests_before_insert() returns trigger
@@ -375,7 +393,6 @@ create trigger requests_after_accept after update on public.requests
 
 alter table public.profiles     enable row level security;
 alter table public.coaches      enable row level security;
-alter table public.signups      enable row level security;
 alter table public.teams        enable row level security;
 alter table public.availability enable row level security;
 alter table public.requests     enable row level security;
@@ -395,8 +412,8 @@ create policy "coaches read" on public.coaches
 drop policy if exists "coaches update" on public.coaches;
 create policy "coaches update" on public.coaches
   for update to authenticated
-  using (public.is_staff() or profile_id = auth.uid())
-  with check (public.is_staff() or profile_id = auth.uid());
+  using (public.is_staff())
+  with check (public.is_staff());
 drop policy if exists "coaches staff insert" on public.coaches;
 create policy "coaches staff insert" on public.coaches
   for insert to authenticated with check (public.is_staff());
@@ -404,29 +421,14 @@ drop policy if exists "coaches staff delete" on public.coaches;
 create policy "coaches staff delete" on public.coaches
   for delete to authenticated using (public.is_staff());
 
--- signups
-drop policy if exists "signups read" on public.signups;
-create policy "signups read" on public.signups
-  for select to authenticated using (user_id = auth.uid() or public.is_staff());
-drop policy if exists "signups insert" on public.signups;
-create policy "signups insert" on public.signups
-  for insert to authenticated with check (user_id = auth.uid() or public.is_staff());
-drop policy if exists "signups update" on public.signups;
-create policy "signups update" on public.signups
-  for update to authenticated
-  using (user_id = auth.uid() or public.is_staff())
-  with check (user_id = auth.uid() or public.is_staff());
-drop policy if exists "signups staff delete" on public.signups;
-create policy "signups staff delete" on public.signups
-  for delete to authenticated using (public.is_staff());
-
 -- teams
 drop policy if exists "teams read" on public.teams;
 create policy "teams read" on public.teams
   for select to anon, authenticated using (true);
+-- Teams are read only from the site: the organiser sets teams, players, linked accounts and
+-- checkpoint placements directly in the database (see the starting data at the end of this file).
 drop policy if exists "teams staff write" on public.teams;
-create policy "teams staff write" on public.teams
-  for all to authenticated using (public.is_staff()) with check (public.is_staff());
+drop policy if exists "teams staff update" on public.teams;
 
 -- availability
 drop policy if exists "availability read" on public.availability;
@@ -552,5 +554,5 @@ on conflict (id) do nothing;
 
 insert into public.teams (name, coach_id, players, sort)
 select 'NeoChair', 'm1',
-       '[{"ign":"Rustska"},{"ign":"Jeiss"},{"ign":"Jast107"},{"ign":"Fwitchu"}]'::jsonb, 1
+       '[{"ign":"Irem-chan"},{"ign":"Jeiss"},{"ign":"Lumi-chan"},{"ign":"Fwitchu"}]'::jsonb, 1
 where not exists (select 1 from public.teams where name = 'NeoChair');
