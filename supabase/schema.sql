@@ -70,6 +70,9 @@ create table if not exists public.teams (
 -- its Standings view once any team has a mock placement, and shows final standings after that.
 alter table public.teams add column if not exists mock_place  smallint check (mock_place  between 1 and 99);
 alter table public.teams add column if not exists final_place smallint check (final_place between 1 and 99);
+-- Team profile: basic information from the signup form as label → answer pairs,
+-- e.g. {"Captain": "…", "Region": "NA"}.
+alter table public.teams add column if not exists info jsonb not null default '{}'::jsonb check (jsonb_typeof(info) = 'object');
 
 -- Hours a coach is free: one row per block (hour in → hour out).
 -- Blocks sit inside one event day: 8:00 AM to 4:00 AM the next morning, Eastern (see availability_window).

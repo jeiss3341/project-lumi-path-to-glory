@@ -100,59 +100,172 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v3";   // bump when the sample data changes, so browsers drop their old copy
+    const KEY = "ptg-demo-v5";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
     let S = load();
 
     function seed() {
-      // sample hours in Eastern time (the event is after daylight saving ends on Nov 1, so Eastern = UTC−5)
-      const at = (ymd, h, m) => { const [y, mo, d] = ymd.split("-").map(Number); return new Date(Date.UTC(y, mo - 1, d, h + 5, m || 0)).toISOString(); };
-      const all = [];   // the 14 event days, with weekday (0 = Sun)
-      const s0 = new Date(C.event.start + "T12:00:00");
-      for (let i = 0; i < 14; i++) { const d = new Date(s0.getTime() + i * 864e5); all.push({ ymd: d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"), dow: d.getDay() }); }
-      const on = dows => all.filter(d => dows.includes(d.dow)).map(d => d.ymd);
-      const days = on([1, 2, 3, 4, 5]);   // weekdays
+      // A full mock event for testing: 8 teams, hours for every coach but one, and requests in every state.
+      // Times are Eastern (the event is after daylight saving ends on Nov 1, so Eastern = UTC−5). Hours can be
+      // fractional (20.5 = 8:30 PM) or past 24 (25 = 1 AM the next morning, still the same event day).
+      const at = (ymd, h) => { const [y, mo, d] = ymd.split("-").map(Number); return new Date(Date.UTC(y, mo - 1, d, 5, Math.round(h * 60))).toISOString(); };
+      const D = [];   // the 14 event days: D[0] Mon Nov 9 … D[6] Sun Nov 15 (Mock) … D[13] Sun Nov 22 (Final)
+      const s0 = new Date(C.event.start + "T12:00:00Z");
+      for (let i = 0; i < 14; i++) D.push(new Date(s0.getTime() + i * 864e5).toISOString().slice(0, 10));
+      const WEEKDAYS = [0, 1, 2, 3, 4, 7, 8, 9, 10, 11], NOT_SUN = [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12], EVERY = [...Array(14).keys()];
+
+      // ---- coach hours ----
       const availability = [];
-      const hours = (coach, ymds, h1, h2) => ymds.forEach(ymd => availability.push({ id: rid(), coach_id: coach, starts_at: at(ymd, h1), ends_at: at(ymd, h2) }));
-      hours("m1", days, 20, 23);                 // Actor: weeknights 8–11 PM
-      hours("m2", days, 19, 22);                 // Dylan: weeknights 7–10 PM
-      hours("m3", on([1, 3, 5]), 21, 25);        // Chibiarc: Mon / Wed / Fri, 9 PM–1 AM
-      hours("a1", days, 18, 21);                 // weeknight early evenings
-      hours("a2", on([2, 4]), 13, 17);           // Tue / Thu afternoons
-      hours("a3", on([0, 6]), 12, 16);           // weekends
-      const sent = d => new Date(Date.UTC(2026, 10, d, 18)).toISOString();
+      const hours = (coach, days, h1, h2) => days.forEach(i => availability.push({ id: rid(), coach_id: coach, starts_at: at(D[i], h1), ends_at: at(D[i], h2) }));
+      hours("m1", WEEKDAYS, 20, 23); hours("m1", [5, 12], 14, 17);      // Actor: weeknights 8–11 PM, Saturday afternoons
+      hours("m2", WEEKDAYS, 19, 22); hours("m2", [5], 13, 16);          // Dylan: weeknights 7–10 PM
+      hours("m3", [0, 2, 4, 7, 9, 11], 21, 25);                         // Chibiarc: Mon / Wed / Fri, 9 PM–1 AM
+      hours("m4", [1, 3, 5, 8, 10, 12], 18, 22);                        // Tue / Thu / Sat evenings
+      hours("m5", NOT_SUN, 10, 12); hours("m5", NOT_SUN, 19, 21);       // two blocks a day
+      hours("m6", [5, 6, 12, 13], 12, 18); hours("m6", [2, 9], 20, 22); // weekends + Wednesday nights
+      hours("m7", [0, 1, 2, 3, 7, 8, 9, 10], 22, 26);                   // Mon–Thu, 10 PM–2 AM
+      hours("m8", [7, 8, 9, 10, 11], 19, 23);                           // week 2 only
+      hours("a1", WEEKDAYS, 18, 21);                                    // Baeksu
+      hours("a2", [1, 3, 8, 10], 13, 17);                               // Jalja: Tue / Thu afternoons
+      hours("a3", [5, 6, 12, 13], 12, 16);                              // CamperonDuty: weekends
+      hours("a4", [0, 2, 7, 9], 20, 24); hours("a4", [4, 11], 15, 18);  // Squortle
+      hours("a5", EVERY, 9, 11);                                        // Jignut: mornings
+      hours("a6", [3, 4, 5], 21, 27);                                   // Kyroshoot: week 1 only, 9 PM–3 AM
+      hours("a7", [2, 9], 10, 12); hours("a7", [2, 9], 15, 17); hours("a7", [2, 9], 21, 23); hours("a7", [5], 11, 13);   // Superior: split days
+      // a8 (Nesious) has no hours: tests "Hide coaches with no hours"
+
+      // ---- accounts (one Discord login each) ----
+      const P = (id, username, display_name, role) => ({ id, discord_id: String(1000 + profiles.length + 1), username, display_name, avatar_url: "", role: role || "player" });
+      const profiles = [];
+      [["u-staff", "lumi.staff", "Lumi Staff", "staff"],
+       ["u-neotep", "actor", "Actor"], ["u-dylan", "dylannn", "Dylan"], ["u-chibi", "chibiarc", "Chibiarc"],
+       ["u-m4", "mentor4.test", "Test Mentor 4"], ["u-m5", "mentor5.test", "Test Mentor 5"], ["u-m6", "mentor6.test", "Test Mentor 6"],
+       ["u-m7", "mentor7.test", "Test Mentor 7"], ["u-m8", "mentor8.test", "Test Mentor 8"],
+       ["u-baeksu", "baeksu", "Baeksu"], ["u-jalja", "jalja", "Jalja"], ["u-camper", "camperonduty", "CamperonDuty"], ["u-squortle", "squortle", "Squortle"],
+       ["u-jignut", "jignut", "Jignut"], ["u-kyro", "kyroshoot", "Kyroshoot"], ["u-superior", "superior", "Superior"],
+       ["u-jeiss", "jeiss", "Jeiss"], ["u-irem", "irem-chan", "Irem-chan"], ["u-lumi", "lumi-chan", "Lumi-chan"],
+       ["u-mochi", "mochi.er", "Mochi"], ["u-kairo", "kairo", "Kairo"], ["u-tofu", "tofu", "Tofu"],
+       ["u-pixelle", "pixelle", "Pixelle"], ["u-juno", "juno", "Juno"],
+       ["u-bunbun", "bunbun", "Bunbun"], ["u-saber", "saber", "Saber"],
+       ["u-noodle", "noodle", "Noodle"], ["u-matcha", "matcha", "Matcha"], ["u-boba", "boba", "Boba"],
+       ["u-zephyr", "zephyr", "Zephyr"], ["u-gale", "gale", "Gale"],
+       ["u-rook", "rook", "Rook"], ["u-ember", "ember", "Ember"],
+       ["u-solo", "newplayer", "New Player"]].forEach(a => profiles.push(P(...a)));
+      const LINK = { m1: "u-neotep", m2: "u-dylan", m3: "u-chibi", m4: "u-m4", m5: "u-m5", m6: "u-m6", m7: "u-m7", m8: "u-m8",
+        a1: "u-baeksu", a2: "u-jalja", a3: "u-camper", a4: "u-squortle", a5: "u-jignut", a6: "u-kyro", a7: "u-superior" };   // a8 stays unlinked
+
+      // ---- teams (results: placements, shown on the site once that checkpoint's day has passed) ----
+      const teams = [];
+      const team = (id, name, coach_id, players, member_ids, info, mock, final) =>
+        teams.push({ id, name, coach_id, players: players.map(([ign, discord]) => ({ ign, discord })), member_ids, sort: teams.length + 1, info, results: { mock, final } });
+      team("t-neochair", "NeoChair", "m1", [["Irem-chan", "irem-chan"], ["Jeiss", "jeiss"], ["Lumi-chan", "lumi-chan"], ["Fwitchu", "fwitchu"]], ["u-jeiss", "u-irem", "u-lumi"],
+        { "Captain": "Irem-chan", "Region": "NA", "Rank range": "Gold – Platinum", "Main roles": "Tank · Bruiser · Support · Mage" }, 2, 1);
+      team("t-hyperloop", "Hyperloop Express", "m2", [["Mochi", "mochi.er"], ["Kairo", "kairo"], ["Tofu", "tofu"], ["Rennie", "rennie"]], ["u-mochi", "u-kairo", "u-tofu"],
+        { "Captain": "Mochi", "Region": "NA", "Rank range": "Silver – Gold", "Main roles": "Fighter · Assassin · Support" }, 3, 4);
+      team("t-wickline", "Wickline Watch", "m3", [["Pixelle", "pixelle"], ["Juno", "juno"], ["Vexa", "vexa"], ["Odette", "odette"]], ["u-pixelle", "u-juno"],
+        { "Captain": "Pixelle", "Region": "NA", "Rank range": "Platinum – Diamond", "Main roles": "Melee · Ranged carry · Tank" }, 1, 2);
+      team("t-meteor", "Meteor Shower", "m4", [["Bunbun", "bunbun"], ["Saber", "saber"], ["Kiwi", "kiwi"]], ["u-bunbun", "u-saber"],
+        { "Captain": "Saber", "Region": "NA", "Rank range": "Gold", "Main roles": "Bruiser · Mage · Support" }, 7, 8);
+      team("t-lunch", "Lumia Lunch Club", "m5", [["Noodle", "noodle"], ["Matcha", "matcha"], ["Boba", "boba"], ["Dumpling", "dumpling"]], ["u-noodle", "u-matcha", "u-boba"],
+        { "Captain": "Noodle", "Region": "NA", "Rank range": "Silver – Gold", "Main roles": "Tank · Mage · Support" }, 5, 6);
+      team("t-air", "Air Supply", "m6", [["Zephyr", "zephyr"], ["Gale", "gale"], ["Nimbus", "nimbus"], ["Cirrus", "cirrus"]], ["u-zephyr", "u-gale"],
+        { "Captain": "Zephyr", "Region": "NA", "Rank range": "Gold – Platinum", "Main roles": "Ranged carry · Support · Bruiser" }, 6, 5);
+      team("t-safezone", "Last Safe Zone", "m7", [["Rook", "rook"], ["Ember", "ember"], ["Ash", "ash"], ["Flint", "flint"], ["Cinder", "cinder"]], ["u-rook", "u-ember"],
+        { "Captain": "Rook", "Region": "NA", "Rank range": "Platinum", "Main roles": "Assassin · Tank · Mage", "Sub": "Cinder" }, 4, 3);
+      team("t-kiosk", "Kiosk Campers", "m8", [["Sprout", "sprout"], ["Pebble", "pebble"], ["Moss", "moss"], ["Fern", "fern"]], [],
+        {}, 8, 7);   // no linked accounts and no profile info yet: tests the empty states
+
+      // ---- session requests ----
+      const requests = [];
+      const req = (coach_id, requester_id, kind, day, h1, h2, status, note) => {
+        const starts_at = at(D[day], h1), sent = new Date(new Date(starts_at).getTime() - (1 + requests.length % 3) * 864e5 - 3 * 36e5);
+        requests.push({ id: "r-" + (requests.length + 1), coach_id, requester_id, kind, starts_at, ends_at: at(D[day], h2), note: note || "", status,
+          created_at: sent.toISOString(), decided_at: status === "pending" ? null : new Date(sent.getTime() + 5 * 36e5).toISOString() });
+      };
+      // mentors (team reviews and individual sessions)
+      req("m1", "u-lumi", "team", 0, 20, 21.5, "accepted", "First team meeting: roles and comps");
+      req("m1", "u-jeiss", "team", 1, 20, 21, "pending", "Review our mock checkpoint plan");
+      req("m1", "u-solo", "individual", 1, 20.5, 21.5, "pending", "Where do I start?");   // overlaps the one above
+      req("m1", "u-mochi", "individual", 2, 21.5, 22.5, "pending", "Second opinion on my Abigail");
+      req("m1", "u-irem", "individual", 3, 21, 22, "accepted");
+      req("m1", "u-jeiss", "team", 5, 14, 16, "accepted", "Scrim block VOD review");
+      req("m1", "u-irem", "team", 7, 20, 21, "accepted", "Mock checkpoint debrief");
+      req("m1", "u-lumi", "individual", 8, 22, 23, "pending", "Macro rotations");
+      req("m1", "u-jeiss", "individual", 9, 20, 20.5, "declined", "Quick question on item builds");
+      req("m1", "u-irem", "team", 11, 20, 22, "pending", "Final prep: drafts");
+      req("m1", "u-lumi", "team", 12, 15, 16, "cancelled");
+      req("m2", "u-mochi", "team", 0, 19, 20.5, "accepted", "Kickoff: who plays what");
+      req("m2", "u-kairo", "individual", 1, 20, 21, "accepted", "Darko matchups");
+      req("m2", "u-tofu", "team", 3, 19, 20, "pending", "Draft priorities for the mock checkpoint");
+      req("m2", "u-lumi", "individual", 4, 21, 22, "pending", "Fighter laning");
+      req("m2", "u-mochi", "team", 5, 13, 15, "accepted", "Scrim VOD review");
+      req("m2", "u-kairo", "team", 7, 19, 20, "accepted", "Mock debrief");
+      req("m2", "u-tofu", "individual", 9, 20, 21, "declined");
+      req("m2", "u-mochi", "team", 10, 19, 21, "pending", "Final checkpoint plan");
+      req("m3", "u-pixelle", "team", 0, 21, 22.5, "accepted", "Team intro and comp ideas");
+      req("m3", "u-jeiss", "individual", 0, 23, 24, "declined", "Laning into Bianca");
+      req("m3", "u-juno", "individual", 2, 22, 23, "accepted", "Melee spacing");
+      req("m3", "u-pixelle", "team", 4, 23, 24.5, "pending", "Late-night scrim review");
+      req("m3", "u-juno", "team", 7, 21, 22, "accepted", "Mock debrief");
+      req("m3", "u-saber", "individual", 9, 22.5, 23.5, "pending", "Hyunwoo combos");
+      req("m3", "u-pixelle", "team", 11, 21, 23, "pending", "Final prep");
+      req("m4", "u-bunbun", "team", 1, 18, 19.5, "accepted", "Kickoff");
+      req("m4", "u-saber", "team", 3, 19, 20, "pending", "Rotations after the first wildlife spawn");
+      req("m4", "u-bunbun", "team", 8, 18, 19, "accepted", "Mock debrief");
+      req("m4", "u-noodle", "individual", 10, 20, 21, "pending");
+      req("m4", "u-saber", "team", 12, 18, 20, "cancelled", "Final checkpoint scrim review");
+      req("m5", "u-noodle", "team", 0, 19, 20, "accepted", "Kickoff");
+      req("m5", "u-matcha", "individual", 1, 10, 11, "accepted", "Support positioning");
+      req("m5", "u-boba", "team", 4, 19, 21, "pending", "Scrim VOD review");
+      req("m5", "u-matcha", "team", 8, 19, 20, "accepted", "Mock debrief");
+      req("m5", "u-boba", "individual", 9, 10.5, 11.5, "declined");
+      req("m5", "u-noodle", "team", 11, 19, 20.5, "pending", "Final plan");
+      req("m6", "u-zephyr", "team", 2, 20, 21.5, "accepted", "Kickoff");
+      req("m6", "u-gale", "individual", 5, 13, 14, "pending", "Ranged kiting");
+      req("m6", "u-zephyr", "team", 9, 20, 22, "pending", "Mock debrief");
+      req("m6", "u-gale", "team", 12, 14, 15, "accepted", "Final checkpoint scrim review");
+      req("m7", "u-rook", "team", 0, 22, 23.5, "accepted", "Kickoff");
+      req("m7", "u-ember", "individual", 1, 23, 24, "accepted", "Late-game fights");
+      req("m7", "u-rook", "team", 3, 22.5, 23.5, "pending");
+      req("m7", "u-ember", "team", 8, 22, 24, "pending", "Mock debrief");
+      req("m7", "u-rook", "individual", 10, 24, 25, "declined");
+      req("m8", "u-solo", "individual", 8, 19, 20, "pending", "Where do I start?");
+      req("m8", "u-kairo", "individual", 10, 21, 22, "pending", "Second opinion before finals");
+      // assistant coaches (individual sessions only)
+      req("a1", "u-tofu", "individual", 1, 18, 19, "accepted", "Abigail builds");
+      req("a1", "u-juno", "individual", 2, 19, 20, "accepted");
+      req("a1", "u-solo", "individual", 4, 18, 19, "pending", "Vision and warding basics");
+      req("a1", "u-boba", "individual", 7, 18.5, 19.5, "pending");
+      req("a1", "u-ember", "individual", 9, 20, 21, "cancelled");
+      req("a2", "u-irem", "individual", 1, 14, 15, "cancelled", "Kiting practice");
+      req("a2", "u-gale", "individual", 3, 13, 14, "accepted", "Kiting practice");
+      req("a2", "u-matcha", "individual", 8, 15, 16.5, "pending");
+      req("a3", "u-solo", "individual", 5, 13, 14, "accepted");
+      req("a3", "u-zephyr", "individual", 6, 12, 13, "accepted", "Warm-up before the mock");
+      req("a3", "u-saber", "individual", 12, 14, 15, "pending");
+      req("a4", "u-kairo", "individual", 0, 21, 22, "accepted");
+      req("a4", "u-pixelle", "individual", 4, 15, 16, "pending");
+      req("a4", "u-lumi", "individual", 9, 22, 23, "pending");
+      req("a5", "u-noodle", "individual", 1, 9, 10, "accepted", "Morning ranked review");
+      req("a5", "u-rook", "individual", 3, 9.5, 10.5, "pending");
+      req("a5", "u-jeiss", "individual", 10, 9, 10, "pending");
+      req("a6", "u-bunbun", "individual", 3, 23, 24, "accepted");
+      req("a6", "u-mochi", "individual", 5, 24, 25.5, "pending");
+      req("a7", "u-juno", "individual", 2, 15, 16, "accepted");
+      req("a7", "u-tofu", "individual", 9, 21, 22, "pending");
+
       return {
-        v: 3, me: null,
-        profiles: [
-          { id: "u-staff", discord_id: "1001", username: "lumi.staff", display_name: "Lumi Staff", avatar_url: "", role: "staff" },
-          { id: "u-neotep", discord_id: "1002", username: "actor", display_name: "Actor", avatar_url: "", role: "player" },
-          { id: "u-jeiss", discord_id: "1003", username: "jeiss", display_name: "Jeiss", avatar_url: "", role: "player" },
-          { id: "u-irem", discord_id: "1004", username: "irem-chan", display_name: "Irem-chan", avatar_url: "", role: "player" },
-          { id: "u-lumi", discord_id: "1006", username: "lumi-chan", display_name: "Lumi-chan", avatar_url: "", role: "player" },
-          { id: "u-solo", discord_id: "1005", username: "newplayer", display_name: "New Player", avatar_url: "", role: "player" }
-        ],
-        coaches: C.coachSeed.map(c => Object.assign({ profile_id: c.id === "m1" ? "u-neotep" : null, focus: "", main_character: "", pool: [], playstyle: "", history: [], about: "" }, c)),
-        teams: [{ id: "t-neochair", name: "NeoChair", coach_id: "m1", players: [{ ign: "Irem-chan" }, { ign: "Jeiss" }, { ign: "Lumi-chan" }, { ign: "Fwitchu" }], member_ids: ["u-jeiss", "u-irem", "u-lumi"], sort: 1 }],
-        availability,
-        requests: [
-          { id: "r-1", coach_id: "m1", requester_id: "u-jeiss", kind: "team", starts_at: at(days[1], 20), ends_at: at(days[1], 21), note: "Review our mock checkpoint plan", status: "pending", created_at: sent(8) },
-          { id: "r-2", coach_id: "m1", requester_id: "u-irem", kind: "individual", starts_at: at(days[3], 21), ends_at: at(days[3], 22), note: "", status: "accepted", created_at: sent(9) },
-          { id: "r-3", coach_id: "m2", requester_id: "u-lumi", kind: "team", starts_at: at(days[2], 19), ends_at: at(days[2], 20, 30), note: "Draft priorities for the mock checkpoint", status: "accepted", created_at: sent(9) },
-          { id: "r-4", coach_id: "m3", requester_id: "u-jeiss", kind: "individual", starts_at: at(days[0], 21, 30), ends_at: at(days[0], 22, 30), note: "Laning into Bianca", status: "declined", created_at: sent(8) },
-          { id: "r-5", coach_id: "a1", requester_id: "u-solo", kind: "individual", starts_at: at(days[4], 18), ends_at: at(days[4], 19), note: "Vision and warding basics", status: "pending", created_at: sent(10) },
-          { id: "r-6", coach_id: "a2", requester_id: "u-irem", kind: "individual", starts_at: at(days[1], 14), ends_at: at(days[1], 15), note: "Kiting practice", status: "cancelled", created_at: sent(8) },
-          { id: "r-7", coach_id: "m3", requester_id: "u-lumi", kind: "team", starts_at: at(days[2], 23), ends_at: at(days[2], 24, 30), note: "Late-night scrim review", status: "pending", created_at: sent(10) },
-          { id: "r-8", coach_id: "m2", requester_id: "u-jeiss", kind: "team", starts_at: at(days[6], 20), ends_at: at(days[6], 21), note: "Final checkpoint plan", status: "accepted", created_at: sent(15) },
-          { id: "r-9", coach_id: "a3", requester_id: "u-solo", kind: "individual", starts_at: at(on([6])[0], 13), ends_at: at(on([6])[0], 14), note: "", status: "accepted", created_at: sent(12) }
-        ]
+        v: 5, me: null, profiles,
+        coaches: C.coachSeed.map(c => Object.assign({ profile_id: LINK[c.id] || null, focus: "", main_character: "", pool: [], playstyle: "", history: [], about: "" }, c)),
+        teams, availability, requests
       };
     }
     function rid() { return Math.random().toString(36).slice(2, 10); }
     function load() {
-      try { localStorage.removeItem("ptg-demo-v1"); localStorage.removeItem("ptg-demo-v2"); } catch (e) { /* storage blocked */ }   // old sample data
-      try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 3) return s; } catch (e) { /* storage blocked */ }
+      try { ["v1", "v2", "v3", "v4"].forEach(v => localStorage.removeItem("ptg-demo-" + v)); } catch (e) { /* storage blocked */ }   // old sample data
+      try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 5) return s; } catch (e) { /* storage blocked */ }
       return seed();
     }
     function save() {
@@ -171,7 +284,11 @@
     const coachMini = id => { const c = S.coaches.find(x => x.id === id); return c ? { id: c.id, kind: c.kind, slot: c.slot, name: c.name, team_name: c.team_name, badge_id: c.badge_id } : null; };
 
     API.demo = {
-      people: () => clone(S.profiles),
+      // accounts for the "View as" menu, with the coach slot or team each one belongs to
+      people: () => S.profiles.map(p => {
+        const c = S.coaches.find(x => x.profile_id === p.id), t = S.teams.find(x => (x.member_ids || []).includes(p.id));
+        return Object.assign(clone(p), { coach: c ? { kind: c.kind, slot: c.slot } : null, team: t ? t.name : "" });
+      }),
       who: () => S.me,
       setMe: id => { S.me = id || null; save(); authListeners.forEach(f => setTimeout(() => f("SIGNED_IN"), 0)); },
       reset: () => { S = seed(); save(); authListeners.forEach(f => setTimeout(() => f("SIGNED_IN"), 0)); }
@@ -191,7 +308,15 @@
       Object.assign(c, patch); save(); return wait(c);
     };
 
-    API.teams = () => wait(S.teams.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)));
+    // sample placements show up once that checkpoint's day has passed (preview with ?today=2026-11-16 or 2026-11-23)
+    const placed = t => {
+      const today = window.UI ? UI.todayYmd() : "", day = k => (C.schedule.find(e => e.kind === k) || {}).date || "9999";
+      const out = Object.assign({}, t, { mock_place: null, final_place: null }), r = t.results || {};
+      if (today > day("mock")) out.mock_place = r.mock || null;
+      if (today > day("final")) out.final_place = r.final || null;
+      delete out.results; return out;
+    };
+    API.teams = () => wait(S.teams.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)).map(placed));
 
     API.availability = coachId => wait(S.availability.filter(b => b.coach_id === coachId).sort((a, b) => a.starts_at.localeCompare(b.starts_at)));
     API.allAvailability = () => wait(S.availability.slice().sort((a, b) => a.starts_at.localeCompare(b.starts_at)));

@@ -65,7 +65,7 @@
   function hoursView() {
     const week = D.days.find(d => d.ymd === ST.day).week, wdays = D.days.filter(d => d.week === week);
     const strip = dayStrip(ymd => { const ms = blocksOn(ymd).reduce((s, b) => s + (new Date(b.ends_at) - new Date(b.starts_at)), 0); return ms ? Math.round(ms / 36e5) + "h" : ""; });
-    const tools = '<div class="sc-tools">' + seg("hview", ST.hView, [["day", "Day"], ["week", "Week " + week]]) +
+    const tools = '<div class="sc-tools">' + seg("hview", ST.hView === "day" ? "day" : "w" + week, [["day", "Day"], ["w1", "Week 1"], ["w2", "Week 2"]]) +
       '<label class="sc-check"><input type="checkbox" data-hide' + (ST.hide ? " checked" : "") + "> Hide coaches with no hours</label>" + fullBtn() + "</div>";
     const legend = '<div class="sc-legend"><span><i class="lg hrs"></i>Posted hours</span><span><i class="lg acc"></i>Booked session</span><span><i class="lg pen"></i>Request waiting</span><span>Click any bar for details</span></div>';
     let body;
@@ -130,8 +130,11 @@
         const go = e.target.closest("[data-req]"); if (go) return openReq(go.dataset.req);
         const b = e.target.closest("[data-do]"); if (!b) return;
         if (b.dataset.do === "close") return d.close();
-        UI.act(b, async () => { await API.setRequestStatus(b.dataset.id, b.dataset.do); d.close(); await ctx.rerender(); },
-          { accepted: "Accepted for the coach.", declined: "Declined for the coach.", cancelled: "Session cancelled." }[b.dataset.do]);
+        // Accept / Decline / Cancel session: say what will happen first (UI.askRequest), then act
+        const r = D.reqs.find(x => x.id === b.dataset.id), s = b.dataset.do, t = r && teamOf(r.requester_id);
+        UI.askRequest({ r, status: s, coach: r && cname(coachOf(r.coach_id)), team: t && t.name, reqs: D.reqs }).then(ok => ok &&
+          UI.act(b, async () => { await API.setRequestStatus(r.id, s); d.close(); await ctx.rerender(); },
+            { accepted: "Accepted for the coach.", declined: "Declined for the coach.", cancelled: "Session cancelled." }[s]));
       });
     }
     return d;
@@ -141,13 +144,19 @@
   function openReq(id) {
     const r = D.reqs.find(x => x.id === id); if (!r) return;
     const c = coachOf(r.coach_id), t = teamOf(r.requester_id), d = dlg(), day = UI.dayOf(r.starts_at);
+    const also = UI.overlapGroup(r, D.reqs).filter(x => x.id !== r.id);
     d.innerHTML = '<div class="sc-dtop"><div><span class="k">Request · ' + esc(cname(c)) + '</span><h3 id="sc-dlg-title">' + (r.kind === "team" ? "Team review" : "Individual session") + "</h3></div>" + chip(r.status) + "</div>" +
       '<dl class="sc-kv">' +
         kv("When", esc(UI.date(UI.etAt(day, 720), { weekday: "long", month: "long", day: "numeric" })) + "<br><b>" + etRange(r.starts_at, r.ends_at) + " ET</b> · " + esc(UI.dur(r.starts_at, r.ends_at)) + yours(r.starts_at, r.ends_at)) +
         kv("Coach", esc(cname(c)) + ' <span class="muted">' + esc(cmeta(c)) + "</span>") +
         kv("From", esc(UI.who(r.requester)) + ' <span class="muted">@' + esc((r.requester && r.requester.username) || "") + "</span>" + (t ? "<br>" + esc(t.name) + (t.coach_id === r.coach_id ? ' <span class="sc-tag">Coach\'s team</span>' : ' <span class="sc-tag other">Other team</span>') : '<br><span class="muted">Not on a team</span>')) +
         kv("Wants to work on", r.note ? "“" + esc(r.note) + "”" : '<span class="muted">No note added.</span>') +
-        kv("Sent", esc(UI.date(r.created_at, { weekday: "short", month: "short", day: "numeric" }))) +
+        // when it was sent, and its place among overlapping requests ("2nd of 2")
+        kv("Sent", esc(UI.sentAt(r.created_at)) + (also.length ? ' <span class="cc-otag">' + UI.sentRank(r, D.reqs) + "</span>" : "")) +
+        // other waiting requests for this coach at the same time, with who asked first
+        (also.length ? kv("Also waiting", '<ul class="sc-in">' + also.map(x => '<li><button type="button" class="linkbtn" data-req="' + esc(x.id) + '">' + etRange(x.starts_at, x.ends_at) + " · " + esc(UI.who(x.requester)) + "</button>" +
+            ' <span class="muted small">' + UI.sentGap(x, r) + "</span></li>").join("") +
+          '</ul><span class="muted small">Same time as this one. Accepting this declines ' + (also.length === 1 ? "it" : "them") + ".</span>") : "") +
         (r.decided_at ? kv(WORD[r.status], esc(UI.date(r.decided_at, { weekday: "short", month: "short", day: "numeric" }))) : "") +
       "</dl>" +
       '<div class="sc-dact">' +
@@ -198,7 +207,11 @@
       if ((b = on("[data-blk]"))) return openBlock(b.dataset.blk);
       if ((b = on("[data-day]"))) { ST.day = b.dataset.day; if (kind === "requests") ST.rView = "day"; }
       else if ((b = on("[data-goday]"))) { ST.day = b.dataset.goday; ST.hView = "day"; }
-      else if ((b = on("[data-hview]"))) ST.hView = b.dataset.hview;
+      else if ((b = on("[data-hview]"))) {   // Day, or a week (jumps to that week if the picked day is in the other one)
+        const v = b.dataset.hview;
+        if (v === "day") ST.hView = "day";
+        else { const w = +v.slice(1); ST.hView = "week"; if (D.days.find(d => d.ymd === ST.day).week !== w) ST.day = D.days.find(d => d.week === w).ymd; }
+      }
       else if ((b = on("[data-rview]"))) ST.rView = b.dataset.rview;
       else if ((b = on("[data-grp]"))) ST.closed[b.dataset.grp] = !ST.closed[b.dataset.grp];
       else if ((b = on("[data-st]"))) ST.show[b.dataset.st] = !ST.show[b.dataset.st];

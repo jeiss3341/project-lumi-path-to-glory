@@ -145,6 +145,66 @@
     catch (e) { UI.toast(e.message || String(e), "bad"); return undefined; }
     finally { if (btn) btn.disabled = false; }
   };
+
+  /* ---------- who asked first, when waiting requests overlap ---------- */
+  const ms = iso => new Date(iso).getTime();
+  // r plus the other waiting requests for the same coach at an overlapping time, earliest sent first ([] when r isn't waiting)
+  UI.overlapGroup = (r, reqs) => !r || r.status !== "pending" ? [] : (reqs || []).filter(x => x.coach_id === r.coach_id && x.status === "pending" &&
+    (x.id === r.id || (ms(x.starts_at) < ms(r.ends_at) && ms(r.starts_at) < ms(x.ends_at)))).sort((a, b) => ms(a.created_at) - ms(b.created_at));
+  UI.ord = n => n + ((n % 100 > 10 && n % 100 < 14) ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+  // r's place in its overlap group: "1st of 2", or "" when nothing overlaps
+  UI.sentRank = (r, reqs) => { const g = UI.overlapGroup(r, reqs); return g.length > 1 ? UI.ord(g.findIndex(x => x.id === r.id) + 1) + " of " + g.length : ""; };
+  // how much earlier or later x was sent than r: "1 day earlier", "3 h later"
+  UI.sentGap = (x, r) => {
+    const d = ms(x.created_at) - ms(r.created_at), m = Math.round(Math.abs(d) / 6e4);
+    const t = m < 60 ? Math.max(1, m) + " min" : m < 1380 ? Math.round(m / 60) + " h" : Math.round(m / 1440) + (Math.round(m / 1440) === 1 ? " day" : " days");   // 23 h and up reads as days
+    return d === 0 ? "sent at the same time" : "sent " + t + (d < 0 ? " earlier" : " later");
+  };
+  // when a request was sent, in the viewer's time: "Sat, Nov 7 · 5:02 PM"
+  UI.sentAt = iso => UI.date(iso, { weekday: "short", month: "short", day: "numeric" }) + " · " + UI.time(iso);
+
+  /* ---------- "are you sure?" before Accept / Decline / Cancel session (staff and coaches) ----------
+     o.r: the request (with .requester) · o.status: "accepted" | "declined" | "cancelled"
+     o.coach: the coach's name when staff act for them, left out when coaches act themselves ("your calendar")
+     o.team: the player's team name · o.reqs: the coach's requests, to list waiting ones that accepting declines
+     Resolves true on "Yes, …"; false on Go back, Esc or a click outside. */
+  UI.askRequest = o => new Promise(done => {
+    const r = o.r, esc = UI.esc, me = !o.coach;
+    const A = { accepted: ["Accept", "Accept this request?", "Yes, accept"], declined: ["Decline", "Decline this request?", "Yes, decline"],
+      cancelled: ["Cancel session", "Cancel this session?", "Yes, cancel session"] }[o.status];
+    if (!r || !A) return done(false);
+    const et = iso => new Date(iso).toLocaleTimeString("en-US", { timeZone: UI.EVENT_TZ, hour: "numeric", minute: "2-digit" });
+    const T = iso => new Date(iso).getTime();
+    const name = esc(UI.who(r.requester)), coach = esc(o.coach || ""), what = r.kind === "team" ? "team review" : "individual session";
+    const cal = me ? "your calendar" : coach + "'s calendar";
+    const when = esc(UI.date(UI.etAt(UI.dayOf(r.starts_at), 720), { weekday: "long", month: "long", day: "numeric" })) + " · " + et(r.starts_at) + "–" + et(r.ends_at) + " ET" +
+      (UI.onEastern(new Date(r.starts_at)) ? "" : '<br><span class="muted">Your time: ' + esc(UI.time(r.starts_at) + "–" + UI.time(r.ends_at)) + "</span>");
+    // accepting books the time, so other waiting requests that overlap it are declined (the database does the same)
+    const clash = o.status !== "accepted" ? [] : (o.reqs || []).filter(x => x.id !== r.id && x.coach_id === r.coach_id && x.status === "pending" && T(x.starts_at) < T(r.ends_at) && T(r.starts_at) < T(x.ends_at));
+    const undo = "There's no undo. If this is a mistake, " + name + " has to send the request again.";
+    const pts = {
+      accepted: ["The " + what + " is booked. It shows as Accepted on " + name + "'s desk and on " + cal + ".",
+        me ? "Make sure you can make it. " + name + " will plan around it." : coach + " isn't asked first, so check with them if you're not sure they can make it."],
+      declined: [name + "'s request moves to Declined. They see it on their desk.", "The time stays open for other requests.", undo],
+      cancelled: ["The session comes off " + cal + " and shows as Cancelled on " + name + "'s desk.", "The time opens up again for new requests.",
+        "Let " + name + (me ? "" : " and " + coach) + " know on Discord too, so nobody shows up for it.", undo]
+    }[o.status];
+    let d = document.getElementById("ask-dlg");
+    if (!d) { d = document.createElement("dialog"); d.id = "ask-dlg"; d.setAttribute("aria-labelledby", "ask-dlg-title"); document.body.appendChild(d); }
+    if (d.open) d.close();
+    d.innerHTML = '<div class="sc-dtop"><div><span class="k">' + A[0] + (me ? "" : " · " + coach) + '</span><h3 id="ask-dlg-title">' + A[1] + "</h3></div>" + UI.statusChip(r.status) + "</div>" +
+      '<p class="sc-ask-who"><b>' + name + "</b>" + (o.team ? " · " + esc(o.team) : "") + "<br>" + what.charAt(0).toUpperCase() + what.slice(1) + (me ? "" : " with " + coach) + "<br>" + when + "</p>" +
+      '<h4 class="sc-ask-k">What happens</h4><ul class="sc-ask">' + pts.map(p => "<li>" + p + "</li>").join("") + "</ul>" +
+      (clash.length ? '<p class="sc-ask-warn">' + (clash.length === 1 ? "1 other waiting request overlaps this time and will be declined:" : clash.length + " other waiting requests overlap this time and will be declined:") + "</p>" +
+        '<ul class="sc-ask warn">' + clash.map(x => "<li>" + esc(UI.who(x.requester)) + " · " + et(x.starts_at) + "–" + et(x.ends_at) + " ET · " + UI.sentGap(x, r) + "</li>").join("") + "</ul>" : "") +
+      '<div class="sc-dact"><button type="button" class="btn' + (o.status === "accepted" ? "" : " cc-danger") + '" data-ok>' + A[2] + "</button>" +
+        '<button type="button" class="linkbtn" data-back>Go back</button></div>';
+    let yes = false;
+    d.onclick = e => { if (e.target.closest("[data-ok]")) { yes = true; d.close(); } else if (e.target === d || e.target.closest("[data-back]")) d.close(); };
+    d.onclose = () => done(yes);
+    d.showModal();
+    d.querySelector("[data-back]").focus();   // the safe choice has focus, so Enter doesn't confirm by accident
+  });
   UI.statusChip = s => '<span class="chip-st st-' + UI.esc(s) + '">' + UI.esc({ pending: "Waiting", accepted: "Accepted", declined: "Declined", cancelled: "Cancelled", waitlist: "Waitlist", withdrawn: "Withdrawn" }[s] || s) + "</span>";
 
   /* ---------- top bar: Discord login ---------- */
@@ -166,10 +226,15 @@
     const bar = document.createElement("div");
     bar.id = "demo-bar";
     const people = API.demo.people();
-    const label = p => UI.who(p) + (p.role === "staff" ? " (staff)" : p.id === "u-neotep" ? " (mentor 01)" : " (player)");
+    const groups = [
+      ["Staff", p => p.role === "staff", p => UI.who(p)],
+      ["Mentors", p => p.coach && p.coach.kind === "mentor", p => UI.who(p) + " · Mentor " + UI.pad(p.coach.slot)],
+      ["Assistant coaches", p => p.coach && p.coach.kind === "assistant", p => UI.who(p) + " · Assistant " + UI.pad(p.coach.slot)],
+      ["Players", p => p.role !== "staff" && !p.coach, p => UI.who(p) + " · " + (p.team || "no team")]
+    ];
     bar.innerHTML = '<b>Demo mode</b><span>Sample data, saved only in this browser.</span>' +
       '<label for="demo-who">View as</label><select id="demo-who"><option value="">Logged out</option>' +
-      people.map(p => '<option value="' + UI.esc(p.id) + '">' + UI.esc(label(p)) + "</option>").join("") + "</select>" +
+      groups.map(([name, has, label]) => '<optgroup label="' + name + '">' + people.filter(has).map(p => '<option value="' + UI.esc(p.id) + '">' + UI.esc(label(p)) + "</option>").join("") + "</optgroup>").join("") + "</select>" +
       '<button type="button" id="demo-reset">Reset data</button>';
     document.body.appendChild(bar);
     const sel = UI.$("#demo-who");

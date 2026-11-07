@@ -188,11 +188,25 @@ body:has(#demo-bar){padding-bottom:64px}
 .kchip{font:600 10px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;padding:5px 7px;background:var(--ink);color:var(--paper)}
 .kchip.solo{background:var(--kraft-shade);color:#2f2416}
 @media (max-width:700px){.app-row summary{grid-template-columns:auto minmax(0,1fr) auto}.app-row summary>.muted,.app-row summary>.rchip,.app-row summary>span:empty{display:none}}
-.teams-admin{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.teams-admin{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:24px;align-items:start}
 @media (max-width:900px){.teams-admin{grid-template-columns:minmax(0,1fr)}}
-.tcard{display:flex;justify-content:space-between;gap:12px;background:#fff;border-left:4px solid var(--green);padding:12px 14px;margin-bottom:8px}
-.tcard>div:first-child{display:grid;gap:3px;min-width:0}
-.tc-act{display:flex;gap:4px;align-items:flex-start}
+.tlist{display:grid;gap:8px}
+.tcard{appearance:none;width:100%;display:flex;align-items:center;gap:12px;background:#fff;border:0;border-left:4px solid var(--kraft-shade);padding:10px 12px;text-align:left;cursor:pointer;font:inherit;color:var(--ink)}
+.tcard:hover{background:#f4f1ea}
+.tcard[aria-pressed="true"]{border-left-color:var(--red);box-shadow:inset 0 0 0 2px var(--ink)}
+.tcard>span{display:grid;gap:3px;min-width:0}
+.tcard b{font:900 17px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:-.02em}
+.tprofile{background:#fff;border:1.5px solid var(--ink);padding:18px 20px}
+.tp-head{display:flex;gap:16px;align-items:center;border-bottom:3px solid var(--ink);padding-bottom:14px}
+.tp-head h3{font:900 clamp(24px,3vw,32px)/1 var(--f-display);text-transform:uppercase;letter-spacing:-.03em;margin:6px 0 4px}
+.tp-head p{margin:0}
+.tp-sub{font:600 10px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px}
+.tp-kv{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);margin:0;border-top:1px dashed #b9b5ac}
+.tp-kv dt,.tp-kv dd{margin:0;padding:9px 0;border-bottom:1px dashed #b9b5ac}
+.tp-kv dt{font:600 11px/1.5 var(--f-mono);letter-spacing:.06em;color:var(--ink-soft)}
+.tp-kv dd{font:700 15px/1.4 var(--f-type)}
+.tp-list{list-style:none;margin:0;padding:0;display:grid;gap:6px;font:400 15px/1.4 var(--f-type)}
+.tp-list b{font-weight:700}
 .checks{display:grid;gap:6px;max-height:220px;overflow:auto;padding:8px;border:1px solid var(--paper-rule);background:#fff}
 .checks label{display:flex;gap:8px;align-items:center;font-size:14px}
 .row-btns{display:flex;gap:8px;flex-wrap:wrap}
@@ -290,8 +304,8 @@ body:has(#demo-bar){padding-bottom:64px}
 .sc-panel.sc-full .sc-tl-in{min-width:1100px}
 html.sc-noscroll{overflow:hidden}
 /* pop-up */
-dialog#sc-dlg,dialog#cc-dlg{border:0;padding:clamp(18px,3vw,28px);width:min(500px,calc(100vw - 32px));background-color:var(--paper);background-image:var(--grain);color:var(--ink);box-shadow:var(--lift)}
-dialog#sc-dlg::backdrop,dialog#cc-dlg::backdrop{background:rgba(10,8,6,.6)}
+dialog#sc-dlg,dialog#cc-dlg,dialog#ask-dlg{border:0;padding:clamp(18px,3vw,28px);width:min(500px,calc(100vw - 32px));background-color:var(--paper);background-image:var(--grain);color:var(--ink);box-shadow:var(--lift)}
+dialog#sc-dlg::backdrop,dialog#cc-dlg::backdrop,dialog#ask-dlg::backdrop{background:rgba(10,8,6,.6)}
 .sc-dtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:3px solid var(--ink);padding-bottom:12px}
 .sc-dtop h3{font:900 28px/1 var(--f-display);text-transform:uppercase;letter-spacing:-.04em;margin:6px 0 0}
 .sc-dtop .k{font:600 10px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
@@ -304,6 +318,31 @@ dialog#sc-dlg::backdrop,dialog#cc-dlg::backdrop{background:rgba(10,8,6,.6)}
 .sc-tag{font:600 10px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;background:var(--green);color:#fff;padding:3px 5px;margin-left:4px}
 .sc-tag.other{background:#7d776f}
 .sc-dact{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:16px}
+/* mentor calendar pop-up with several requests on a day: the list on the left, the picked one on the right */
+dialog#cc-dlg.wide{width:min(800px,calc(100vw - 32px))}
+.cc-split{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px}
+.cc-side h4{font:600 10px/1.5 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:2px 0 10px}
+.cc-side ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.cc-srow{appearance:none;width:100%;border:0;border-left:4px solid var(--red);background:#fff;color:var(--ink);text-align:left;padding:9px 10px;cursor:pointer;display:grid;gap:3px;font:inherit}
+.cc-srow.acc{border-left-color:var(--green)}
+.cc-srow b{font:700 14px/1.2 var(--f-type)}
+.cc-srow span{font:500 11px/1.3 var(--f-mono);color:var(--ink-soft)}
+.cc-srow:hover{background:#f4f1ea}
+.cc-srow[aria-current="true"]{box-shadow:inset 0 0 0 2px var(--ink)}
+.cc-otag{font:600 9.5px/1 var(--f-mono);font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:var(--red-deep);border:1.5px solid var(--red);padding:2px 4px;justify-self:start;margin-top:2px}
+.slip-flag{margin:-2px 0 0;white-space:nowrap}
+.slip-act .js-open{margin-left:auto}
+.cc-side ul .cc-sday{font:600 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin:8px 0 0}
+.cc-side ul .cc-sday:first-child{margin-top:0}
+.cc-side ul{max-height:min(60vh,520px);overflow-y:auto}
+@media (max-width:720px){ .cc-split{grid-template-columns:minmax(0,1fr);gap:16px} .cc-side ul{max-height:34vh} }
+/* are-you-sure step for Accept / Decline / Cancel session (UI.askRequest, staff and coaches) */
+.sc-ask-who{font:400 15px/1.55 var(--f-type);margin:14px 0 0;padding-bottom:12px;border-bottom:1px dashed #b9b5ac}
+.sc-ask-k{font:600 10px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 6px}
+.sc-ask{margin:0;padding-left:20px;font:400 15px/1.55 var(--f-type)}
+.sc-ask li+li{margin-top:4px}
+.sc-ask-warn{color:var(--red-deep);font:700 14px/1.5 var(--f-type);margin:12px 0 4px}
+.sc-ask.warn{color:var(--red-deep)}
 .sc-dact .linkbtn{margin-left:auto}
 @media (max-width:700px){
   .sc-days{grid-template-columns:repeat(7,minmax(0,1fr))}

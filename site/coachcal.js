@@ -4,7 +4,7 @@
              same hours), tick several to delete (after an "are you sure?"), or add new hours to every ticked day.
              Overlapping or touching hours join into one block, and booked sessions always stay inside.
    Hours that are over drop off, days that are over fade and lock, and the session / waiting chips open the request.
-   Answering requests still happens in the Requests waiting cards above; booked sessions are listed in Coming up. */
+   Requests are answered in the request pop-up (openReq), which the Requests waiting cards above open too. */
 (function () {
   "use strict";
   const { esc } = UI;
@@ -66,8 +66,9 @@
       (hrs ? shown.map(b => { const [x, y] = bm(b); return '<button type="button" class="blk-btn' + (ST.edit && ST.edit.id === b.id ? " editing" : "") + '" data-edit="' + esc(b.id) + '" title="Edit ' + span(x, y) + '">' + short(x, y) + "</button>"; }).join("") +
         (up.length > shown.length ? '<span class="more-blk">+' + (up.length - shown.length) + " more</span>" : "") : "") +
       // session / waiting chips only in the Sessions view (Hours stays just about hours)
-      (!hrs && acc.length ? '<button type="button" class="ses-btn cd-acc" data-req="' + esc(acc[0].id) + '" title="See the session">' + acc.length + (acc.length === 1 ? " session" : " sessions") + "</button>" : "") +
-      (!hrs && pen.length ? '<button type="button" class="ses-btn cd-pen" data-req="' + esc(pen[0].id) + '" title="See the request">' + pen.length + " waiting</button>" : "") +
+      // opens the first one; the pop-up lists the day's ones down its left side
+      (!hrs && acc.length ? '<button type="button" class="ses-btn cd-acc" data-req="' + esc(acc[0].id) + '" data-set="' + d.ymd + '|accepted" title="See ' + (acc.length === 1 ? "the session" : "the " + acc.length + " sessions") + '">' + acc.length + (acc.length === 1 ? " session" : " sessions") + "</button>" : "") +
+      (!hrs && pen.length ? '<button type="button" class="ses-btn cd-pen" data-req="' + esc(pen[0].id) + '" data-set="' + d.ymd + '|pending" title="See ' + (pen.length === 1 ? "the request" : "the " + pen.length + " requests") + '">' + pen.length + " waiting</button>" : "") +
       (hrs ? '<span class="tick" aria-hidden="true">' + (on ? "✓" : "") + "</span>" : "") + "</div>";
   }
   const grid = () => '<div class="cal2 cc-cal">' + [1, 2].map(w => '<span class="wkl">Week ' + w + "</span>" + D.days.filter(d => d.week === w).map(cell).join("")).join("") + "</div>";
@@ -122,44 +123,96 @@
     const list = reqsOn(ST.open), ev = D.days.find(d => d.ymd === ST.open).events[0];
     return '<div class="cc-dhead"><h3>' + esc(longDay(ST.open)) + '</h3><button type="button" class="linkbtn" data-closeday>Close</button></div>' + (ev ? '<p class="muted small">' + esc(ev.title) + "</p>" : "") +
       (list.length ? '<ul class="cc-list">' + list.map(r => '<li class="cc-row ' + (r.status === "accepted" ? "acc" : "pen") + '"><div class="cc-info"><span class="t">' + span(mins(r.starts_at, ST.open), mins(r.ends_at, ST.open)) + "</span><span>" + UI.statusChip(r.status) + " " + esc(who(r)) + " · " + (r.kind === "team" ? "Team review" : "Individual") + "</span></div>" +
-        '<button type="button" class="cc-act" data-req="' + esc(r.id) + '">Details ›</button></li>').join("") + "</ul>"
+        '<button type="button" class="cc-act" data-req="' + esc(r.id) + '" data-set="' + ST.open + '|all">Details ›</button></li>').join("") + "</ul>"
                   : '<p class="empty-note">No sessions or requests on this day.</p>');
   }
 
   /* ---------- pop-ups ---------- */
   let onYes = null;
+  const PG = { ids: [], key: "", cur: "" };   // the requests listed down the left of a wide pop-up
   function dlg() {
     let d = document.getElementById("cc-dlg");
     if (!d) {
       d = document.createElement("dialog"); d.id = "cc-dlg"; d.setAttribute("aria-labelledby", "cc-dlg-title"); document.body.appendChild(d);
+      d.addEventListener("close", () => d.classList.remove("wide"));
       d.addEventListener("click", e => {
         if (e.target === d) return d.close();
         if (e.target.closest("[data-yes]")) { const f = onYes; onYes = null; d.close(); if (f) f(); return; }
+        const go = e.target.closest("[data-req]"); if (go) return openReq(go.dataset.req);
         const b = e.target.closest("[data-do]"); if (!b) return;
         if (b.dataset.do === "close") return d.close();
-        UI.act(b, async () => { await API.setRequestStatus(b.dataset.id, b.dataset.do); d.close(); await ctx.rerender(); },
-          { accepted: "Accepted. It's on your calendar.", declined: "Declined.", cancelled: "Session cancelled." }[b.dataset.do]);
+        // Accept / Decline / Cancel session: say what will happen first (UI.askRequest), then act
+        const r = D.reqs.find(x => x.id === b.dataset.id), s = b.dataset.do, t = r && D.teams.find(x => (x.member_ids || []).includes(r.requester_id));
+        UI.askRequest({ r, status: s, team: t && t.name, reqs: D.reqs }).then(ok => ok &&
+          UI.act(b, async () => { await API.setRequestStatus(r.id, s); d.close(); await ctx.rerender(); },
+            { accepted: "Accepted. It's on your calendar.", declined: "Declined.", cancelled: "Session cancelled." }[s]));
+      });
+      // ↑ ↓ move through the list on the left
+      d.addEventListener("keydown", e => {
+        if ((e.key === "ArrowUp" || e.key === "ArrowDown") && e.target.closest(".cc-side")) {
+          e.preventDefault();
+          const j = PG.ids.indexOf(PG.cur) + (e.key === "ArrowUp" ? -1 : 1);
+          if (j >= 0 && j < PG.ids.length) openReq(PG.ids[j]);
+        }
       });
     }
     return d;
   }
   const kv = (k, v) => "<dt>" + k + "</dt><dd>" + v + "</dd>";
-  function openReq(id) {
+  const teamOf = r => D.teams.find(x => (x.member_ids || []).includes(r.requester_id));
+  const T = iso => new Date(iso).getTime();
+  // other waiting requests at the same time as r (accepting one declines the others)
+  const clashes = r => D.reqs.filter(x => x.id !== r.id && x.status === "pending" && T(x.starts_at) < T(r.ends_at) && T(r.starts_at) < T(x.ends_at));
+  // The request pop-up: the list on the left, the picked one on the right. set is what the list holds:
+  //   "ymd|pending" / "ymd|accepted"  a day's "2 waiting" / "2 sessions" chip
+  //   "ymd|all"                       Details › in a day's list
+  //   "*|pending"                     every upcoming request waiting (Details › on a Requests waiting card)
+  // Left out, the list stays as it was (or becomes the request's day).
+  const dayShort = ymd => UI.date(UI.etAt(ymd, 720), { weekday: "short", month: "short", day: "numeric" });
+  function setIds(set) {
+    const [y, s] = set.split("|");
+    if (y === "*") return D.reqs.filter(x => x.status === s && new Date(x.starts_at) > new Date()).sort((p, q) => new Date(p.starts_at) - new Date(q.starts_at)).map(x => x.id);
+    return reqsOn(y).filter(x => s === "all" || x.status === s).map(x => x.id);
+  }
+  function openReq(id, set) {
     const r = D.reqs.find(x => x.id === id); if (!r) return;
-    const ymd = UI.dayOf(r.starts_at), t = D.teams.find(x => (x.member_ids || []).includes(r.requester_id)), d = dlg();
-    const mine = t && t.coach_id === ctx.coach.id, pending = r.status === "pending";
-    d.innerHTML = '<div class="sc-dtop"><div><span class="k">' + (pending ? "Request waiting for you" : r.status === "accepted" ? "Booked session" : "Request") + '</span><h3 id="cc-dlg-title">' + (r.kind === "team" ? "Team review" : "Individual session") + "</h3></div>" + UI.statusChip(r.status) + "</div>" +
+    const ymd = UI.dayOf(r.starts_at);
+    if (set) { PG.key = set; PG.ids = setIds(set); }
+    if (!PG.ids.includes(id)) { PG.key = ymd + "|all"; PG.ids = setIds(PG.key); if (!PG.ids.includes(id)) PG.ids = [id]; }
+    PG.cur = id;
+    const t = teamOf(r), d = dlg();
+    const mine = t && t.coach_id === ctx.coach.id, pending = r.status === "pending", also = pending ? clashes(r) : [];
+    const [ky, ks] = PG.key.split("|"), n = PG.ids.length, all = ky === "*";
+    const what = ks === "pending" ? (n === 1 ? " request waiting" : " requests waiting") : ks === "accepted" ? (n === 1 ? " booked session" : " booked sessions") : " on this day";
+    let lastDay = "";
+    const side = '<aside class="cc-side"><h4>' + (all ? "All requests waiting<br>" + n + " in total" : esc(dayShort(ky)) + "<br>" + n + what) + "</h4><ul>" +
+      PG.ids.map(x => D.reqs.find(q => q.id === x)).filter(Boolean).map(q => {
+        const qy = UI.dayOf(q.starts_at), head = all && qy !== lastDay ? '<li class="cc-sday">' + esc(dayShort(qy)) + "</li>" : "";
+        lastDay = qy;
+        return head + '<li><button type="button" class="cc-srow ' + (q.status === "accepted" ? "acc" : "pen") + '" data-req="' + esc(q.id) + '" aria-current="' + (q.id === id) + '">' +
+          "<b>" + span(mins(q.starts_at, qy), mins(q.ends_at, qy)) + "</b><span>" + esc(who(q)) + " · " + (q.kind === "team" ? "Team review" : "Individual") + "</span>" +
+          (q.status === "pending" && clashes(q).length ? '<em class="cc-otag">Overlaps · sent ' + UI.sentRank(q, D.reqs).split(" ")[0] + "</em>" : "") + "</button></li>";
+      }).join("") + "</ul></aside>";
+    d.classList.add("wide");
+    d.innerHTML = '<div class="cc-split">' + side + "<div>" + '<div class="sc-dtop"><div><span class="k">' + (pending ? "Request waiting for you" : r.status === "accepted" ? "Booked session" : "Request") + '</span><h3 id="cc-dlg-title">' + (r.kind === "team" ? "Team review" : "Individual session") + "</h3></div>" + UI.statusChip(r.status) + "</div>" +
       '<dl class="sc-kv">' +
         kv("When", esc(longDay(ymd)) + "<br><b>" + span(mins(r.starts_at, ymd), mins(r.ends_at, ymd)) + " ET</b> · " + esc(UI.dur(r.starts_at, r.ends_at)) + (UI.onEastern(new Date(r.starts_at)) ? "" : '<br><span class="muted">Your time: ' + esc(UI.time(r.starts_at) + "–" + UI.time(r.ends_at)) + "</span>")) +
         kv("From", esc(who(r)) + ' <span class="muted">@' + esc((r.requester && r.requester.username) || "") + "</span>" + (t ? "<br>" + esc(t.name) + (mine ? ' <span class="sc-tag">Your team</span>' : ' <span class="sc-tag other">Other team</span>') : '<br><span class="muted">Not on a team</span>')) +
         kv("Wants to work on", r.note ? "“" + esc(r.note) + "”" : '<span class="muted">No note added.</span>') +
-        kv("Sent", esc(UI.date(r.created_at, { weekday: "short", month: "short", day: "numeric" }))) +
+        // when it was sent, and its place among overlapping requests ("2nd of 2")
+        kv("Sent", esc(UI.sentAt(r.created_at)) + (also.length ? ' <span class="cc-otag">' + UI.sentRank(r, D.reqs) + "</span>" : "")) +
+        // other requests for the same time, with who asked first: accepting this one declines them
+        (also.length ? kv("Also waiting", '<ul class="sc-in">' + also.map(x => '<li><button type="button" class="linkbtn" data-req="' + esc(x.id) + '">' + span(mins(x.starts_at, ymd), mins(x.ends_at, ymd)) + " · " + esc(who(x)) + "</button>" +
+            ' <span class="muted small">' + UI.sentGap(x, r) + "</span></li>").join("") +
+          '</ul><span class="muted small">Same time as this one. Accepting this declines ' + (also.length === 1 ? "it" : "them") + ".</span>") : "") +
       "</dl>" +
       '<div class="sc-dact">' +
         (pending && new Date(r.starts_at) > new Date() ? '<button type="button" class="btn" data-do="accepted" data-id="' + esc(r.id) + '">Accept</button><button type="button" class="btn ghost" data-do="declined" data-id="' + esc(r.id) + '">Decline</button>' : "") +
         (r.status === "accepted" && new Date(r.ends_at) > new Date() ? '<button type="button" class="btn ghost" data-do="cancelled" data-id="' + esc(r.id) + '">Cancel session</button>' : "") +
-        '<button type="button" class="linkbtn" data-do="close">Close</button></div>';
+        '<button type="button" class="linkbtn" data-do="close">Close</button></div>' + "</div></div>";
     if (!d.open) d.showModal();
+    const cur = d.querySelector('.cc-srow[aria-current="true"]');   // keep focus on the picked row, so ↑ ↓ keep working
+    if (cur) cur.focus();
   }
   // "are you sure?" before deleting; hours with a booked session inside are kept
   function askDelete(ids) {
@@ -233,7 +286,7 @@
     panel.onclick = e => {
       const t = e.target, on = s => t.closest(s);
       let x;
-      if ((x = on("[data-req]"))) return openReq(x.dataset.req);
+      if ((x = on("[data-req]"))) return openReq(x.dataset.req, x.dataset.set || "");
       if ((x = on("[data-mode]"))) { ST.mode = x.dataset.mode; ST.edit = null; ST.sel.clear(); }
       else if ((x = on("[data-edit]"))) { const b = D.blocks.find(o => o.id === x.dataset.edit); if (!b) return; const [p, q] = bm(b); ST.edit = { id: b.id, ea: p, eb: q, all: false, err: "" }; if (!ST.picked.includes(blockDay(b))) ST.picked = ST.picked.concat(blockDay(b)); }
       else if ((x = on(".hit"))) { const y = x.dataset.day; if (ST.mode === "hours") ST.picked = ST.picked.includes(y) ? ST.picked.filter(v => v !== y) : ST.picked.concat(y); else ST.open = ST.open === y ? null : y; }
@@ -261,5 +314,5 @@
     };
   }
 
-  window.PTGCoachCal = { mount };
+  window.PTGCoachCal = { mount, openReq };   // openReq: the desk's Requests waiting cards open the same pop-up
 })();

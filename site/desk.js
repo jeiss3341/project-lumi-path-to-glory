@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   const { $, $$, esc, pad } = UI;
-  const S = { me: null, coaches: [], myCoach: null, tab: null, staffTab: "teams", coachEdit: null };
+  const S = { me: null, coaches: [], myCoach: null, tab: null, staffTab: "teams", teamOpen: null, coachEdit: null };
   let watching = false;
 
   boot();
@@ -110,14 +110,20 @@
     const now = new Date();
     const pending = reqs.filter(r => r.status === "pending" && new Date(r.starts_at) > now);
     const upcoming = reqs.filter(r => r.status === "accepted" && new Date(r.ends_at) > now);
+    // another waiting request at the same time (accepting one declines the other)
+    const T = iso => new Date(iso).getTime();
+    const overlaps = r => pending.some(x => x.id !== r.id && T(x.starts_at) < T(r.ends_at) && T(r.starts_at) < T(x.ends_at));
 
     const slip = r => '<article class="slip">' +
       '<div class="slip-top">' + UI.avatar(r.requester, 30) + "<div><b>" + esc(UI.who(r.requester)) + '</b><span class="muted">@' + esc((r.requester && r.requester.username) || "") + "</span></div>" +
         (onTeam(r) ? '<span class="rchip green">Your team</span>' : '<span class="rchip">Other team</span>') + "</div>" +
       '<p class="slip-when">' + esc(UI.date(r.starts_at, { weekday: "long", month: "short", day: "numeric" })) + "<br><b>" + esc(UI.time(r.starts_at)) + " → " + esc(UI.time(r.ends_at)) + "</b> · " + esc(UI.dur(r.starts_at, r.ends_at)) + "</p>" +
       '<p class="slip-kind">' + (r.kind === "team" ? "Team review" : "Individual session") + "</p>" +
+      // its own line, so it never wraps halfway
+      (overlaps(r) ? '<em class="cc-otag slip-flag">Overlaps · sent ' + UI.sentRank(r, pending).split(" ")[0] + "</em>" : "") +
       (r.note ? '<p class="slip-note">“' + esc(r.note) + "”</p>" : "") +
-      '<div class="slip-act"><button type="button" class="btn js-dec" data-id="' + esc(r.id) + '" data-s="accepted">Accept</button><button type="button" class="btn ghost js-dec" data-id="' + esc(r.id) + '" data-s="declined">Decline</button></div></article>';
+      // accepting or declining happens in the Details pop-up
+      '<div class="slip-act"><button type="button" class="linkbtn js-open" data-id="' + esc(r.id) + '">Details ›</button></div></article>';
 
     body.innerHTML =
       '<section class="dpanel-flat"><div class="dp-head"><h2>Requests waiting <span class="count">' + pending.length + "</span></h2><span class=\"muted\">Times in your time zone (" + esc(UI.tz) + ")</span></div>" +
@@ -129,9 +135,12 @@
 
     // Requests waiting cards and Coming up (the calendar handles its own clicks)
     body.onclick = e => {
-      const dec = e.target.closest(".js-dec"), can = e.target.closest(".js-cancel-acc, .js-cancel");
-      if (dec) UI.act(dec, async () => { await API.setRequestStatus(dec.dataset.id, dec.dataset.s); await render(); }, dec.dataset.s === "accepted" ? "Accepted. It's on your calendar." : "Declined.");
-      else if (can) UI.act(can, async () => { await API.setRequestStatus(can.dataset.id, "cancelled"); await render(); }, "Session cancelled.");
+      const open = e.target.closest(".js-open");
+      if (open) return PTGCoachCal.openReq(open.dataset.id, "*|pending");   // the list-and-details pop-up, with every waiting request
+      // Cancel in Coming up: say what will happen first (UI.askRequest), then act
+      const can = e.target.closest(".js-cancel-acc, .js-cancel"); if (!can) return;
+      const r = reqs.find(x => x.id === can.dataset.id), t = r && teams.find(x => (x.member_ids || []).includes(r.requester_id));
+      UI.askRequest({ r, status: "cancelled", team: t && t.name, reqs }).then(ok => ok && UI.act(can, async () => { await API.setRequestStatus(r.id, "cancelled"); await render(); }, "Session cancelled."));
     };
   }
 
@@ -173,18 +182,30 @@
     const pName = id => { const p = profiles.find(x => x.id === id); return p ? UI.who(p) + " (@" + (p.username || "") + ")" : "Unknown"; };
 
     if (S.staffTab === "teams") {
-      // Read only: teams, players, linked accounts and checkpoint placements are set by the organiser
-      // (supabase/schema.sql), not from the site.
+      // Read only: teams, players, linked accounts and the team profile (basic information from the
+      // signup form) are set by the organiser (supabase/schema.sql), not from the site.
       const teams = await API.teams();
-      inner = '<p class="muted">Teams, players and checkpoint placements are set by the event organiser. To change something, message them.</p>' +
-        (teams.length ? '<div class="tbl"><table><thead><tr><th>Team</th><th>Mentor</th><th>Players</th><th>Linked accounts</th><th>Mock · Nov 15</th><th>Final · Nov 22</th></tr></thead><tbody>' +
-          teams.map(t => "<tr><td><b>" + esc(t.name) + "</b></td><td>" + esc(t.coach_id ? UI.bare(UI.coachName(coaches.find(c => c.id === t.coach_id))) : "None yet") + "</td>" +
-            '<td class="small">' + esc((t.players || []).map(p => p.ign).join(", ")) + "</td>" +
-            '<td class="small">' + ((t.member_ids || []).map(id => esc(pName(id))).join("<br>") || '<span class="muted">—</span>') + "</td>" +
-            "<td>" + (t.mock_place || '<span class="muted">—</span>') + "</td><td>" + (t.final_place || '<span class="muted">—</span>') + "</td></tr>").join("") + "</tbody></table></div>"
-          : '<p class="empty-note">No teams yet. They\'re added before the event starts.</p>');
+      const t = teams.find(x => x.id === S.teamOpen) || teams[0];
+      const coachOf = x => x.coach_id ? UI.bare(UI.coachName(coaches.find(c => c.id === x.coach_id))) : "None yet";
+      const info = t ? Object.entries(t.info || {}).filter(([, v]) => v != null && String(v).trim()) : [];
+      inner = '<p class="muted">Teams and players are set by the event organiser. To change something, message them.</p>' +
+        (!teams.length ? '<p class="empty-note">No teams yet. They\'re added before the event starts.</p>' :
+        '<div class="teams-admin"><div class="tlist">' + teams.map(x =>
+          '<button type="button" class="tcard js-team" data-id="' + esc(x.id) + '" aria-pressed="' + (x === t) + '">' +
+            '<span><b>' + esc(x.name) + '</b><span class="muted small">Mentor: ' + esc(coachOf(x)) + '</span><span class="small">' + esc((x.players || []).map(p => p.ign).join(", ")) + "</span></span></button>").join("") + "</div>" +
+        // the selected team's profile
+        '<article class="tprofile"><div class="tp-head"><div><span class="mono-label" style="color:var(--ink-soft)">Team profile</span><h3>' + esc(t.name) + '</h3><p class="muted">Mentor: <b>' + esc(coachOf(t)) + "</b></p></div></div>" +
+          '<h4 class="tp-sub">Basic information</h4>' +
+          (info.length ? '<dl class="tp-kv">' + info.map(([k, v]) => "<dt>" + esc(k) + "</dt><dd>" + esc(v) + "</dd>").join("") + "</dl>" : '<p class="muted small">No profile info yet. It comes from the signup form.</p>') +
+          '<h4 class="tp-sub">Players</h4><ul class="tp-list">' + ((t.players || []).map(p => "<li><b>" + esc(p.ign) + "</b>" + (p.discord ? ' <span class="muted">@' + esc(p.discord) + "</span>" : "") + "</li>").join("") || '<li class="muted">No players listed.</li>') + "</ul>" +
+          '<h4 class="tp-sub">Linked accounts</h4><ul class="tp-list">' + ((t.member_ids || []).map(id => "<li>" + esc(pName(id)) + "</li>").join("") || '<li class="muted">None linked yet.</li>') + "</ul>" +
+        "</article></div>");
       body.innerHTML = head + '<section class="sheet dpanel wide-panel"><h2>Teams</h2>' + inner + "</section>";
-      body.onclick = e => { stabClick(e); };
+      body.onclick = e => {
+        if (stabClick(e)) return;
+        const b = e.target.closest(".js-team");
+        if (b) { S.teamOpen = b.dataset.id; render(); }
+      };
       return;
     }
 
