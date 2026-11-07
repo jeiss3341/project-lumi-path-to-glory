@@ -191,30 +191,15 @@
       <div class="arrows"><button class="arrow" id="prev" aria-label="Previous mentor">←</button><button class="arrow" id="next" aria-label="Next mentor">→</button></div>
     </div>
     <div class="assist">
-      <div class="assist-head"><h3>Assistant &amp; role coaches</h3><p>On standby for players on any team. Ask them about your character or role, request an individual session, or join the topic sessions they run.</p></div>
+      <div class="assist-head"><h3>Assistant &amp; role coaches</h3><p>On standby for players on any team. Ask them about your character or role, request a team review or an individual session, or join the topic sessions they run.</p></div>
       <div class="assist-grid" id="assist"></div>
     </div>
   </section>
 
   <section class="sec wrap" id="book">
-    <div class="sec-head"><span class="no">(05)</span><h2>Office hours</h2><p>Mentors post the hours they're free. Pick an hour in and an hour out inside those hours and send a request; the mentor accepts or declines it. Times are in your time zone (<span id="tz"></span>); days and hours follow Eastern time, 8 AM to 4 AM.</p></div>
-    <div class="book">
-      <form class="sheet book-ctl" id="book-form">
-        <div><label class="k" for="bk-who">Coach</label><select id="bk-who"></select></div>
-        <fieldset id="bk-kind-f"><legend>Session</legend><div class="seg">
-          <input type="radio" name="bk-kind" id="bk-team" value="team" checked><label for="bk-team">Team review</label>
-          <input type="radio" name="bk-kind" id="bk-ind" value="individual"><label for="bk-ind">Individual</label>
-        </div></fieldset>
-        <div><label class="k" for="bk-note">What do you want to work on?</label><textarea id="bk-note" class="ta" rows="4" maxlength="500" placeholder="Review our mock checkpoint VOD, trio rotations, ..."></textarea></div>
-        <p class="hint" id="bk-hint"></p>
-      </form>
-      <div class="sheet ledger">
-        <div class="ledger-top"><h3>Appointment book</h3><span class="mono-label" style="color:var(--ink-soft)" id="bk-label"></span></div>
-        <div class="ldays" id="bk-days"></div>
-        <ul class="rows" id="bk-rows" aria-label="Time slots"></ul>
-      </div>
-      <aside class="appt" id="bk-card" aria-live="polite"></aside>
-    </div>
+    <div class="sec-head"><span class="no">(05)</span><h2>Office hours</h2><p>Pick a coach to see their week. Click a start time, choose how long, and send a request; the coach accepts or declines it. Times are Eastern (ET), 8 AM to 4 AM, and the request card also shows your own time (<span id="tz"></span>).</p></div>
+    <!-- coach cards; each opens #bk-pop with that coach's week planner (home.js, office hours) -->
+    <div class="sheet bk-sheet" id="bk-cards"></div>
     <div class="mine" id="my-req"></div>
   </section>
 
@@ -257,6 +242,7 @@
     <a href="#schedule">See the schedule →</a>
   </footer>
 </main>
+<dialog id="bk-pop" aria-labelledby="bk-pop-title"></dialog>
 
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>

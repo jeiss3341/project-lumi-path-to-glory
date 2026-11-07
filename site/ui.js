@@ -24,9 +24,11 @@
   UI.time = iso => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   UI.date = (iso, o) => new Date(iso).toLocaleDateString("en-US", o || { weekday: "short", month: "short", day: "numeric" });
   UI.range = (a, b) => UI.date(a) + " · " + UI.time(a) + "–" + UI.time(b);
+  // one formatter per time zone: making a new one each call is slow, and the planners call this thousands of times
+  const FMT = {};
   const tzParts = (d, tz) => {
     const p = {};
-    new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
+    (FMT[tz] || (FMT[tz] = new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })))
       .formatToParts(d).forEach(x => { p[x.type] = x.value; });
     return p;
   };
@@ -191,7 +193,6 @@
     }[o.status];
     let d = document.getElementById("ask-dlg");
     if (!d) { d = document.createElement("dialog"); d.id = "ask-dlg"; d.setAttribute("aria-labelledby", "ask-dlg-title"); document.body.appendChild(d); }
-    if (d.open) d.close();
     d.innerHTML = '<div class="sc-dtop"><div><span class="k">' + A[0] + (me ? "" : " · " + coach) + '</span><h3 id="ask-dlg-title">' + A[1] + "</h3></div>" + UI.statusChip(r.status) + "</div>" +
       '<p class="sc-ask-who"><b>' + name + "</b>" + (o.team ? " · " + esc(o.team) : "") + "<br>" + what.charAt(0).toUpperCase() + what.slice(1) + (me ? "" : " with " + coach) + "<br>" + when + "</p>" +
       '<h4 class="sc-ask-k">What happens</h4><ul class="sc-ask">' + pts.map(p => "<li>" + p + "</li>").join("") + "</ul>" +
@@ -199,12 +200,32 @@
         '<ul class="sc-ask warn">' + clash.map(x => "<li>" + esc(UI.who(x.requester)) + " · " + et(x.starts_at) + "–" + et(x.ends_at) + " ET · " + UI.sentGap(x, r) + "</li>").join("") + "</ul>" : "") +
       '<div class="sc-dact"><button type="button" class="btn' + (o.status === "accepted" ? "" : " cc-danger") + '" data-ok>' + A[2] + "</button>" +
         '<button type="button" class="linkbtn" data-back>Go back</button></div>';
-    let yes = false;
-    d.onclick = e => { if (e.target.closest("[data-ok]")) { yes = true; d.close(); } else if (e.target === d || e.target.closest("[data-back]")) d.close(); };
-    d.onclose = () => done(yes);
-    d.showModal();
-    d.querySelector("[data-back]").focus();   // the safe choice has focus, so Enter doesn't confirm by accident
+    answer(d, done);
   });
+  /* ---------- "are you sure?" for anything else (the mentor calendar's hours), same look as askRequest ----------
+     o: { kicker, title, lead (html), points: [html], warn (html) + warnList: [html], yes, danger }
+     Resolves true on yes; false on Go back, Esc or a click outside. */
+  UI.ask = o => new Promise(done => {
+    let d = document.getElementById("ask-dlg");
+    if (!d) { d = document.createElement("dialog"); d.id = "ask-dlg"; d.setAttribute("aria-labelledby", "ask-dlg-title"); document.body.appendChild(d); }
+    d.innerHTML = '<div class="sc-dtop"><div><span class="k">' + o.kicker + '</span><h3 id="ask-dlg-title">' + o.title + "</h3></div></div>" +
+      (o.lead ? '<p class="sc-ask-who">' + o.lead + "</p>" : "") +
+      '<h4 class="sc-ask-k">What happens</h4><ul class="sc-ask">' + o.points.map(p => "<li>" + p + "</li>").join("") + "</ul>" +
+      (o.warn ? '<p class="sc-ask-warn">' + o.warn + '</p><ul class="sc-ask warn">' + (o.warnList || []).map(p => "<li>" + p + "</li>").join("") + "</ul>" : "") +
+      '<div class="sc-dact"><button type="button" class="btn' + (o.danger ? " cc-danger" : "") + '" data-ok>' + o.yes + '</button><button type="button" class="linkbtn" data-back>Go back</button></div>';
+    answer(d, done);
+  });
+  // the buttons answer straight away (the dialog's close event waits for the next frame); Esc answers "no"
+  function answer(d, done) {
+    if (d._finish) d._finish(false);   // a question still open gets "no"
+    let settled = false;
+    const finish = v => { if (settled) return; settled = true; d._finish = null; if (d.open) d.close(); done(v); };
+    d._finish = finish;
+    d.onclick = e => { if (e.target.closest("[data-ok]")) finish(true); else if (e.target === d || e.target.closest("[data-back]")) finish(false); };
+    d.onclose = () => { if (!d.open && d._finish === finish) finish(false); };   // Esc (a late close event from an earlier question is ignored)
+    if (!d.open) d.showModal();
+    d.querySelector("[data-back]").focus();   // the safe choice has focus, so Enter doesn't confirm by accident
+  }
   UI.statusChip = s => '<span class="chip-st st-' + UI.esc(s) + '">' + UI.esc({ pending: "Waiting", accepted: "Accepted", declined: "Declined", cancelled: "Cancelled", waitlist: "Waitlist", withdrawn: "Withdrawn" }[s] || s) + "</span>";
 
   /* ---------- top bar: Discord login ---------- */

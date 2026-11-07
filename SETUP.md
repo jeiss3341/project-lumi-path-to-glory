@@ -4,8 +4,8 @@ The Project Lumi pre-season mentor event site (Nov 9–22, 2026), in the Concept
 
 - **Discord login** for players, mentors and staff
 - **Team rosters and checkpoint standings**: teams, players and Mock and Final Checkpoint Series placements are set by the organiser in the database (signups happen beforehand on Google Forms and Discord); the site shows them read only
-- **A calendar for each mentor and assistant coach** (Hours | Sessions): they post the hours they're free, 8 AM to 4 AM Eastern, then edit or delete them; overlapping hours join into one block, and booked sessions are always kept
-- **Session requests**: players pick an hour in and an hour out inside those hours; the coach **accepts or declines** each one
+- **A calendar for each mentor and assistant coach** (Sessions | Hours): Sessions shows both weeks with their booked sessions and waiting requests. Hours opens on an overview of the hours they're free (8 AM to 4 AM Eastern) with each day's total; Change hours opens a week planner where they drag (or type the times and pick the days) to add or remove hours, see the totals in a side panel, and confirm before anything is saved. Touching hours join into one block, removing can cut a piece out of a block, and booked sessions always keep their time
+- **Session requests**: players pick a coach, then a start time and length (30 minutes to 2 hours) on that coach's week planner; the coach **accepts or declines** each one
 - **A staff desk** to see the teams, every coach's hours and every request, link coach slots to Discord accounts, and edit mentor files
 - Optional **Discord pings**: the coach is pinged when a request arrives, and the player when it's answered
 
@@ -16,7 +16,7 @@ No Google Calendar involved. Everything runs on your own Supabase project (free 
 | Path | What it is |
 |---|---|
 | `site/` | The website. Plain HTML/CSS/JS, no build step. Deploy this folder. |
-| `site/index.html` + `home.js` | Public page: brief, sign up, schedule, faculty, office hours, rosters, notes, channels |
+| `site/index.html` + `home.js` | Public page: brief, schedule, faculty, office hours, rosters, notes, channels |
 | `site/desk.html` + `desk.js` | Logged-in desk: player file, mentor calendar, staff tools |
 | `site/api.js` | Data layer: live (Supabase) and demo (browser-only) modes behind one API |
 | `site/content.js` | Static event content: schedule, roles, resources, Discord links, seminars |
@@ -72,14 +72,14 @@ Pings use Discord's `<t:…>` timestamps, so each reader sees the time in their 
 ## How booking works
 
 1. A mentor posts hours on their desk, e.g. **8:00 PM → 11:00 PM**, and can copy the same hours to other days in one go.
-2. A player opens *Office hours*, picks the coach and a day, then an **hour in** and an **hour out** (30 minutes to 2 hours) inside those hours, and sends the request with a note.
+2. A player opens *Office hours* and clicks a coach card. A pop-up shows that coach's week as half-hour rows (Eastern); the player clicks a start time, picks how long (30 minutes to 2 hours), chooses Team review or Individual, adds a note and sends it. Booked times are hatched; times someone else is waiting on stay open, outlined in red.
 3. The request shows on the mentor's desk under **Requests waiting**, tagged *Your team* or *Other team*.
 4. The mentor **accepts** or **declines**. Accepting books the time and automatically declines any other request that overlaps it.
 5. Either side can cancel a booked session. Players see every answer on their desk.
 
 The database enforces the rules no matter what the page does:
 - requests must sit inside posted hours, can't be in the past, and can't overlap a booked session
-- assistant coaches take individual sessions only
+- only players request sessions: coaches (mentors and assistants) and staff can't, unless they're on a team
 - players have at most 5 requests waiting at once
 - only the coach, or staff, can accept or decline
 - coaches can't remove hours that have booked sessions in them

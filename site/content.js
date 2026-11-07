@@ -33,7 +33,7 @@ window.PTG = {
   roles: [
     { key: "staff", icon: "⚫", name: "Staff", d: "Oversee everything, monitor interactions, and keep the event moving smoothly." },
     { key: "mentor", icon: "🔴", name: "Mentors", d: "The 8 team coaches. Group review sessions, character-specific help, and any other questions from their team." },
-    { key: "assistant", icon: "⭕", name: "Assistant Coaches", d: "Role and character specialists on standby. Individual coaching and general help for players on any team." },
+    { key: "assistant", icon: "⭕", name: "Assistant Coaches", d: "Role and character specialists on standby. Team reviews, individual coaching and general help for players on any team." },
     { key: "player", icon: "⚪", name: "Players", d: "Developing players here to learn the game." }
   ],
 

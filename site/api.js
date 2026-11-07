@@ -81,6 +81,7 @@
     };
     API.deleteBlock = id => q(sb.from("availability").delete().eq("id", id));
     API.saveHours = (c, b, s, e) => q(sb.rpc("save_hours", { c, b: b || null, s, e }));   // post or change hours; overlaps join (see schema.sql)
+    API.removeHours = (c, s, e) => q(sb.rpc("remove_hours", { c, s, e }));                 // take a stretch out of a coach's hours (blocks split around it)
     API.busy = coachId => q(sb.rpc("coach_busy", { c: coachId }));
 
     API.myRequests = async () => {
@@ -233,7 +234,7 @@
       req("m7", "u-rook", "individual", 10, 24, 25, "declined");
       req("m8", "u-solo", "individual", 8, 19, 20, "pending", "Where do I start?");
       req("m8", "u-kairo", "individual", 10, 21, 22, "pending", "Second opinion before finals");
-      // assistant coaches (individual sessions only)
+      // assistant coaches (team reviews and individual sessions, like mentors)
       req("a1", "u-tofu", "individual", 1, 18, 19, "accepted", "Abigail builds");
       req("a1", "u-juno", "individual", 2, 19, 20, "accepted");
       req("a1", "u-solo", "individual", 4, 18, 19, "pending", "Vision and warding basics");
@@ -369,6 +370,21 @@
       S.availability.push(row); save();
       return wait(Object.assign({ joined: joined.length }, row));
     };
+    // same rules as the database's remove_hours: take a stretch of time out of a coach's hours, splitting blocks
+    // around it; not while a booked session is in it
+    API.removeHours = (coachId, starts_at, ends_at) => {
+      if (!isStaff() && !isCoach(coachId)) return fail("You don't have permission to do that.");
+      const s = new Date(starts_at), e = new Date(ends_at);
+      if (e <= s) return fail("Hour out has to be after hour in.");
+      if (S.requests.some(r => r.coach_id === coachId && r.status === "accepted" && new Date(r.starts_at) < e && new Date(r.ends_at) > s)) return fail("A booked session is in those hours. Cancel it first.");
+      const hit = S.availability.filter(x => x.coach_id === coachId && new Date(x.starts_at) < e && new Date(x.ends_at) > s);
+      S.availability = S.availability.filter(x => !hit.includes(x));
+      hit.forEach(x => {
+        if (new Date(x.starts_at) < s) S.availability.push({ id: rid(), coach_id: coachId, starts_at: x.starts_at, ends_at: s.toISOString() });
+        if (new Date(x.ends_at) > e) S.availability.push({ id: rid(), coach_id: coachId, starts_at: e.toISOString(), ends_at: x.ends_at });
+      });
+      save(); return wait(null);
+    };
     API.busy = coachId => wait(S.requests.filter(r => r.coach_id === coachId && ["pending", "accepted"].includes(r.status)).map(r => ({ starts_at: r.starts_at, ends_at: r.ends_at, status: r.status })));
 
     API.myRequests = () => wait(S.me ? S.requests.filter(r => r.requester_id === S.me).map(r => Object.assign({}, r, { coach: coachMini(r.coach_id) })).sort((a, b) => a.starts_at.localeCompare(b.starts_at)) : []);
@@ -378,7 +394,9 @@
       if (!S.me) return fail("Log in with Discord first.");
       const c = S.coaches.find(x => x.id === r.coach_id);
       if (!c) return fail("That coach doesn't exist.");
-      if (c.kind === "assistant" && r.kind !== "individual") return fail("Assistant coaches take individual sessions only.");
+      // only players request: coaches and staff can't, unless they're on a team (same rule as the database)
+      const onTeam = S.teams.some(t => (t.member_ids || []).includes(S.me));
+      if (!onTeam && (isStaff() || S.coaches.some(x => x.profile_id === S.me))) return fail("Only players can request sessions.");
       const mins = (new Date(r.ends_at) - new Date(r.starts_at)) / 6e4;
       if (mins < 30 || mins > 120) return fail("Sessions run from 30 minutes to 2 hours.");
       if (new Date(r.starts_at) < new Date()) return fail("That time has already passed.");

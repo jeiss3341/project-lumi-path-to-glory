@@ -4,7 +4,8 @@
   const { $, $$, esc, pad } = UI;
   const C = window.PTG;
   const S = { me: null, coaches: [], teams: [], myReqs: [] };
-  const BK = { coach: null, day: null, start: null, end: null, blocks: [], busy: [] };
+  // office hours: the coach whose pop-up is open, the week shown, the picked start and length (half hours)
+  const BK = { coach: null, wk: 1, start: null, len: 0, kind: "team", note: "", all: [], blocks: [], busy: [] };
   const HALF = 30 * 6e4;
   let watching = false, bookingWired = false, fi = 0, rv = null, animOK = false;
 
@@ -369,188 +370,206 @@
       const b = e.target.closest("button[data-v]");
       if (b && !b.disabled) { rv = b.dataset.v; renderRosters(); }
     };
-    // a mentor's name jumps to office hours with that mentor picked, without reloading the page
-    $("#rost-view").onclick = e => {
-      const a = e.target.closest(".rost-coach");
-      const sel = $("#bk-who");
-      if (!a || !sel || !coachById(a.dataset.id)) return;
-      e.preventDefault();
-      sel.value = a.dataset.id; sel.dispatchEvent(new Event("change"));
-      if (window.PTGScroll) PTGScroll.to($("#book")); else $("#book").scrollIntoView({ behavior: "smooth" });
-    };
+    // a mentor's name opens their office hours pop-up (see initBooking)
   }
 
-  /* ================================================== office hours */
+  /* ================================================== office hours
+     Coach cards on the page. A card opens a pop-up with that coach's week planner (half-hour rows, Eastern)
+     and the request card beside it. Week 1 drops away once it's over; closing the pop-up starts the next
+     one back on the first week. Mentors and assistant coaches both take team reviews and individual sessions. */
+  const T = iso => new Date(iso).getTime();
+  const etTime = iso => new Date(iso).toLocaleTimeString("en-US", { timeZone: UI.EVENT_TZ, hour: "numeric", minute: "2-digit" });
+  const etShort = (a, b) => { const f = s => etTime(s).replace(":00", ""); const x = f(a), y = f(b); return x.slice(-2) === y.slice(-2) ? x.slice(0, -3) + "–" + y : x + "–" + y; };
+  const dayShort = ymd => UI.date(UI.etAt(ymd, 720), { weekday: "short", month: "short", day: "numeric" });
+  const EVENT_DAYS = UI.eventDays();
+  const WEEK2 = EVENT_DAYS.find(d => d.week === 2).ymd;
+  const weeks = () => UI.todayYmd() >= WEEK2 ? [2] : [1, 2];
+  const LEN = ["30 min", "1 h", "1.5 h", "2 h"];
+
   function initBooking() {
-    const sel = $("#bk-who");
-    const opt = c => '<option value="' + esc(c.id) + '">' + esc(UI.bare(UI.coachName(c))) + " · " + esc(UI.bare(UI.coachTeam(c))) + "</option>";
-    sel.innerHTML = '<optgroup label="Mentors">' + mentors().map(opt).join("") + '</optgroup><optgroup label="Assistant coaches">' + assistants().map(opt).join("") + "</optgroup>";
-    const asked = new URLSearchParams(location.search).get("coach");
-    if (!BK.coach && asked && coachById(asked)) BK.coach = asked;
-    if (!BK.coach || !coachById(BK.coach)) BK.coach = S.coaches.length ? S.coaches[0].id : null;
-    sel.value = BK.coach || "";
     if (!bookingWired) {
       bookingWired = true;
-      sel.onchange = () => { BK.coach = sel.value; BK.day = null; BK.start = BK.end = null; refreshBooking(); };
-      $("#book-form").addEventListener("change", e => { if (e.target.name === "bk-kind") renderCard(); });
-      $("#book-form").onsubmit = e => e.preventDefault();
-      $("#book").addEventListener("click", onBookClick);
-      $("#book").addEventListener("change", e => {
-        if (e.target.id === "bk-in") { BK.start = e.target.value; BK.end = defaultEnd(BK.start); renderBooking(); }
-        if (e.target.id === "bk-out") { BK.end = e.target.value; renderBooking(); }
-      });
+      const pop = $("#bk-pop");
+      $("#bk-cards").addEventListener("click", e => { const b = e.target.closest("[data-coach]"); if (b) openCoach(b.dataset.coach); });
+      // "Request a session" on the faculty files and assistant badges, and mentor names in the rosters
       document.addEventListener("click", e => {
-        const b = e.target.closest("[data-book]");
-        if (!b) return;
-        BK.coach = b.dataset.book; BK.day = null; BK.start = BK.end = null;
-        $("#bk-who").value = BK.coach;
-        refreshBooking();
+        const b = e.target.closest("[data-book], .rost-coach");
+        const id = b && (b.dataset.book || b.dataset.id);
+        if (!id || !coachById(id)) return;
+        e.preventDefault();
+        openCoach(id);
       });
+      pop.addEventListener("click", onPopClick);
+      pop.addEventListener("input", e => { if (e.target.id === "bk-note") BK.note = e.target.value; });
+      pop.addEventListener("close", () => { BK.wk = weeks()[0]; BK.coach = null; });   // the next coach starts back on the first week
+      $("#my-req").addEventListener("click", e => {
+        const c = e.target.closest(".js-cancel-req");
+        if (c) UI.act(c, async () => { await API.setRequestStatus(c.dataset.id, "cancelled"); await refreshBooking(); }, "Request cancelled.");
+      });
+      const asked = new URLSearchParams(location.search).get("coach");   // ?coach=m1 opens that coach right away
+      if (asked && coachById(asked)) openCoach(asked);
     }
     refreshBooking();
   }
 
+  // cards + "Your requests"; the open pop-up (if any) reloads its coach too
   async function refreshBooking() {
-    const id = BK.coach;
-    if (!id) return;
-    const r = await Promise.all([
-      API.availability(id).catch(() => []),
-      API.busy(id).catch(() => []),
-      S.me ? API.myRequests().catch(() => []) : Promise.resolve([])
-    ]);
-    if (id !== BK.coach) return;
-    BK.blocks = r[0]; BK.busy = r[1]; S.myReqs = r[2];
-    const days = UI.eventDays(), now = new Date();
-    const hasOpen = ymd => slotsFor(ymd).some(s => s.st === "open" || s.st === "requested");
-    if (!BK.day || !days.some(d => d.ymd === BK.day)) {
-      BK.day = (days.find(d => d.ymd >= UI.todayYmd() && hasOpen(d.ymd)) || days.find(d => d.ymd >= UI.todayYmd()) || days[0]).ymd;
-    }
-    void now;
-    renderBooking();
+    const r = await Promise.all([API.allAvailability().catch(() => []), S.me ? API.myRequests().catch(() => []) : Promise.resolve([])]);
+    BK.all = r[0]; S.myReqs = r[1];
+    renderCards();
     renderMyReqs();
+    if (BK.coach && $("#bk-pop").open) { await loadCoach(); paintPop(); }
   }
 
-  // Every half hour inside the coach's posted hours for one day, with its state.
+  function renderCards() {
+    const now = Date.now();
+    const card = c => {
+      const next = BK.all.filter(b => b.coach_id === c.id && T(b.ends_at) > now).sort((a, b) => T(a.starts_at) - T(b.starts_at))[0];
+      return '<button type="button" class="bk-card" data-coach="' + esc(c.id) + '"' + (next ? "" : " disabled") + "><b>" + esc(UI.bare(UI.coachName(c))) + "</b>" +
+        "<span>" + (c.kind === "assistant" ? "Assistant coach · any team" : "Mentor · " + esc(UI.bare(UI.coachTeam(c)))) + "</span>" +
+        "<em>" + (next ? "Next: " + esc(dayShort(UI.dayOf(next.starts_at))) + " · " + etShort(next.starts_at, next.ends_at) + " ET" : "No hours posted yet") + "</em></button>";
+    };
+    $("#bk-cards").innerHTML = '<div class="bk-top"><h3>Book office hours</h3><span>Pick a coach to see their week.</span></div>' +
+      '<p class="bk-grp">Mentors</p><div class="bk-grid">' + mentors().map(card).join("") + "</div>" +
+      '<p class="bk-grp">Assistant coaches</p><div class="bk-grid">' + assistants().map(card).join("") + "</div>";
+  }
+
+  async function openCoach(id) {
+    const pop = $("#bk-pop");
+    const myTeam = S.me && S.teams.some(t => (t.member_ids || []).includes(S.me.id));
+    Object.assign(BK, { coach: id, start: null, len: 0, note: "", kind: myTeam ? "team" : "individual" });
+    if (!pop.open) { pop.innerHTML = '<p class="loading">Loading ' + esc(UI.bare(UI.coachName(coachById(id)))) + "'s week…</p>"; pop.showModal(); }
+    await loadCoach();
+    if (BK.coach === id) paintPop();
+  }
+  async function loadCoach() {
+    const id = BK.coach;
+    const r = await Promise.all([API.availability(id).catch(() => []), API.busy(id).catch(() => []), S.me ? API.myRequests().catch(() => []) : Promise.resolve([])]);
+    if (id !== BK.coach) return;
+    BK.blocks = r[0]; BK.busy = r[1]; S.myReqs = r[2];
+  }
+
+  // every half hour inside the coach's hours on one day, with its state
   function slotsFor(ymd) {
-    const now = new Date(), out = [];
+    const now = Date.now(), out = [];
     const mine = S.myReqs.filter(r => r.coach_id === BK.coach && (r.status === "pending" || r.status === "accepted"));
-    BK.blocks.filter(b => UI.dayOf(b.starts_at) === ymd).sort((a, b) => a.starts_at.localeCompare(b.starts_at)).forEach((b, bi) => {
-      const bEnd = new Date(b.ends_at);
-      for (let t = new Date(b.starts_at); t.getTime() + HALF <= bEnd.getTime(); t = new Date(t.getTime() + HALF)) {
-        const e = new Date(t.getTime() + HALF);
-        const ov = x => new Date(x.starts_at) < e && t < new Date(x.ends_at);
+    BK.blocks.filter(b => UI.dayOf(b.starts_at) === ymd).sort((a, b) => T(a.starts_at) - T(b.starts_at)).forEach((b, bi) => {
+      for (let t = T(b.starts_at); t + HALF <= T(b.ends_at); t += HALF) {
+        const e = t + HALF, ov = x => T(x.starts_at) < e && t < T(x.ends_at);
         const my = mine.find(ov);
         let st = "open";
         if (t < now) st = "past";
         else if (my) st = my.status === "accepted" ? "mine-ok" : "mine";
         else if (BK.busy.some(x => x.status === "accepted" && ov(x))) st = "booked";
-        else if (BK.busy.some(x => x.status === "pending" && ov(x))) st = "requested";
-        out.push({ t, e, iso: t.toISOString(), st, block: bi });
+        else if (BK.busy.some(x => x.status === "pending" && ov(x))) st = "requested";   // someone else is waiting; still open
+        out.push({ t, e, iso: new Date(t).toISOString(), st, bi });
       }
     });
     return out;
   }
   const pickable = s => s.st === "open" || s.st === "requested";
-  function endOptions(slots, startIso) {
-    const i = slots.findIndex(s => s.iso === startIso);
-    if (i < 0) return [];
-    const out = [];
-    for (let j = i; j < slots.length && j < i + 4; j++) {
-      if (slots[j].block !== slots[i].block || !pickable(slots[j])) break;
-      out.push(slots[j].e.toISOString());
+  // how many half hours can follow a start (same block, still pickable, 2 hours at most)
+  const maxLen = (sl, i) => { let n = 0; for (let j = i; j < sl.length && n < 4; j++) { if (sl[j].bi !== sl[i].bi || !pickable(sl[j])) break; n++; } return n; };
+  const startDay = () => BK.start ? UI.dayOf(BK.start) : null;
+
+  // Only players request sessions. Coaches (mentors and assistants) and staff get a view-only planner, unless
+  // they're on a team themselves: the same rule as the desk's Player file. The database enforces it too.
+  const canRequest = () => !S.me || S.teams.some(t => (t.member_ids || []).includes(S.me.id)) ||
+    (S.me.role !== "staff" && !S.coaches.some(c => c.profile_id === S.me.id));
+
+  // the week planner: days across, half hours down, only the times the coach has hours (gaps squeezed out)
+  function planner() {
+    const c = coachById(BK.coach), days = EVENT_DAYS.filter(d => d.week === BK.wk);
+    const cell = {}, used = new Set();
+    days.forEach(d => slotsFor(d.ymd).forEach(s => { const m = Math.round((s.t - UI.etAt(d.ymd, 0).getTime()) / 6e4); cell[d.ymd + "|" + m] = s; used.add(m); }));
+    if (!used.size) return '<div class="bk-empty">' + esc(UI.bare(UI.coachName(c))) + " has no hours in Week " + BK.wk + (weeks().length > 1 ? ". Try the other week." : " yet.") + "</div>";
+    const sel = BK.start ? T(BK.start) : 0, selEnd = sel + BK.len * HALF, ask = canRequest();
+    const lab = m => { const h = Math.floor(m / 60) % 24, mm = m % 60; return (h % 12 || 12) + (mm ? ":" + pad(mm) : "") + " " + (h < 12 ? "AM" : "PM"); };
+    const words = { mine: "Your request (waiting)", "mine-ok": "Your session", booked: "Booked", requested: "Someone's waiting", open: "Open" };
+    let prev = null, rows = "";
+    [...used].sort((a, b) => a - b).forEach(m => {
+      if (prev != null && m - prev > 30) rows += '<tr class="gap"><th></th><td colspan="7"></td></tr>';   // hours nobody's free: squeezed out
+      rows += '<tr><th class="tm">' + (m % 60 && prev === m - 30 ? "" : lab(m)) + "</th>" + days.map(d => {
+        const s = cell[d.ymd + "|" + m];
+        if (!s || s.st === "past") return '<td class="off"></td>';
+        const label = esc(dayShort(d.ymd) + " · " + etTime(s.iso) + " ET · " + words[s.st]);
+        if (!pickable(s) || !ask) return '<td><span class="is-' + s.st + '" title="' + label + '"></span></td>';   // view only: nothing to click
+        const cls = s.t === sel ? "on" : s.t > sel && s.t < selEnd ? "in" : s.st === "requested" ? "req" : "";
+        return '<td><button type="button" class="' + cls + '" data-start="' + s.iso + '" title="' + label + '" aria-label="' + label + '"></button></td>';
+      }).join("") + "</tr>";
+      prev = m;
+    });
+    return '<div class="bk-scroll"><table class="bk-wk"><thead><tr><th class="tm"></th>' + days.map(d => '<th class="' + (UI.todayYmd() > d.ymd ? "past" : "") + '">' + d.dow + "<b>" + d.n + "</b></th>").join("") + "</tr></thead><tbody>" + rows + "</tbody></table></div>" +
+      '<div class="bk-key"><span><i class="open"></i>Open</span><span><i class="wait"></i>' + (ask ? "Someone's waiting (you can still ask)" : "Request waiting") + '</span><span><i class="is-booked"></i>Booked</span>' +
+        (S.me && ask ? '<span><i class="is-mine"></i>Your request</span><span><i class="is-mine-ok"></i>Your session</span><span><i class="on"></i>Your pick</span>' : !S.me ? '<span><i class="on"></i>Your pick</span>' : "") + "</div>";
+  }
+
+  function requestCard() {
+    const c = coachById(BK.coach), has = BK.start && BK.len, end = has ? new Date(T(BK.start) + BK.len * HALF).toISOString() : "";
+    if (!canRequest()) {   // coaches and staff: a look at the week, no request card
+      const own = c.profile_id && c.profile_id === S.me.id, staff = S.me.role === "staff";
+      return '<div class="bk-req"><h4>View only</h4><p class="bk-note">' +
+        (own ? "This is your week as players see it. Players request time with you here."
+             : (staff ? "Staff" : "Coaches") + " don't request sessions. This is a look at " + esc(UI.bare(UI.coachName(c))) + "'s week.") + "</p>" +
+        '<a class="btn" href="desk.html">Open your desk</a><p class="bk-fine">' + (staff ? "Requests are handled in Staff → Requests on your desk." : "You change your hours and answer requests on your desk.") + "</p></div>";
     }
-    return out;
-  }
-  function defaultEnd(startIso) {
-    const ends = endOptions(slotsFor(BK.day), startIso);
-    return ends[1] || ends[0] || null;
-  }
-
-  function renderBooking() {
-    const coach = coachById(BK.coach);
-    if (!coach) return;
-    const isA = coach.kind === "assistant";
-    $("#bk-team").disabled = isA;
-    if (isA) $("#bk-ind").checked = true;
-    $("#bk-label").textContent = UI.bare(UI.coachName(coach)) + " · " + (BK.blocks.length ? "posted hours" : "no hours posted yet");
-    $("#bk-hint").textContent = isA ? "Assistant coaches take individual sessions from players on any team. Every request waits for the coach to accept it."
-      : "Every request waits for the mentor to accept it. Players from other teams can request time too.";
-
-    const days = UI.eventDays();
-    const hours = ymd => BK.blocks.filter(b => UI.dayOf(b.starts_at) === ymd).reduce((m, b) => m + (new Date(b.ends_at) - new Date(b.starts_at)) / 36e5, 0);
-    $("#bk-days").innerHTML = [1, 2].map(w => '<span class="wkl">Week ' + w + "</span>" + days.filter(d => d.week === w).map(d => {
-      const h = hours(d.ymd), ev = d.events[0];
-      return '<button type="button" class="lday' + (h ? " has" : "") + '" data-day="' + d.ymd + '" aria-pressed="' + (d.ymd === BK.day) + '" aria-label="' +
-        esc(UI.date(d.d, { weekday: "long", month: "long", day: "numeric" })) + (h ? ", " + h + " hours posted" : ", no hours posted") + (ev ? ", " + esc(ev.title) : "") + '"><small>' + d.dow + "</small><b>" + d.n + '</b><span class="sc">' + (h ? (Math.round(h * 10) / 10) + "h" : "") + "</span>" + (ev ? '<i class="evdot ' + ev.kind + '" title="' + esc(ev.title) + '"></i>' : "") + "</button>";
-    }).join("")).join("");
-
-    const slots = slotsFor(BK.day);
-    if (BK.start && !slots.some(s => s.iso === BK.start && pickable(s))) BK.start = BK.end = null;
-    if (BK.start && !endOptions(slots, BK.start).includes(BK.end)) BK.end = defaultEnd(BK.start);
-    const sel0 = BK.start ? new Date(BK.start) : null, sel1 = BK.end ? new Date(BK.end) : null;
-    const words = { open: "Open", requested: "Open · someone asked", booked: "Booked", mine: "Your request · waiting", "mine-ok": "Your session", past: "Past" };
-    $("#bk-rows").innerHTML = slots.length ? slots.map((s, i) => {
-      const inSel = sel0 && s.t >= sel0 && s.e <= sel1;
-      const gap = i > 0 && slots[i - 1].block !== s.block ? " gap" : "";
-      let cell;
-      if (inSel && s.iso !== BK.start) cell = '<span class="cont">↳ continued</span>';
-      else if (pickable(s)) cell = '<button type="button" class="slot' + (s.st === "requested" ? " req" : "") + '" data-start="' + s.iso + '" aria-pressed="' + (s.iso === BK.start) + '">' + (s.iso === BK.start ? "Hour in" : words[s.st]) + "</button>";
-      else cell = '<span class="taken st-' + s.st + '">' + words[s.st] + "</span>";
-      return '<li class="' + (inSel ? "sel" : "") + gap + '"><span class="t">' + UI.time(s.iso) + '</span><span class="s">' + cell + "</span></li>";
-    }).join("") : '<li class="none"><span class="s">No hours posted for ' + esc(UI.date(BK.day + "T12:00:00", { weekday: "long", month: "short", day: "numeric" })) + ". Days with hours show how many under the date.</span></li>";
-    renderCard();
+    const sl = BK.start ? slotsFor(startDay()) : [], i = sl.findIndex(s => s.iso === BK.start), mx = i >= 0 ? maxLen(sl, i) : 0;
+    const yours = has && !UI.onEastern(new Date(BK.start)) ? '<span class="bk-yours">' + esc(UI.time(BK.start) + "–" + UI.time(end)) + " your time</span>" : "";
+    return '<div class="bk-req"><h4>Request card</h4><dl>' +
+      "<div><dt>Coach</dt><dd>" + esc(UI.bare(UI.coachName(c))) + "</dd></div>" +
+      "<div><dt>When</dt>" + (has ? "<dd>" + esc(dayShort(startDay())) + "<br>" + etTime(BK.start) + "–" + etTime(end) + " ET" + yours + "</dd>" : '<dd class="empty">Click a start time on the planner</dd>') + "</div></dl>" +
+      '<div><span class="bk-lbl">How long</span>' + (BK.start ? '<div class="bk-seg" role="group" aria-label="How long">' + LEN.map((l, j) => '<button type="button" data-len="' + (j + 1) + '" aria-pressed="' + (BK.len === j + 1) + '"' + (j + 1 > mx ? " disabled" : "") + ">" + l + "</button>").join("") + "</div>"
+        : '<p class="bk-fine">Pick a start time first.</p>') + "</div>" +
+      '<div><span class="bk-lbl">Session</span><div class="bk-seg" role="group" aria-label="Session"><button type="button" data-kind="team" aria-pressed="' + (BK.kind === "team") + '">Team review</button><button type="button" data-kind="individual" aria-pressed="' + (BK.kind === "individual") + '">Individual</button></div></div>' +
+      '<label><span class="bk-lbl">What do you want to work on?</span><textarea id="bk-note" maxlength="500" placeholder="Review our mock checkpoint VOD, trio rotations, …">' + esc(BK.note) + "</textarea></label>" +
+      (S.me ? '<button type="button" class="btn" data-send' + (has ? "" : " disabled") + ">Send request</button>"
+            : '<button type="button" class="btn" data-login>Log in with Discord to send</button>') +
+      '<p class="bk-fine">' + (S.me ? esc(UI.bare(UI.coachName(c))) + " accepts or declines it. The answer shows on your desk." : "Requests need a Discord login so your coach knows who's asking.") + "</p></div>";
   }
 
-  function renderCard() {
-    const coach = coachById(BK.coach);
-    const card = $("#bk-card");
-    if (!coach) { card.innerHTML = ""; return; }
-    const slots = slotsFor(BK.day);
-    const starts = slots.filter(pickable);
-    const kind = (document.querySelector('input[name="bk-kind"]:checked') || {}).value || "team";
-    let html = "<h3>Request card</h3>";
-    if (!starts.length) {
-      card.innerHTML = html + '<p class="note">' + esc(UI.bare(UI.coachName(coach))) + " has no open time on this day. Pick a day marked with hours.</p>";
-      return;
-    }
-    const ends = BK.start ? endOptions(slots, BK.start) : [];
-    html += "<dl><div><dt>With</dt><dd>" + esc(UI.bare(UI.coachName(coach))) + "</dd></div>" +
-      "<div><dt>On</dt><dd>" + esc(UI.date(BK.day + "T12:00:00", { weekday: "long", month: "short", day: "numeric" })) + "</dd></div>" +
-      '<div class="io"><label for="bk-in">Hour in</label><select id="bk-in"><option value="">Pick a time</option>' + starts.map(s => '<option value="' + s.iso + '"' + (s.iso === BK.start ? " selected" : "") + ">" + UI.time(s.iso) + "</option>").join("") + "</select></div>" +
-      '<div class="io"><label for="bk-out">Hour out</label><select id="bk-out"' + (BK.start ? "" : " disabled") + ">" + (BK.start ? ends.map(e => '<option value="' + e + '"' + (e === BK.end ? " selected" : "") + ">" + UI.time(e) + "</option>").join("") : "<option>—</option>") + "</select></div>" +
-      "<div><dt>Session</dt><dd>" + (kind === "team" ? "Team review" : "Individual") + (BK.start && BK.end ? " · " + UI.dur(BK.start, BK.end) : "") + "</dd></div></dl>";
-    if (!S.me) html += '<button type="button" class="btn" id="bk-login">Log in with Discord to send</button><p class="note">Requests need a Discord login so your coach knows who is asking.</p>';
-    else html += '<button type="button" class="btn" id="bk-send"' + (BK.start && BK.end ? "" : " disabled") + '>Send request</button><p class="note">The request waits until ' + esc(UI.bare(UI.coachName(coach))) + " accepts or declines it. Answers show on your desk.</p>";
-    card.innerHTML = html;
+  function paintPop() {
+    const c = coachById(BK.coach), pop = $("#bk-pop");
+    if (!c) return;
+    const wks = weeks();
+    pop.innerHTML = '<div class="bk-top"><div><span class="k">' + (c.kind === "assistant" ? "Assistant coach · any team" : "Mentor · " + esc(UI.bare(UI.coachTeam(c)))) + '</span><h3 id="bk-pop-title">' + esc(UI.bare(UI.coachName(c))) + "</h3></div>" +
+      '<div class="bk-tools">' + (wks.length === 1 ? '<span class="bk-wk-only">Week 2</span>' : '<div class="bk-seg">' + wks.map(w => '<button type="button" data-wk="' + w + '" aria-pressed="' + (BK.wk === w) + '">Week ' + w + "</button>").join("") + "</div>") +
+        '<button type="button" class="linkbtn" data-close>Close</button></div></div>' +
+      '<div class="bk-body"><div><p class="bk-step">' + (canRequest() ? "Click a start time" : "Week view") + " · Eastern (ET)</p>" + planner() + "</div>" + requestCard() + "</div>";
   }
 
-  function onBookClick(e) {
-    const d = e.target.closest(".lday"), s = e.target.closest(".slot"), send = e.target.closest("#bk-send"), login = e.target.closest("#bk-login");
-    if (d) { BK.day = d.dataset.day; BK.start = BK.end = null; renderBooking(); const n = $('.lday[data-day="' + BK.day + '"]'); if (n) n.focus(); }
-    else if (s) { BK.start = s.dataset.start; BK.end = defaultEnd(BK.start); renderBooking(); const n = $('.slot[data-start="' + BK.start + '"]'); if (n) n.focus(); }
-    else if (login) UI.login(login);
-    else if (send) {
-      const kind = (document.querySelector('input[name="bk-kind"]:checked') || {}).value || "team";
-      UI.act(send, async () => {
-        await API.requestSession({ coach_id: BK.coach, kind, starts_at: BK.start, ends_at: BK.end, note: $("#bk-note").value.trim() });
-        $("#bk-note").value = "";
-        BK.start = BK.end = null;
-        await refreshBooking();
+  function onPopClick(e) {
+    const pop = $("#bk-pop");
+    if (e.target === pop || e.target.closest("[data-close]")) return pop.close();
+    const t = e.target.closest("[data-wk],[data-start],[data-len],[data-kind],[data-send],[data-login]");
+    if (!t) return;
+    if (t.dataset.wk) { BK.wk = +t.dataset.wk; BK.start = null; BK.len = 0; }
+    else if (t.dataset.start) { const sl = slotsFor(UI.dayOf(t.dataset.start)), i = sl.findIndex(s => s.iso === t.dataset.start); BK.start = t.dataset.start; BK.len = Math.min(2, maxLen(sl, i)); }
+    else if (t.dataset.len) BK.len = +t.dataset.len;
+    else if (t.dataset.kind) BK.kind = t.dataset.kind;
+    else if (t.hasAttribute("data-login")) return UI.login(t);
+    else if (t.hasAttribute("data-send")) {
+      return UI.act(t, async () => {
+        await API.requestSession({ coach_id: BK.coach, kind: BK.kind, starts_at: BK.start, ends_at: new Date(T(BK.start) + BK.len * HALF).toISOString(), note: BK.note.trim() });
+        BK.start = null; BK.len = 0; BK.note = "";
+        await refreshBooking();   // the planner now shows it as your request
       }, "Request sent. You'll see the answer on your desk.");
     }
-    const c = e.target.closest(".js-cancel-req");
-    if (c) UI.act(c, async () => { await API.setRequestStatus(c.dataset.id, "cancelled"); await refreshBooking(); }, "Request cancelled.");
+    paintPop();
   }
 
   function renderMyReqs() {
     const box = $("#my-req");
-    if (!S.me) { box.innerHTML = ""; return; }
+    if (!S.me || !canRequest()) { box.innerHTML = ""; return; }   // logged out, or a coach / staff: nothing to list
     const now = new Date();
-    const list = S.myReqs.filter(r => new Date(r.ends_at) > now && r.status !== "cancelled").slice(0, 6);
+    // only what's still waiting or booked; declined ones don't pile up here (they stay on the desk)
+    const upcoming = S.myReqs.filter(r => new Date(r.ends_at) > now);
+    const list = upcoming.filter(r => r.status === "pending" || r.status === "accepted").slice(0, 6);
+    const declined = upcoming.filter(r => r.status === "declined").length;
     box.innerHTML = '<div class="mine-head"><h3>Your requests</h3><a href="desk.html">All on your desk →</a></div>' +
       (list.length ? '<ul class="req-list">' + list.map(r =>
         "<li>" + UI.statusChip(r.status) + '<span class="rq-when">' + esc(UI.range(r.starts_at, r.ends_at)) + '</span><span class="rq-who">' + esc(UI.bare(UI.coachName(r.coach))) + " · " + (r.kind === "team" ? "Team review" : "Individual") + "</span>" +
-        (["pending", "accepted"].includes(r.status) ? '<button type="button" class="linkbtn js-cancel-req" data-id="' + esc(r.id) + '">Cancel</button>' : "<span></span>") + "</li>").join("") + "</ul>"
-        : '<p class="empty-note">No upcoming requests yet. Pick a coach and a time above.</p>');
+        '<button type="button" class="linkbtn js-cancel-req" data-id="' + esc(r.id) + '">Cancel</button></li>').join("") + "</ul>"
+        : '<p class="empty-note">Nothing waiting or booked. Pick a coach above.</p>') +
+      (declined ? '<p class="mine-note">' + declined + (declined === 1 ? " request was" : " requests were") + ' declined. <a href="desk.html">See them on your desk</a></p>' : "");
   }
 })();

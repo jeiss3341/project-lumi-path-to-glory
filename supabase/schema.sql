@@ -297,6 +297,37 @@ begin
   return saved;
 end $$;
 
+-- Take a stretch of time out of a coach's hours (the mentor calendar's Remove hours): blocks it cuts through
+-- are split around it. Not while a booked session is in that time.
+create or replace function public.remove_hours(c text, s timestamptz, e timestamptz)
+returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  a public.availability;
+begin
+  if not (public.is_staff() or public.is_coach(c)) then
+    raise exception 'You don''t have permission to do that.';
+  end if;
+  if e <= s then
+    raise exception 'Hour out has to be after hour in.';
+  end if;
+  if exists (select 1 from public.requests r
+              where r.coach_id = c and r.status = 'accepted' and r.starts_at < e and r.ends_at > s) then
+    raise exception 'A booked session is in those hours. Cancel it first.';
+  end if;
+  perform set_config('ptg.saving_hours', 'on', true);
+  for a in select * from public.availability where coach_id = c and starts_at < e and ends_at > s loop
+    delete from public.availability where id = a.id;
+    if a.starts_at < s then
+      insert into public.availability (coach_id, starts_at, ends_at) values (c, a.starts_at, s);
+    end if;
+    if a.ends_at > e then
+      insert into public.availability (coach_id, starts_at, ends_at) values (c, e, a.ends_at);
+    end if;
+  end loop;
+  perform set_config('ptg.saving_hours', 'off', true);
+end $$;
+
 -- Validate a new request: inside posted hours, not booked, not in the past.
 create or replace function public.requests_before_insert() returns trigger
 language plpgsql security definer set search_path = public as $$
@@ -313,8 +344,11 @@ begin
   if k is null then
     raise exception 'That coach doesn''t exist.';
   end if;
-  if k = 'assistant' and new.kind <> 'individual' then
-    raise exception 'Assistant coaches take individual sessions only.';
+  -- only players request sessions: coaches (mentors and assistants) and staff can't, unless they're on a team
+  if (exists (select 1 from public.coaches c where c.profile_id = new.requester_id)
+      or exists (select 1 from public.profiles p where p.id = new.requester_id and p.role = 'staff'))
+     and not exists (select 1 from public.teams t where new.requester_id = any (t.member_ids)) then
+    raise exception 'Only players can request sessions.';
   end if;
   if new.starts_at < now() then
     raise exception 'That time has already passed.';
