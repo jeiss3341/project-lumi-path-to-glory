@@ -22,6 +22,7 @@ body{background-color:var(--desk);background-image:radial-gradient(110% 70% at 5
 a{color:inherit}
 :focus-visible{outline:2px solid var(--red);outline-offset:3px}
 h1,h2,h3,h4{text-wrap:balance}
+@media (min-width:1360px){html{zoom:1.1}}   /* everything 10% bigger where the screen has room; narrower screens keep their layouts */
 .wrap{max-width:1200px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .sheet{background-color:var(--paper);background-image:var(--grain);color:var(--ink);box-shadow:var(--lift);position:relative;color-scheme:light}   /* light paper: light tick boxes and menus */
 .ph{color:#8f887e;font-style:italic}

@@ -613,7 +613,8 @@
     const c = changes(v);
     t.textContent = (v.t === "add" ? "+ " : "− ") + span(v.a, v.b) + (v.days.length > 1 ? " · " + v.days.length + " days" : "") + " · " + hrs(c.sum) + (c.held.length ? " · " + c.held.length + " to answer first" : "");
   }
-  const tagAt = (x, y) => { const t = tag(); t.style.left = Math.max(8, Math.min(x + 16, innerWidth - t.offsetWidth - 8)) + "px"; t.style.top = (y + 20) + "px"; };
+  // the page may be zoomed (styles.css), and a fixed element's left and top are in zoomed pixels
+  const tagAt = (x, y) => { const t = tag(), z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1; t.style.left = Math.max(8, Math.min(x + 16, innerWidth - t.offsetWidth * z - 8)) / z + "px"; t.style.top = (y + 20) / z + "px"; };
   // redraw at most once a frame, however fast the pointer moves
   const refreshSoon = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; refresh(); tagText(); }); };
   function down(e) {
