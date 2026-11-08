@@ -9,6 +9,11 @@
   const HALF = 30 * 6e4;
   let watching = false, bookingWired = false, fi = 0, rv = null, animOK = false;
 
+  const HOURS_PAGE = document.documentElement.classList.contains("hours-page");
+  if (HOURS_PAGE) {   // the other sections live on the main page
+    document.title = "Office Hours · Path to Glory";
+    $$('.topbar nav a[href^="#"], main a[href^="#"]').forEach(a => { a.setAttribute("href", "index.html" + a.getAttribute("href")); });
+  }
   renderStatic();
   boot();
   API.onAuth(() => boot());
@@ -23,6 +28,11 @@
       API.teams().catch(() => [])
     ]);
     S.coaches = res[0]; S.teams = res[1];
+    if (HOURS_PAGE) {
+      const inEvent = S.me && (S.me.role === "staff" || S.coaches.some(c => c.profile_id === S.me.id) || S.teams.some(t => (t.member_ids || []).includes(S.me.id)));
+      $("#bk-locked").style.display = inEvent ? "none" : "";
+      $("#bk-cards").style.display = $("#my-req").style.display = inEvent ? "" : "none";
+    }
     renderHeroBadge(); renderFaculty(); renderAssist(); renderRosters(); initBooking();
     if (window.PTGSwing) PTGSwing.play();   // hero lanyard swings in once the badge is on the page
     if (!watching) {
@@ -168,7 +178,7 @@
         t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
       };
-      return "--sx:" + Math.round(2 + r() * 38) + "%;--sy:" + Math.round(38 + r() * 10) + "%;--sr:" + Math.round(-14 + r() * 28) + "deg";
+      return "--sx:" + Math.round(2 + r() * 38) + "%;--sy:" + Math.round(38 + r() * 10) + "%;--sr:" + (ymd === "2026-11-18" ? -4 : Math.round(-14 + r() * 28)) + "deg";   // Nov 18 landed perfectly straight, so it gets a slight lean by hand
     };
     const chip = ev => ev.kind === "scrim" ? '<img class="scrim-sticker" src="art/scrim-sticker.svg" alt="" width="240" height="240" style="' + stickerSpot(ev.date) + '">' : '<span class="chip ' + ev.kind + (ev.tentative ? " tbc" : "") + '">' + esc(ev.short) + "</span>";
     $("#weeks").innerHTML = [1, 2].map(w => '<div class="wk">' + label[w] + '</div><div class="week">' +
@@ -224,7 +234,7 @@
           '<section class="hist-sec"><h4>Competitive history</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul>" + (dz("burger") ? DOODLE.burger : "") + "</section>" +
           "<section><h4>About me</h4>" + (m.about ? paras(m.about) : "<p>" + UI.ph("", "[A short about-me written by the mentor.]") + "</p>") + "</section>" +
         "</div>" +
-        '<div class="info-foot"><span>Main: ' + UI.ph(m.main_character, "[Main character]") + " · Display: " + UI.ph(m.display_skin, "[Display skin]") + '</span><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="#book" data-book="' + esc(m.id) + '">Request a session</a></span>' +
+        '<div class="info-foot"><span>Main: ' + UI.ph(m.main_character, "[Main character]") + " · Display: " + UI.ph(m.display_skin, "[Display skin]") + '</span><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="index.html?hours" data-book="' + esc(m.id) + '">Request a session</a></span>' +
           (m.foot_scribble ? '<span class="scribble s-foot" aria-hidden="true">' + esc(m.foot_scribble).replace(/\n/g, "<br>") + "</span>" : "") + "</div>" +
         "</article>";
       const back =
@@ -285,6 +295,7 @@
     };
     $("#prev").onclick = () => show(fi - 1);
     $("#next").onclick = () => show(fi + 1);
+    S.showMentor = id => { const i = ms.findIndex(m => m.id === id); if (i >= 0) show(i); };
     show(Math.min(fi, ms.length - 1));
     animOK = true;
   }
@@ -294,27 +305,123 @@
     scratches: '<path d="M118 9 L172 33"/><path class="faint" d="M128 6 L178 27"/><path d="M146 41 C158 45 172 47 192 54"/><path class="faint" d="M104 20 l9 3 M181 15 l6 4"/>',
     scuff: '<ellipse class="scuff" cx="26" cy="128" rx="44" ry="20"/><path d="M8 130 L62 108"/><path class="faint" d="M16 138 L54 121 M38 134 l16 -5"/><path d="M4 118 l6 -2"/>',
     gouge: '<path d="M4 76 C60 64 118 68 198 42"/><path class="faint" d="M10 81 C64 70 120 74 196 49"/><path class="faint" d="M70 30 l3 1 M150 96 l4 -1 M30 104 l2 2"/>',
-    marked: '<rect class="tape" x="78" y="-6" width="48" height="16" transform="rotate(-4 102 2)"/><path class="ink" d="M156 64 l6 7 l15 -17"/><path class="faint" d="M168 70 L194 58"/>',
+    marked: '<path class="ink" d="M156 64 l6 7 l15 -17"/><path class="faint" d="M168 70 L194 58"/>',
     nicks: '<path d="M196 92 l-7 3 M197 99 l-5 1"/><path class="faint" d="M60 14 L96 6 M120 128 L160 118"/><ellipse class="scuff" cx="178" cy="18" rx="26" ry="12"/>'
   };
   const WEAR_BY_SLOT = ["", "scratches", "", "scuff", "gouge", "", "marked", "nicks"]; // a1..a8; blank = clean card
-  function renderAssist() {
-    $("#assist").innerHTML = assistants().map((a, i) =>
-      '<div class="mini-badge">' +
-      (WEAR[WEAR_BY_SLOT[i % WEAR_BY_SLOT.length]] ? '<svg class="wear" viewBox="0 0 200 140" preserveAspectRatio="none" aria-hidden="true">' + WEAR[WEAR_BY_SLOT[i % WEAR_BY_SLOT.length]] + "</svg>" : "") +
+  /* Assistant & role coaches: four small cards, two sliding every 4 seconds, and a tall card for the coach you click.
+     The slide stops while the mouse or keyboard is on the section, so nothing moves as you go to click. */
+  const AS_EVERY = 4000, AS_CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const AS = { list: [], main: null, head: 0, busy: false, draw: 0, timer: 0, left: AS_EVERY, t0: 0, hover: false, keys: false, seen: false, wired: false };
+  const asMoves = () => AS.list.length > 4;
+
+  function assistCard(a, on) {
+    const seed = C.coachSeed.find(c => c.id === a.id) || {}, name = UI.bare(UI.coachName(a));
+    const wear = WEAR[WEAR_BY_SLOT[AS.list.indexOf(a) % WEAR_BY_SLOT.length]];
+    const sticker = a.sticker || seed.sticker, at = a.sticker_at || seed.sticker_at || {}; // sticker_at: { top: "30%", tilt: -14 }
+    return '<div class="mini-badge as-card' + (on ? " on" : "") + '">' +
+      (wear ? '<svg class="wear" viewBox="0 0 200 140" preserveAspectRatio="none" aria-hidden="true">' + wear + "</svg>" : "") +
       // optional sticker slapped on the empty right side (from the coach row, or the event content as a fallback)
-      ((seed => {
-        const s = a.sticker || seed.sticker, at = a.sticker_at || seed.sticker_at || {}; // sticker_at: { top: "30%", tilt: -14 }
-        return s ? '<img class="mb-sticker" src="' + esc(s) + '" alt="" width="240" height="240" style="' +
-          (at.top ? "top:" + esc(at.top) + ";" : "") + (at.tilt != null ? "--tilt:" + Number(at.tilt) + "deg" : "") + '">' : "";
-      })(C.coachSeed.find(c => c.id === a.id) || {})) +
-      '<div class="b-strip"><span>ROLE COACH · PTG</span></div><div class="mb-body">' +
+      (sticker ? '<img class="mb-sticker" src="' + esc(sticker) + '" alt="" width="240" height="240" style="' + (at.top ? "top:" + esc(at.top) + ";" : "") + (at.tilt != null ? "--tilt:" + Number(at.tilt) + "deg" : "") + '">' : "") +
+      '<div class="b-strip"><span>FACULTY · PATH TO GLORY</span></div><div class="mb-body">' +
       '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>' + esc(a.badge_id) + "</span></div>" +
-      '<div class="mb-role">Assistant</div><div class="mb-name">[' + esc(UI.bare(UI.coachName(a))) + "]</div>" +
-      // icon between the name and the role focus: art from PTG.art (e.g. a1: "art/a1.webp"), else an empty slot
-      '<div class="mb-icon">' + (C.art && C.art[a.id] ? '<img src="' + esc(C.art[a.id]) + '" alt="' + esc(UI.bare(UI.coachName(a))) + ' icon">' : '<span class="mb-icon-ph" aria-hidden="true">?</span>') + "</div>" +
+      '<div class="mb-role">Assistant</div><div class="mb-nameline"><div class="mb-name">[' + esc(name) + ']</div><span class="b-team">' + esc(UI.bare(UI.coachTeam(a))) + "</span></div>" +
+      // icon between the name and the role focus: a headshot from PTG.artHead (e.g. a1: "art/heads/a1.webp"), else an empty slot
+      '<div class="mb-icon">' + (C.artHead && C.artHead[a.id] ? '<img src="' + esc(C.artHead[a.id]) + '" alt="' + esc(name) + ' icon">' : '<span class="mb-icon-ph" aria-hidden="true">?</span>') + "</div>" +
       '<div class="mb-focus">' + UI.ph(a.focus, "[Role focus]") + "<br>" + UI.ph((a.pool || []).join(", "), "[Characters or topics]") + "</div>" +
-      '<div class="mb-foot"><span class="b-team">Any team</span><a href="#book" data-book="' + esc(a.id) + '">Request ›</a></div></div></div>').join("");
+      '<div class="mb-foot"><a href="index.html?hours" data-book="' + esc(a.id) + '">Request ›</a></div></div>' +
+      '<button type="button" class="as-hit" data-a="' + esc(a.id) + '" aria-pressed="' + !!on + '" aria-label="Show ' + esc(name) + ' on the big card"></button></div>';
+  }
+
+  // the "next open" line on the tall card; runs again whenever the office hours reload
+  function asOpen() {
+    const el = $("#as-open");
+    if (!el || !AS.main) return;
+    const next = nextHours(AS.main);
+    el.textContent = next ? hoursLabel(next) : "No hours posted yet";
+  }
+  function asPaintMain(fade) {
+    const a = AS.main, box = $("#assist .as-main");
+    box.innerHTML = '<article class="as-tall"><div class="as-badge">' + UI.badge(a) + '</div><div class="as-side"><dl class="as-facts"><dt>Role focus</dt><dd>' + UI.ph(a.focus, "[Role focus]") +
+      "</dd><dt>Characters</dt><dd>" + UI.ph((a.pool || []).join(", "), "[Characters or topics]") + "</dd><dt>About</dt><dd>" + UI.ph(a.about, "[Short intro]") +
+      '</dd><dt>Next open</dt><dd id="as-open"></dd></dl><a class="as-go" href="index.html?hours" data-book="' + esc(a.id) + '">Request a session ›</a></div></article>';
+    if (fade) $(".as-badge", box).classList.add("swap");   // the same little rise as the Instructor card, on the wrapper so the card keeps its tilt
+    asOpen();
+  }
+  function asMark() {
+    $$("#assist .as-card").forEach(card => {
+      const hit = $(".as-hit", card), on = hit.dataset.a === AS.main.id;
+      card.classList.toggle("on", on);
+      hit.setAttribute("aria-pressed", String(on));
+    });
+  }
+  const asRestartBar = () => { const bar = $("#assist .as-bar"); if (bar) bar.innerHTML = "<i></i>"; };
+
+  // two cards leave one side and two come in on the other; the cards already there just move over, so nothing redraws
+  function asStep(right) {
+    if (AS.busy || !asMoves()) return;
+    const n = AS.list.length, track = $("#assist .as-track"), draw = AS.draw;
+    const more = [0, 1].map(i => AS.list[(right ? AS.head - 2 + i + n : AS.head + 4 + i) % n]);
+    track.insertAdjacentHTML(right ? "afterbegin" : "beforeend", more.map(a => assistCard(a, a === AS.main)).join(""));
+    const finish = () => {
+      if (draw !== AS.draw) return;   // the section was redrawn in the meantime
+      for (let i = 0; i < 2; i++) (right ? track.lastElementChild : track.firstElementChild).remove();
+      AS.head = (AS.head + (right ? -2 : 2) + n) % n;
+      AS.busy = false;
+    };
+    if (AS_CALM) return finish();
+    AS.busy = true;
+    const off = "translateX(" + -(track.firstElementChild.offsetWidth + parseFloat(getComputedStyle(track).columnGap)) + "px)", still = "translateX(0)";
+    const anim = track.animate(right ? [{ transform: off }, { transform: still }] : [{ transform: still }, { transform: off }], { duration: 520, easing: "cubic-bezier(.45,0,.2,1)", fill: "forwards" });
+    anim.finished.then(() => { finish(); anim.cancel(); }, () => { if (draw === AS.draw) AS.busy = false; });
+  }
+
+  const asShouldRun = () => asMoves() && AS.seen && !AS.hover && !AS.keys && !document.hidden && !AS_CALM;
+  function asSync() {
+    const run = asShouldRun();
+    $("#assist").classList.toggle("paused", !run);
+    if (run && !AS.timer) {
+      AS.t0 = Date.now();
+      AS.timer = setTimeout(() => { AS.timer = 0; AS.left = AS_EVERY; asStep(false); asRestartBar(); asSync(); }, AS.left);
+    } else if (!run && AS.timer) {
+      clearTimeout(AS.timer); AS.timer = 0;
+      AS.left = Math.max(200, AS.left - (Date.now() - AS.t0));
+    }
+  }
+  function asResetTimer() {
+    clearTimeout(AS.timer); AS.timer = 0; AS.left = AS_EVERY;
+    asRestartBar(); asSync();
+  }
+
+  function renderAssist() {
+    const box = $("#assist"), n = assistants().length;
+    AS.list = assistants();
+    AS.draw++; AS.busy = false;
+    AS.head = n ? AS.head % n : 0;
+    AS.main = AS.list.find(a => AS.main && a.id === AS.main.id) || AS.list[0] || null;
+    if (!n) { box.innerHTML = ""; return; }
+    AS.list.forEach(a => { if (C.artHead && C.artHead[a.id]) new Image().src = C.artHead[a.id]; });   // ready before a card slides in
+    box.innerHTML = '<div class="as-left"><div class="as-view"><div class="as-track">' +
+      Array.from({ length: Math.min(4, n) }, (_, i) => AS.list[(AS.head + i) % n]).map(a => assistCard(a, a === AS.main)).join("") + "</div></div>" +
+      (asMoves() ? '<div class="as-meta"><span>' + n + ' coaches</span><div class="as-bar"><i></i></div><div class="arrows"><button type="button" class="arrow as-prev" aria-label="Previous coaches">←</button><button type="button" class="arrow as-next" aria-label="Next coaches">→</button></div></div>' : "") +
+      '</div><div class="as-main" aria-live="polite"></div>';
+    asPaintMain(false);
+    if (!AS.wired) {
+      AS.wired = true;
+      box.addEventListener("click", e => {
+        const hit = e.target.closest(".as-hit");
+        if (hit) { AS.main = AS.list.find(a => a.id === hit.dataset.a); asPaintMain(true); asMark(); asResetTimer(); return; }
+        const arrow = e.target.closest(".as-prev, .as-next");
+        if (arrow) { asStep(arrow.classList.contains("as-prev")); asResetTimer(); }
+      });
+      box.addEventListener("pointerenter", e => { if (e.pointerType !== "touch") { AS.hover = true; asResetTimer(); } });   // hovering starts the 4 seconds over
+      box.addEventListener("pointerleave", () => { AS.hover = false; asSync(); });
+      box.addEventListener("focusin", e => { AS.keys = e.target.matches(":focus-visible"); asSync(); });
+      box.addEventListener("focusout", () => { AS.keys = false; asSync(); });
+      document.addEventListener("visibilitychange", asSync);
+      new IntersectionObserver(es => { AS.seen = es[es.length - 1].isIntersecting; asSync(); }, { threshold: .25 }).observe(box);
+    }
+    asResetTimer();
   }
 
   /* Rosters: every team in two columns. The Standings view unlocks once staff enter the first
@@ -330,7 +437,7 @@
     const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
     const mentor = t => {
       const c = t.coach_id ? coachById(t.coach_id) : null;
-      return c ? '<a class="rost-coach" data-id="' + esc(c.id) + '" href="?coach=' + encodeURIComponent(c.id) + '#book">' + esc(UI.bare(UI.coachName(c))) + "</a>" : '<span class="tba">To be assigned</span>';
+      return c ? '<a class="rost-coach" data-id="' + esc(c.id) + '" href="#faculty">' + esc(UI.bare(UI.coachName(c))) + "</a>" : '<span class="tba">To be assigned</span>';
     };
     const standings = rv === "standings";
 
@@ -391,10 +498,15 @@
       bookingWired = true;
       const pop = $("#bk-pop");
       $("#bk-cards").addEventListener("click", e => { const b = e.target.closest("[data-coach]"); if (b) openCoach(b.dataset.coach); });
-      // "Request a session" on the faculty files and assistant badges, and mentor names in the rosters
+      // a mentor's name in the rosters opens their file in Faculty (scroll.js does the scrolling, from the link's #faculty)
       document.addEventListener("click", e => {
-        const b = e.target.closest("[data-book], .rost-coach");
-        const id = b && (b.dataset.book || b.dataset.id);
+        const name = e.target.closest(".rost-coach");
+        if (name && S.showMentor) S.showMentor(name.dataset.id);
+      });
+      // "Request a session" on the faculty files and assistant badges
+      document.addEventListener("click", e => {
+        const b = e.target.closest("[data-book]");
+        const id = b && b.dataset.book;
         if (!id || !coachById(id)) return;
         e.preventDefault();
         openCoach(id);
@@ -417,17 +529,20 @@
     const r = await Promise.all([API.allAvailability().catch(() => []), S.me ? API.myRequests().catch(() => []) : Promise.resolve([])]);
     BK.all = r[0]; S.myReqs = r[1];
     renderCards();
+    asOpen();
     renderMyReqs();
     if (BK.coach && $("#bk-pop").open) { await loadCoach(); paintPop(); }
   }
 
+  const nextHours = c => BK.all.filter(b => b.coach_id === c.id && T(b.ends_at) > UI.now()).sort((a, b) => T(a.starts_at) - T(b.starts_at))[0];
+  const hoursLabel = b => dayShort(UI.dayOf(b.starts_at)) + " · " + etShort(b.starts_at, b.ends_at) + " ET";
+
   function renderCards() {
-    const now = Date.now();
     const card = c => {
-      const next = BK.all.filter(b => b.coach_id === c.id && T(b.ends_at) > now).sort((a, b) => T(a.starts_at) - T(b.starts_at))[0];
+      const next = nextHours(c);
       return '<button type="button" class="bk-card" data-coach="' + esc(c.id) + '"' + (next ? "" : " disabled") + "><b>" + esc(UI.bare(UI.coachName(c))) + "</b>" +
         "<span>" + (c.kind === "assistant" ? "Assistant coach · any team" : "Mentor · " + esc(UI.bare(UI.coachTeam(c)))) + "</span>" +
-        "<em>" + (next ? "Next: " + esc(dayShort(UI.dayOf(next.starts_at))) + " · " + etShort(next.starts_at, next.ends_at) + " ET" : "No hours posted yet") + "</em></button>";
+        "<em>" + (next ? "Next: " + esc(hoursLabel(next)) : "No hours posted yet") + "</em></button>";
     };
     $("#bk-cards").innerHTML = '<div class="bk-top"><h3>Book office hours</h3><span>Pick a coach to see their week.</span></div>' +
       '<p class="bk-grp">Mentors</p><div class="bk-grid">' + mentors().map(card).join("") + "</div>" +
@@ -438,6 +553,7 @@
     const pop = $("#bk-pop");
     const myTeam = S.me && S.teams.some(t => (t.member_ids || []).includes(S.me.id));
     Object.assign(BK, { coach: id, start: null, len: 0, note: "", kind: myTeam ? "team" : "individual" });
+    if (coachRules().kinds !== "both") BK.kind = coachRules().kinds;
     if (!pop.open) { pop.innerHTML = '<p class="loading">Loading ' + esc(UI.bare(UI.coachName(coachById(id)))) + "'s week…</p>"; pop.showModal(); }
     await loadCoach();
     if (BK.coach === id) paintPop();
@@ -451,7 +567,7 @@
 
   // every half hour inside the coach's hours on one day, with its state
   function slotsFor(ymd) {
-    const now = Date.now(), out = [];
+    const now = UI.now(), out = [];
     const mine = S.myReqs.filter(r => r.coach_id === BK.coach && (r.status === "pending" || r.status === "accepted"));
     BK.blocks.filter(b => UI.dayOf(b.starts_at) === ymd).sort((a, b) => T(a.starts_at) - T(b.starts_at)).forEach((b, bi) => {
       for (let t = T(b.starts_at); t + HALF <= T(b.ends_at); t += HALF) {
@@ -469,7 +585,9 @@
   }
   const pickable = s => s.st === "open" || s.st === "requested";
   // how many half hours can follow a start (same block, still pickable, 2 hours at most)
-  const maxLen = (sl, i) => { let n = 0; for (let j = i; j < sl.length && n < 4; j++) { if (sl[j].bi !== sl[i].bi || !pickable(sl[j])) break; n++; } return n; };
+  const maxLen = (sl, i) => { const top = coachRules().max; let n = 0; for (let j = i; j < sl.length && n < top; j++) { if (sl[j].bi !== sl[i].bi || !pickable(sl[j])) break; n++; } return n; };
+  // what this coach takes, in half hours (their Session settings; the defaults are 30 minutes to 2 hours, both kinds)
+  const coachRules = () => { const c = coachById(BK.coach) || {}; return { min: (c.min_minutes || 30) / 30, max: (c.max_minutes || 120) / 30, kinds: c.session_kinds || "both" }; };
   const startDay = () => BK.start ? UI.dayOf(BK.start) : null;
 
   // Only players request sessions. Coaches (mentors and assistants) and staff get a view-only planner, unless
@@ -481,7 +599,7 @@
   function planner() {
     const c = coachById(BK.coach), days = EVENT_DAYS.filter(d => d.week === BK.wk);
     const cell = {}, used = new Set();
-    days.forEach(d => slotsFor(d.ymd).forEach(s => { const m = Math.round((s.t - UI.etAt(d.ymd, 0).getTime()) / 6e4); cell[d.ymd + "|" + m] = s; used.add(m); }));
+    days.forEach(d => slotsFor(d.ymd).forEach((s, i, all) => { s.fits = maxLen(all, i) >= coachRules().min; const m = Math.round((s.t - UI.etAt(d.ymd, 0).getTime()) / 6e4); cell[d.ymd + "|" + m] = s; used.add(m); }));
     if (!used.size) return '<div class="bk-empty">' + esc(UI.bare(UI.coachName(c))) + " has no hours in Week " + BK.wk + (weeks().length > 1 ? ". Try the other week." : " yet.") + "</div>";
     const sel = BK.start ? T(BK.start) : 0, selEnd = sel + BK.len * HALF, ask = canRequest();
     const lab = m => { const h = Math.floor(m / 60) % 24, mm = m % 60; return (h % 12 || 12) + (mm ? ":" + pad(mm) : "") + " " + (h < 12 ? "AM" : "PM"); };
@@ -493,7 +611,7 @@
         const s = cell[d.ymd + "|" + m];
         if (!s || s.st === "past") return '<td class="off"></td>';
         const label = esc(dayShort(d.ymd) + " · " + etTime(s.iso) + " ET · " + words[s.st]);
-        if (!pickable(s) || !ask) return '<td><span class="is-' + s.st + '" title="' + label + '"></span></td>';   // view only: nothing to click
+        if (!pickable(s) || !ask || !s.fits) return '<td><span class="is-' + s.st + '" title="' + label + '"></span></td>';   // view only: nothing to click
         const cls = s.t === sel ? "on" : s.t > sel && s.t < selEnd ? "in" : s.st === "requested" ? "req" : "";
         return '<td><button type="button" class="' + cls + '" data-start="' + s.iso + '" title="' + label + '" aria-label="' + label + '"></button></td>';
       }).join("") + "</tr>";
@@ -514,13 +632,18 @@
         '<a class="btn" href="desk.html">Open your desk</a><p class="bk-fine">' + (staff ? "Requests are handled in Staff → Requests on your desk." : "You change your hours and answer requests on your desk.") + "</p></div>";
     }
     const sl = BK.start ? slotsFor(startDay()) : [], i = sl.findIndex(s => s.iso === BK.start), mx = i >= 0 ? maxLen(sl, i) : 0;
-    const yours = has && !UI.onEastern(new Date(BK.start)) ? '<span class="bk-yours">' + esc(UI.time(BK.start) + "–" + UI.time(end)) + " your time</span>" : "";
+    const rules = coachRules(), who = esc(UI.bare(UI.coachName(c))), span = n => LEN[n - 1];
+    // says so when this coach's Session settings narrow the choices
+    const lenNote = rules.min > 1 || rules.max < 4 ? '<p class="bk-fine bk-rule">' + who + " only does " + (rules.min === rules.max ? span(rules.min) : span(rules.min) + "–" + span(rules.max)) + " sessions.</p>" : "";
+    const kindNote = rules.kinds !== "both" ? '<p class="bk-fine bk-rule">' + who + " only does " + (rules.kinds === "team" ? "team reviews" : "individual sessions") + ".</p>" : "";
+    const kindBtn = (k, t) => '<button type="button" data-kind="' + k + '" aria-pressed="' + (BK.kind === k) + '">' + t + "</button>";
+    const yours = has && !UI.onEastern(new Date(BK.start)) ? '<span class="bk-yours">' + esc(UI.time(BK.start) + " – " + UI.time(end)) + " your time</span>" : "";
     return '<div class="bk-req"><h4>Request card</h4><dl>' +
       "<div><dt>Coach</dt><dd>" + esc(UI.bare(UI.coachName(c))) + "</dd></div>" +
-      "<div><dt>When</dt>" + (has ? "<dd>" + esc(dayShort(startDay())) + "<br>" + etTime(BK.start) + "–" + etTime(end) + " ET" + yours + "</dd>" : '<dd class="empty">Click a start time on the planner</dd>') + "</div></dl>" +
-      '<div><span class="bk-lbl">How long</span>' + (BK.start ? '<div class="bk-seg" role="group" aria-label="How long">' + LEN.map((l, j) => '<button type="button" data-len="' + (j + 1) + '" aria-pressed="' + (BK.len === j + 1) + '"' + (j + 1 > mx ? " disabled" : "") + ">" + l + "</button>").join("") + "</div>"
-        : '<p class="bk-fine">Pick a start time first.</p>') + "</div>" +
-      '<div><span class="bk-lbl">Session</span><div class="bk-seg" role="group" aria-label="Session"><button type="button" data-kind="team" aria-pressed="' + (BK.kind === "team") + '">Team review</button><button type="button" data-kind="individual" aria-pressed="' + (BK.kind === "individual") + '">Individual</button></div></div>' +
+      "<div><dt>When</dt>" + (has ? "<dd>" + esc(dayShort(startDay())) + "<br>" + etTime(BK.start) + " – " + etTime(end) + " ET" + yours + "</dd>" : '<dd class="empty">Click a start time on the planner</dd>') + "</div></dl>" +
+      '<div><span class="bk-lbl">How long</span>' + (BK.start ? '<div class="bk-seg" role="group" aria-label="How long">' + LEN.map((l, j) => '<button type="button" data-len="' + (j + 1) + '" aria-pressed="' + (BK.len === j + 1) + '"' + (j + 1 > mx || j + 1 < rules.min ? " disabled" : "") + ">" + l + "</button>").join("") + "</div>"
+        : '<p class="bk-fine">Pick a start time first.</p>') + lenNote + "</div>" +
+      '<div><span class="bk-lbl">Session</span><div class="bk-seg" role="group" aria-label="Session">' + (rules.kinds !== "individual" ? kindBtn("team", "Team review") : "") + (rules.kinds !== "team" ? kindBtn("individual", "Individual") : "") + "</div>" + kindNote + "</div>" +
       '<label><span class="bk-lbl">What do you want to work on?</span><textarea id="bk-note" maxlength="500" placeholder="Review our mock checkpoint VOD, trio rotations, …">' + esc(BK.note) + "</textarea></label>" +
       (S.me ? '<button type="button" class="btn" data-send' + (has ? "" : " disabled") + ">Send request</button>"
             : '<button type="button" class="btn" data-login>Log in with Discord to send</button>') +
@@ -543,7 +666,7 @@
     const t = e.target.closest("[data-wk],[data-start],[data-len],[data-kind],[data-send],[data-login]");
     if (!t) return;
     if (t.dataset.wk) { BK.wk = +t.dataset.wk; BK.start = null; BK.len = 0; }
-    else if (t.dataset.start) { const sl = slotsFor(UI.dayOf(t.dataset.start)), i = sl.findIndex(s => s.iso === t.dataset.start); BK.start = t.dataset.start; BK.len = Math.min(2, maxLen(sl, i)); }
+    else if (t.dataset.start) { const sl = slotsFor(UI.dayOf(t.dataset.start)), i = sl.findIndex(s => s.iso === t.dataset.start); BK.start = t.dataset.start; BK.len = Math.max(coachRules().min, Math.min(2, maxLen(sl, i))); }
     else if (t.dataset.len) BK.len = +t.dataset.len;
     else if (t.dataset.kind) BK.kind = t.dataset.kind;
     else if (t.hasAttribute("data-login")) return UI.login(t);
@@ -560,15 +683,15 @@
   function renderMyReqs() {
     const box = $("#my-req");
     if (!S.me || !canRequest()) { box.innerHTML = ""; return; }   // logged out, or a coach / staff: nothing to list
-    const now = new Date();
+    const now = new Date(UI.now());
     // only what's still waiting or booked; declined ones don't pile up here (they stay on the desk)
     const upcoming = S.myReqs.filter(r => new Date(r.ends_at) > now);
-    const list = upcoming.filter(r => r.status === "pending" || r.status === "accepted").slice(0, 6);
+    const list = upcoming.filter(r => UI.shown(r) === "pending" || UI.shown(r) === "accepted").slice(0, 6);   // an expired one drops off
     const declined = upcoming.filter(r => r.status === "declined").length;
     box.innerHTML = '<div class="mine-head"><h3>Your requests</h3><a href="desk.html">All on your desk →</a></div>' +
       (list.length ? '<ul class="req-list">' + list.map(r =>
-        "<li>" + UI.statusChip(r.status) + '<span class="rq-when">' + esc(UI.range(r.starts_at, r.ends_at)) + '</span><span class="rq-who">' + esc(UI.bare(UI.coachName(r.coach))) + " · " + (r.kind === "team" ? "Team review" : "Individual") + "</span>" +
-        '<button type="button" class="linkbtn js-cancel-req" data-id="' + esc(r.id) + '">Cancel</button></li>').join("") + "</ul>"
+        "<li>" + UI.statusChip(UI.shown(r)) + '<span class="rq-when">' + esc(UI.range(r.starts_at, r.ends_at)) + '</span><span class="rq-who">' + esc(UI.bare(UI.coachName(r.coach))) + " · " + (r.kind === "team" ? "Team review" : "Individual") + (r.by_coach ? " · booked by your mentor" : "") + "</span>" +
+        (r.requester_id === S.me.id ? '<button type="button" class="linkbtn js-cancel-req" data-id="' + esc(r.id) + '">Cancel</button>' : "") + "</li>").join("") + "</ul>"
         : '<p class="empty-note">Nothing waiting or booked. Pick a coach above.</p>') +
       (declined ? '<p class="mine-note">' + declined + (declined === 1 ? " request was" : " requests were") + ' declined. <a href="desk.html">See them on your desk</a></p>' : "");
   }

@@ -7,7 +7,8 @@
 -- Who can do what (enforced here, not in the browser):
 --   anyone            reads coaches, teams, posted hours, busy times
 --   signed-in player  requests sessions, cancels own
---   mentor / assist.  posts own hours, accepts or declines own requests
+--   mentor / assist.  posts own hours, accepts or declines own requests; mentors write down sessions
+--                     they set up with their own team (write_session)
 --   staff             links coaches to Discord accounts, edits mentor files, sets roles,
 --                     sees every session (teams are set by the organiser, read only on the site)
 -- =====================================================================
@@ -54,6 +55,11 @@ create table if not exists public.coaches (
   about          text not null default '' check (char_length(about) <= 600),
   updated_at     timestamptz not null default now()
 );
+
+-- What each coach takes (their Session settings). The defaults are the event's normal rules.
+alter table public.coaches add column if not exists min_minutes int not null default 30 check (min_minutes in (30, 60, 90, 120));
+alter table public.coaches add column if not exists max_minutes int not null default 120 check (max_minutes in (30, 60, 90, 120));
+alter table public.coaches add column if not exists session_kinds text not null default 'both' check (session_kinds in ('both', 'team', 'individual'));
 
 -- Event teams. Signups happen on Google Forms and Discord; the organiser enters the final teams here
 -- (read only from the site, staff can't change them).
@@ -102,10 +108,28 @@ create table if not exists public.requests (
   decided_at   timestamptz,
   created_at   timestamptz not null default now(),
   check (ends_at > starts_at),
-  check (ends_at - starts_at between interval '30 minutes' and interval '2 hours'),
   constraint requests_no_double_booking
     exclude using gist (coach_id with =, tstzrange(starts_at, ends_at) with &&) where (status = 'accepted')
 );
+
+-- A session the mentor wrote down (set up with their own team, on Discord say), booked straight away by
+-- write_session, rather than requested by a player. A team review is under the mentor's own account and every
+-- player on the team can see it; an individual session is under that player.
+alter table public.requests add column if not exists by_coach boolean not null default false;
+
+-- Sessions run from 30 minutes to 4 hours (players can only request up to 2: see requests_before_insert).
+-- This also replaces the old 2-hour limit on databases set up before written sessions.
+do $$
+declare n text;
+begin
+  for n in select conname from pg_constraint
+            where conrelid = 'public.requests'::regclass and contype = 'c' and pg_get_constraintdef(oid) like '%02:00:00%' loop
+    execute format('alter table public.requests drop constraint %I', n);
+  end loop;
+end $$;
+alter table public.requests drop constraint if exists requests_length;
+alter table public.requests add constraint requests_length
+  check (ends_at - starts_at between interval '30 minutes' and interval '4 hours');
 
 create index if not exists requests_coach_idx on public.requests (coach_id, starts_at);
 create index if not exists requests_requester_idx on public.requests (requester_id, starts_at);
@@ -205,8 +229,8 @@ drop trigger if exists coaches_guard on public.coaches;
 create trigger coaches_guard before update on public.coaches
   for each row execute function public.coaches_guard();
 
--- A coach can't delete hours that already have booked sessions in them.
--- (save_hours below switches this off for its own deletes, after checking the new hours still cover every session.)
+-- A coach can't delete hours that have a booked session or a waiting request in them: it has to be declined or
+-- cancelled first. (save_hours and remove_hours switch this off for their own deletes, after the same check.)
 create or replace function public.availability_guard() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
@@ -215,10 +239,11 @@ begin
   end if;
   if exists (
     select 1 from public.requests r
-    where r.coach_id = old.coach_id and r.status = 'accepted'
+    where r.coach_id = old.coach_id
+      and (r.status = 'accepted' or (r.status = 'pending' and r.starts_at > now()))
       and r.starts_at >= old.starts_at and r.ends_at <= old.ends_at
   ) then
-    raise exception 'These hours have booked sessions. Cancel those sessions first.';
+    raise exception 'These hours have a session or a waiting request in them. Decline or cancel it first.';
   end if;
   return old;
 end $$;
@@ -247,7 +272,7 @@ create trigger availability_window before insert or update on public.availabilit
   for each row execute function public.availability_window();
 
 -- Post new hours (b = null) or change a block (b = its id), all in one step:
--- the hours join every block they overlap or touch, and booked sessions must stay inside.
+-- the hours join every block they overlap or touch, and booked sessions and waiting requests must stay inside.
 create or replace function public.save_hours(c text, b uuid, s timestamptz, e timestamptz)
 returns public.availability
 language plpgsql security definer set search_path = public as $$
@@ -279,16 +304,17 @@ begin
     s2 := least(s2, ms);
     e2 := greatest(e2, me);
   end loop;
-  -- every booked session in the hours being replaced has to fit in the new hours
+  -- every booked session and waiting request in the hours being replaced has to fit in the new hours
   if exists (
     select 1 from public.requests r
-     where r.coach_id = c and r.status = 'accepted'
+     where r.coach_id = c
+       and (r.status = 'accepted' or (r.status = 'pending' and r.starts_at > now()))
        and not (r.starts_at >= s2 and r.ends_at <= e2)
        and exists (select 1 from public.availability a
                     where a.coach_id = c and (a.id = b or (a.starts_at <= e2 and a.ends_at >= s2))
                       and r.starts_at >= a.starts_at and r.ends_at <= a.ends_at)
   ) then
-    raise exception 'A booked session would be outside the new hours. Cancel it first, or keep it inside.';
+    raise exception 'A session or waiting request would be outside the new hours. Decline or cancel it first, or keep it inside.';
   end if;
   perform set_config('ptg.saving_hours', 'on', true);
   delete from public.availability a where a.coach_id = c and (a.id = b or (a.starts_at <= e2 and a.ends_at >= s2));
@@ -298,7 +324,7 @@ begin
 end $$;
 
 -- Take a stretch of time out of a coach's hours (the mentor calendar's Remove hours): blocks it cuts through
--- are split around it. Not while a booked session is in that time.
+-- are split around it. Not while a booked session or a waiting request is in that time.
 create or replace function public.remove_hours(c text, s timestamptz, e timestamptz)
 returns void
 language plpgsql security definer set search_path = public as $$
@@ -312,8 +338,9 @@ begin
     raise exception 'Hour out has to be after hour in.';
   end if;
   if exists (select 1 from public.requests r
-              where r.coach_id = c and r.status = 'accepted' and r.starts_at < e and r.ends_at > s) then
-    raise exception 'A booked session is in those hours. Cancel it first.';
+              where r.coach_id = c and r.starts_at < e and r.ends_at > s
+                and (r.status = 'accepted' or (r.status = 'pending' and r.starts_at > now()))) then
+    raise exception 'A session or waiting request is in those hours. Decline or cancel it first.';
   end if;
   perform set_config('ptg.saving_hours', 'on', true);
   for a in select * from public.availability where coach_id = c and starts_at < e and ends_at > s loop
@@ -333,16 +360,31 @@ create or replace function public.requests_before_insert() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
   k text;
+  mn int;
+  mx int;
+  ks text;
 begin
+  if current_setting('ptg.writing_session', true) = 'on' then
+    return new;   -- write_session checked everything itself
+  end if;
   if auth.uid() is not null then
     new.requester_id := auth.uid();
   end if;
   new.status := 'pending';
   new.decided_at := null;
+  if new.ends_at - new.starts_at < interval '30 minutes' or new.ends_at - new.starts_at > interval '2 hours' then
+    raise exception 'Sessions run from 30 minutes to 2 hours.';
+  end if;
 
-  select kind into k from public.coaches where id = new.coach_id;
+  select kind, min_minutes, max_minutes, session_kinds into k, mn, mx, ks from public.coaches where id = new.coach_id;
   if k is null then
     raise exception 'That coach doesn''t exist.';
+  end if;
+  if new.ends_at - new.starts_at < make_interval(mins => mn) or new.ends_at - new.starts_at > make_interval(mins => mx) then
+    raise exception 'That length is outside what this coach takes.';
+  end if;
+  if ks <> 'both' and ks <> new.kind then
+    raise exception 'This coach doesn''t take that kind of session.';
   end if;
   -- only players request sessions: coaches (mentors and assistants) and staff can't, unless they're on a team
   if (exists (select 1 from public.coaches c where c.profile_id = new.requester_id)
@@ -377,13 +419,83 @@ drop trigger if exists requests_before_insert on public.requests;
 create trigger requests_before_insert before insert on public.requests
   for each row execute function public.requests_before_insert();
 
+-- A mentor writes down a session they set up with their own team (on Discord, say), so every session is on the
+-- site. It's booked straight away (by_coach = true), inside their hours. k = 'team' is for the whole team (p is
+-- left null) and shows on all their desks; k = 'individual' is with player p. Waiting requests at the same time
+-- are declined, as when accepting one.
+-- A coach answers their own Session settings (staff can too).
+create or replace function public.save_session_settings(c text, mn int, mx int, k text)
+returns public.coaches
+language plpgsql security definer set search_path = public as $$
+declare
+  row_out public.coaches;
+begin
+  if not public.is_staff() and not exists (select 1 from public.coaches where id = c and profile_id = auth.uid()) then
+    raise exception 'You don''t have permission to do that.';
+  end if;
+  if mn > mx then
+    raise exception 'The shortest session can''t be longer than the longest.';
+  end if;
+  update public.coaches set min_minutes = mn, max_minutes = mx, session_kinds = k where id = c returning * into row_out;
+  return row_out;
+end $$;
+
+create or replace function public.write_session(c text, p uuid, k text, s timestamptz, e timestamptz, n text default '')
+returns public.requests
+language plpgsql security definer set search_path = public as $$
+declare
+  saved public.requests;
+  who   uuid := p;
+begin
+  if not (public.is_staff() or public.is_coach(c)) then
+    raise exception 'You don''t have permission to do that.';
+  end if;
+  if not exists (select 1 from public.teams t where t.coach_id = c) then
+    raise exception 'Only mentors with a team can write sessions.';
+  end if;
+  if k is null or k not in ('team', 'individual') then
+    raise exception 'Pick team review or individual.';
+  end if;
+  if k = 'team' then
+    select profile_id into who from public.coaches where id = c;
+    if who is null then
+      raise exception 'This mentor slot isn''t linked to a Discord account yet.';
+    end if;
+  elsif p is null or not exists (select 1 from public.teams t where t.coach_id = c and p = any (t.member_ids)) then
+    raise exception 'You can only write sessions for players on your own team.';
+  end if;
+  if e - s < interval '30 minutes' or e - s > interval '4 hours' then
+    raise exception 'Written sessions run from 30 minutes to 4 hours.';
+  end if;
+  if s < now() then
+    raise exception 'That time has already passed.';
+  end if;
+  if not exists (select 1 from public.availability a
+                  where a.coach_id = c and a.starts_at <= s and a.ends_at >= e) then
+    raise exception 'That time is outside your posted hours.';
+  end if;
+  if exists (select 1 from public.requests r
+              where r.coach_id = c and r.status = 'accepted'
+                and tstzrange(r.starts_at, r.ends_at) && tstzrange(s, e)) then
+    raise exception 'That time is already booked.';
+  end if;
+  update public.requests set status = 'declined'
+   where coach_id = c and status = 'pending' and tstzrange(starts_at, ends_at) && tstzrange(s, e);
+  perform set_config('ptg.writing_session', 'on', true);
+  insert into public.requests (coach_id, requester_id, kind, starts_at, ends_at, note, status, decided_at, by_coach)
+  values (c, who, k, s, e, left(coalesce(n, ''), 500), 'accepted', now(), true)
+  returning * into saved;
+  perform set_config('ptg.writing_session', 'off', true);
+  return saved;
+end $$;
+
 -- Only the status changes, and only in allowed ways.
 create or replace function public.requests_before_update() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   if new.coach_id <> old.coach_id or new.requester_id <> old.requester_id
      or new.starts_at <> old.starts_at or new.ends_at <> old.ends_at
-     or new.kind <> old.kind or new.note <> old.note then
+     or new.kind <> old.kind or new.note <> old.note or new.by_coach <> old.by_coach then
     raise exception 'Only a request''s status can change.';
   end if;
   if new.status = old.status then
@@ -481,7 +593,9 @@ create policy "availability write" on public.availability
 drop policy if exists "requests read" on public.requests;
 create policy "requests read" on public.requests
   for select to authenticated
-  using (requester_id = auth.uid() or public.is_coach(coach_id) or public.is_staff());
+  using (requester_id = auth.uid() or public.is_coach(coach_id) or public.is_staff()
+         or (by_coach and kind = 'team' and exists (select 1 from public.teams t
+              where t.coach_id = requests.coach_id and auth.uid() = any (t.member_ids))));   -- team reviews the mentor wrote
 drop policy if exists "requests insert" on public.requests;
 create policy "requests insert" on public.requests
   for insert to authenticated with check (requester_id = auth.uid());
@@ -535,7 +649,13 @@ begin
   select coalesce(display_name, username, 'A player'), discord_id into pname, pping
     from public.profiles where id = new.requester_id;
 
-  if tg_op = 'INSERT' then
+  if tg_op = 'INSERT' and new.by_coach and new.kind = 'team' then
+    msg := format('%s booked a team review: <t:%s:F> to <t:%s:t>. It''s on your team''s desks.', cname, t1, t2);
+    ping := null;
+  elsif tg_op = 'INSERT' and new.by_coach then
+    msg := format('%s booked an individual session with you: <t:%s:F> to <t:%s:t>. It''s on your desk.', cname, t1, t2);
+    ping := pping;
+  elsif tg_op = 'INSERT' then
     msg := format('New %s session request for %s: <t:%s:F> to <t:%s:t>, from %s. Accept or decline it on your mentor desk.',
                   new.kind, cname, t1, t2, pname);
     ping := cping;
@@ -544,7 +664,7 @@ begin
     ping := pping;
   elsif new.status <> old.status and new.status = 'cancelled' then
     msg := format('The %s session with %s on <t:%s:F> was cancelled.', new.kind, cname, t1);
-    ping := case when public.is_coach(new.coach_id) then pping else cping end;
+    ping := case when new.by_coach and new.kind = 'team' then null when public.is_coach(new.coach_id) then pping else cping end;
   else
     return null;
   end if;

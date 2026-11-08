@@ -13,6 +13,8 @@
 <link rel="stylesheet" href="app.css">
 <!-- keeps the hero lanyard hidden until swing.js swings it in (swing.js clears this; it also clears itself after 5 s) -->
 <script>document.documentElement.classList.add("swing-pending")</script>
+<!-- index.html?hours shows only Office Hours; the main page leaves it out (rules in app.css) -->
+<script>if (new URLSearchParams(location.search).has("hours")) document.documentElement.classList.add("hours-page")</script>
 </head>
 <body>
 <!-- shared SVG filters: rubber-stamp ink that bleeds at the edges and skips in spots -->
@@ -38,7 +40,7 @@
   <div class="wrap">
     <a class="code" href="index.html">PATH*TO*GLORY—(11)-(22)</a>
     <nav aria-label="Sections">
-      <a href="#brief">Brief</a><a href="#schedule">Schedule</a><a href="#faculty">Faculty</a><a href="#book">Office hours</a><a href="#rosters">Rosters</a><a href="#notes">Field notes</a><a href="#channels">Channels</a>
+      <a href="#brief">Brief</a><a href="#schedule">Schedule</a><a href="#faculty">Faculty</a><a href="#rosters">Rosters</a><a href="#notes">Field notes</a><a href="#channels">Channels</a>
     </nav>
     <div class="auth" id="auth"></div>
   </div>
@@ -192,19 +194,20 @@
     </div>
     <div class="assist">
       <div class="assist-head"><h3>Assistant &amp; role coaches</h3><p>On standby for players on any team. Ask them about your character or role, request a team review or an individual session, or join the topic sessions they run.</p></div>
-      <div class="assist-grid" id="assist"></div>
+      <div class="as-stage" id="assist"></div>
     </div>
   </section>
 
   <section class="sec wrap" id="book">
     <div class="sec-head"><span class="no">(05)</span><h2>Office hours</h2><p>Pick a coach to see their week. Click a start time, choose how long, and send a request; the coach accepts or declines it. Times are Eastern (ET), 8 AM to 4 AM, and the request card also shows your own time (<span id="tz"></span>).</p></div>
     <!-- coach cards; each opens #bk-pop with that coach's week planner (home.js, office hours) -->
+    <p class="sheet bk-locked" id="bk-locked" style="display:none">Office hours are for the players, mentors and staff in the event. If that's you, log in with Discord at the top of the page.</p>
     <div class="sheet bk-sheet" id="bk-cards"></div>
     <div class="mine" id="my-req"></div>
   </section>
 
   <section class="sec wrap" id="rosters">
-    <div class="sec-head"><span class="no">(06)</span><h2>Rosters</h2><p>Every team, its mentor, and the checkpoint standings.</p></div>
+    <div class="sec-head"><span class="no">(05)</span><h2>Rosters</h2><p>Every team, its mentor, and the checkpoint standings.</p></div>
     <article class="sheet roster">
       <div class="roster-top">
         <div><span class="mono-label" style="color:var(--ink-soft)">Form PTG-R · Nov 9–22</span><h3 id="rost-title">Team rosters</h3></div>
@@ -216,7 +219,7 @@
   </section>
 
   <section class="sec wrap" id="notes">
-    <div class="sec-head"><span class="no">(07)</span><h2>Field notes</h2><p>Everything from the event is open to the public, so the whole scene can learn from it.</p></div>
+    <div class="sec-head"><span class="no">(06)</span><h2>Field notes</h2><p>Everything from the event is open to the public, so the whole scene can learn from it.</p></div>
     <div class="notes">
       <div class="cards" id="res"></div>
       <article class="sheet oblig">
@@ -233,7 +236,7 @@
   </section>
 
   <section class="sec wrap" id="channels">
-    <div class="sec-head"><span class="no">(08)</span><h2>Channels</h2></div>
+    <div class="sec-head"><span class="no">(07)</span><h2>Channels</h2></div>
     <div class="links" id="links"></div>
   </section>
 

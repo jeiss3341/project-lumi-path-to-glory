@@ -23,7 +23,7 @@
   UI.ymd = d => d.getFullYear() + "-" + UI.pad(d.getMonth() + 1) + "-" + UI.pad(d.getDate());
   UI.time = iso => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   UI.date = (iso, o) => new Date(iso).toLocaleDateString("en-US", o || { weekday: "short", month: "short", day: "numeric" });
-  UI.range = (a, b) => UI.date(a) + " · " + UI.time(a) + "–" + UI.time(b);
+  UI.range = (a, b) => UI.date(a) + " · " + UI.time(a) + " – " + UI.time(b);
   // one formatter per time zone: making a new one each call is slow, and the planners call this thousands of times
   const FMT = {};
   const tzParts = (d, tz) => {
@@ -62,10 +62,25 @@
     }
     return out;
   };
-  // ?today=2026-11-18 previews the site as of that date (testing only)
-  const FAKE = (location.search.match(/[?&]today=(\d{4}-\d\d-\d\d)/) || [])[1];
+  // Previewing another day: ?today=2026-11-18 (and &at=21:00, Eastern; noon if left out), or in demo mode the demo
+  // bar's Day picker, which sticks while you browse. The site then acts as if it's that moment (what's over, what's
+  // waiting, what's next), and the clock keeps running from there. Off, it's the real time.
+  const WHEN_KEY = "ptg-demo-when";
+  let fakeDay = (location.search.match(/[?&]today=(\d{4}-\d\d-\d\d)/) || [])[1], fakeAt = 12 * 60;
+  const at = location.search.match(/[?&]at=(\d\d?):(\d\d)/);
+  if (fakeDay && at) fakeAt = +at[1] * 60 + +at[2];
+  if (!fakeDay && window.API && !API.live) {
+    try { const w = JSON.parse(localStorage.getItem(WHEN_KEY) || "null"); if (w && w.day) { fakeDay = w.day; fakeAt = w.at; } } catch (e) { /* no storage: real time */ }
+  }
+  const LOADED = Date.now();
+  const FAKE_T = fakeDay ? UI.etAt(fakeDay, fakeAt < UI.DAY_END - 1440 ? fakeAt + 1440 : fakeAt).getTime() : null;   // 1 AM is the night of that day
+  UI.now = () => FAKE_T == null ? Date.now() : FAKE_T + (Date.now() - LOADED);
+  UI.previewing = () => FAKE_T != null;
   // today's event day (Eastern, rolling over at 4 AM)
-  UI.todayYmd = () => FAKE || UI.dayOf(new Date());
+  UI.todayYmd = () => UI.dayOf(new Date(UI.now()));
+  // what a request is now: a waiting one nobody answered before it started has expired; a booked one that's over is done
+  UI.shown = r => r.status === "pending" && new Date(r.starts_at).getTime() <= UI.now() ? "expired"
+    : r.status === "accepted" && new Date(r.ends_at).getTime() <= UI.now() ? "done" : r.status;
   const dayNum = ymd => { const [y, m, d] = ymd.split("-").map(Number); return Math.round(Date.UTC(y, m - 1, d) / DAY); };
   UI.status = () => {
     const t = dayNum(UI.todayYmd()), s = dayNum(C.event.start), e = dayNum(C.event.end);
@@ -81,6 +96,8 @@
 
   /* ---------- people & coaches ---------- */
   UI.who = p => p ? (p.display_name || p.username || "Player") : "Someone";
+  // who a session is with: the team's name for a team review the mentor wrote down, otherwise the player
+  UI.party = (r, teamName) => r.by_coach && r.kind === "team" && teamName ? teamName : UI.who(r.requester);
   UI.avatar = (p, size) => {
     size = size || 28;
     const name = UI.who(p);
@@ -121,13 +138,16 @@
     return '<div class="ph-art"><span class="L">' + UI.esc(base.charAt(0)) + '</span><span class="cap">Display art<br>' + UI.esc((c && c.display_skin) || "To be chosen") + "</span></div>";
   };
   UI.badge = function (c) {
-    return '<div class="badge"><div class="b-strip"><span>FACULTY ACCESS · PATH TO GLORY</span></div><div class="b-body">' +
+    return '<div class="badge"><div class="b-strip"><span>FACULTY · PATH TO GLORY</span></div><div class="b-body">' +
       '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>ID // 2026</span></div>' +
       '<div class="b-role">' + (c.kind === "assistant" ? "Assistant" : "Instructor") + "</div>" +
       '<div class="b-row"><span class="b-id">' + UI.esc(c.badge_id) + "</span>" + UI.barcode(c.badge_id, 92, 24) + "</div>" +
       '<div class="b-art">' + UI.art(c) + "</div>" +
-      '<div class="b-name"><small>NAME</small><b>[' + UI.esc(bare(UI.coachName(c))) + "]</b></div>" +
-      '<span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div>";
+      // assistants carry a small team tag beside the name; mentors keep theirs on its own line
+      (c.kind === "assistant"
+        ? '<div class="b-name"><small>NAME</small><div class="b-nameline"><b>[' + UI.esc(bare(UI.coachName(c))) + ']</b><span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div></div></div>"
+        : '<div class="b-name"><small>NAME</small><b>[' + UI.esc(bare(UI.coachName(c))) + "]</b></div>" +
+          '<span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div>");
   };
 
   /* ---------- feedback ---------- */
@@ -177,13 +197,14 @@
     if (!r || !A) return done(false);
     const et = iso => new Date(iso).toLocaleTimeString("en-US", { timeZone: UI.EVENT_TZ, hour: "numeric", minute: "2-digit" });
     const T = iso => new Date(iso).getTime();
-    const name = esc(UI.who(r.requester)), coach = esc(o.coach || ""), what = r.kind === "team" ? "team review" : "individual session";
+    const name = esc(UI.party(r, o.team)), coach = esc(o.coach || ""), what = r.kind === "team" ? "team review" : "individual session";
     const cal = me ? "your calendar" : coach + "'s calendar";
     const when = esc(UI.date(UI.etAt(UI.dayOf(r.starts_at), 720), { weekday: "long", month: "long", day: "numeric" })) + " · " + et(r.starts_at) + "–" + et(r.ends_at) + " ET" +
       (UI.onEastern(new Date(r.starts_at)) ? "" : '<br><span class="muted">Your time: ' + esc(UI.time(r.starts_at) + "–" + UI.time(r.ends_at)) + "</span>");
     // accepting books the time, so other waiting requests that overlap it are declined (the database does the same)
     const clash = o.status !== "accepted" ? [] : (o.reqs || []).filter(x => x.id !== r.id && x.coach_id === r.coach_id && x.status === "pending" && T(x.starts_at) < T(r.ends_at) && T(r.starts_at) < T(x.ends_at));
-    const undo = "There's no undo. If this is a mistake, " + name + " has to send the request again.";
+    const undo = r.by_coach ? "There's no undo, but " + (me ? "you" : coach) + " can write the session again."   // a session the mentor wrote down
+      : "There's no undo. If this is a mistake, " + name + " has to send the request again.";
     const pts = {
       accepted: ["The " + what + " is booked. It shows as Accepted on " + name + "'s desk and on " + cal + ".",
         me ? "Make sure you can make it. " + name + " will plan around it." : coach + " isn't asked first, so check with them if you're not sure they can make it."],
@@ -194,7 +215,7 @@
     let d = document.getElementById("ask-dlg");
     if (!d) { d = document.createElement("dialog"); d.id = "ask-dlg"; d.setAttribute("aria-labelledby", "ask-dlg-title"); document.body.appendChild(d); }
     d.innerHTML = '<div class="sc-dtop"><div><span class="k">' + A[0] + (me ? "" : " · " + coach) + '</span><h3 id="ask-dlg-title">' + A[1] + "</h3></div>" + UI.statusChip(r.status) + "</div>" +
-      '<p class="sc-ask-who"><b>' + name + "</b>" + (o.team ? " · " + esc(o.team) : "") + "<br>" + what.charAt(0).toUpperCase() + what.slice(1) + (me ? "" : " with " + coach) + "<br>" + when + "</p>" +
+      '<p class="sc-ask-who"><b>' + name + "</b>" + (o.team && !(r.by_coach && r.kind === "team") ? " · " + esc(o.team) : "") + "<br>" + what.charAt(0).toUpperCase() + what.slice(1) + (me ? "" : " with " + coach) + "<br>" + when + "</p>" +
       '<h4 class="sc-ask-k">What happens</h4><ul class="sc-ask">' + pts.map(p => "<li>" + p + "</li>").join("") + "</ul>" +
       (clash.length ? '<p class="sc-ask-warn">' + (clash.length === 1 ? "1 other waiting request overlaps this time and will be declined:" : clash.length + " other waiting requests overlap this time and will be declined:") + "</p>" +
         '<ul class="sc-ask warn">' + clash.map(x => "<li>" + esc(UI.who(x.requester)) + " · " + et(x.starts_at) + "–" + et(x.ends_at) + " ET · " + UI.sentGap(x, r) + "</li>").join("") + "</ul>" : "") +
@@ -226,7 +247,7 @@
     if (!d.open) d.showModal();
     d.querySelector("[data-back]").focus();   // the safe choice has focus, so Enter doesn't confirm by accident
   }
-  UI.statusChip = s => '<span class="chip-st st-' + UI.esc(s) + '">' + UI.esc({ pending: "Waiting", accepted: "Accepted", declined: "Declined", cancelled: "Cancelled", waitlist: "Waitlist", withdrawn: "Withdrawn" }[s] || s) + "</span>";
+  UI.statusChip = s => '<span class="chip-st st-' + UI.esc(s) + '">' + UI.esc({ pending: "Waiting", accepted: "Accepted", declined: "Declined", cancelled: "Cancelled", waitlist: "Waitlist", withdrawn: "Withdrawn", expired: "Expired", done: "Done" }[s] || s) + "</span>";
 
   /* ---------- top bar: Discord login ---------- */
   UI.mountAuth = function (el, me) {
@@ -236,12 +257,80 @@
       UI.$("#login-btn", el).onclick = e => UI.act(e.currentTarget, () => API.signIn());
       return;
     }
-    el.innerHTML = '<a class="me-chip" href="desk.html" title="Open your desk">' + UI.avatar(me, 26) + "<span>" + UI.esc(UI.who(me)) + '</span></a><button type="button" class="cta ghost-cta" id="logout-btn">Log out</button>';
+    // the profile menu: opens on hover or click, and lists the same desk pages as the desk's tabs
+    el.innerHTML = '<div class="me-menu"><button type="button" class="me-chip" aria-haspopup="true" aria-expanded="false">' + UI.avatar(me, 26) + "<span>" + UI.esc(UI.who(me)) + '</span><i class="me-caret" aria-hidden="true"></i></button>' +
+      '<div class="me-pop"><div class="me-links"></div><button type="button" id="logout-btn">Log out</button></div></div>';
     UI.$("#logout-btn", el).onclick = e => UI.act(e.currentTarget, () => API.signOut());
+    const menu = UI.$(".me-menu", el), chip = UI.$(".me-chip", el), links = UI.$(".me-links", el);
+    const setOpen = on => { menu.classList.toggle("open", on); chip.setAttribute("aria-expanded", String(on)); };
+    chip.onclick = () => setOpen(!menu.classList.contains("open"));
+    menu.onclick = e => { if (e.target.closest("a")) setOpen(false); };
+    menu.onpointerleave = e => { if (e.pointerType === "mouse") setOpen(false); };
+    menu.onkeydown = e => { if (e.key === "Escape") { setOpen(false); chip.focus(); } };
+    if (!UI.meMenuWired) {
+      UI.meMenuWired = true;
+      document.addEventListener("click", e => { const open = UI.$(".me-menu.open"); if (open && !open.contains(e.target)) { open.classList.remove("open"); UI.$(".me-chip", open).setAttribute("aria-expanded", "false"); } });
+    }
+    Promise.all([API.coaches(), API.teams()]).then(([coaches, teams]) => {
+      const coach = coaches.find(c => c.profile_id === me.id), staff = me.role === "staff", onTeam = teams.some(t => (t.member_ids || []).includes(me.id));
+      const items = [];
+      if (coach) items.push(["desk.html#coach", coach.kind === "assistant" ? "Coach calendar" : "Mentor calendar"]);
+      if (coach) items.push(["", "Session settings"]);
+      if (onTeam || (!coach && !staff)) items.push(["desk.html#player", "Player file"]);
+      if (staff) items.push(["desk.html#staff", "Staff"]);
+      if (coach || staff || onTeam) items.push(["index.html?hours", "Office hours"]);   // only for people in the event
+      links.innerHTML = items.map(i => i[0] ? '<a href="' + i[0] + '">' + UI.esc(i[1]) + "</a>" : '<button type="button" class="js-settings">' + UI.esc(i[1]) + "</button>").join("");
+      const settings = UI.$(".js-settings", links);
+      if (settings) settings.onclick = () => { setOpen(false); UI.sessionSettings(coach); };
+    }).catch(() => { links.innerHTML = '<a href="desk.html">Your desk</a>'; });
   };
   UI.login = btn => UI.act(btn, () => API.signIn());
 
+  // a coach's questions about the sessions they take; the defaults are the event's normal rules
+  UI.sessionSettings = function (c) {
+    const LENGTHS = [[30, "30 min"], [60, "1 h"], [90, "1.5 h"], [120, "2 h"]], KINDS = [["both", "Both"], ["team", "Team only"], ["individual", "Individual only"]];
+    const v = { min: c.min_minutes || 30, max: c.max_minutes || 120, kinds: c.session_kinds || "both" };
+    const d = document.createElement("dialog");
+    d.className = "ss-pop";
+    d.setAttribute("aria-labelledby", "ss-title");
+    const seg = (key, label, opts) => '<div class="ss-q"><span id="ss-' + key + '">' + label + '</span><div class="bk-seg" role="group" aria-labelledby="ss-' + key + '">' +
+      opts.map(([val, text]) => '<button type="button" data-k="' + key + '" data-v="' + val + '" aria-pressed="' + (v[key] === val) + '"' + ((key === "min" && val > v.max) || (key === "max" && val < v.min) ? " disabled" : "") + ">" + text + "</button>").join("") + "</div></div>";
+    const paint = () => {
+      d.innerHTML = '<h3 id="ss-title">Session settings</h3><p>Players only see what you allow here when they request time with you.</p>' +
+        seg("min", "Shortest session", LENGTHS) + seg("max", "Longest session", LENGTHS) + seg("kinds", "Sessions you take", KINDS) +
+        '<div class="ss-foot"><button type="button" class="ss-reset" data-reset>Back to defaults</button><span><button type="button" class="btn ghost" data-cancel>Cancel</button> <button type="button" class="btn" data-save>Save</button></span></div>';
+    };
+    d.onclick = e => {
+      const b = e.target.closest("button");
+      if (!b || b.disabled) return;
+      if (b.dataset.k) { v[b.dataset.k] = b.dataset.k === "kinds" ? b.dataset.v : +b.dataset.v; paint(); }
+      else if ("reset" in b.dataset) { Object.assign(v, { min: 30, max: 120, kinds: "both" }); paint(); }
+      else if ("cancel" in b.dataset) d.close();
+      else if ("save" in b.dataset) UI.act(b, async () => {
+        await API.saveSessionSettings(c.id, v.min, v.max, v.kinds);
+        Object.assign(c, { min_minutes: v.min, max_minutes: v.max, session_kinds: v.kinds });
+        d.close();
+      }, "Session settings saved.");
+    };
+    d.onclose = () => d.remove();
+    paint();
+    document.body.append(d);
+    d.showModal();
+  };
+
   /* ---------- demo mode bar ---------- */
+  // the demo bar's Day and time menus: real time, the day before, each event day, the day after
+  function dayPicker() {
+    const days = UI.eventDays(), before = UI.ymd(new Date(days[0].d.getTime() - DAY)), after = UI.ymd(new Date(days[days.length - 1].d.getTime() + DAY));
+    const label = ymd => UI.date(UI.etAt(ymd, 720), { weekday: "short", month: "short", day: "numeric" });
+    const opts = [["", "Real time"], [before, label(before) + " · day before"]]
+      .concat(days.map((d, i) => [d.ymd, label(d.ymd) + " · Day " + (i + 1) + (d.events[0] ? " · " + d.events[0].title : "")]))
+      .concat([[after, label(after) + " · after the event"]]);
+    const times = [[600, "10:00 AM"], [840, "2:00 PM"], [1080, "6:00 PM"], [1260, "9:00 PM"], [1410, "11:30 PM"], [120, "2:00 AM (that night)"]];
+    const cur = fakeDay || "";
+    return '<label for="demo-day">Day</label><select id="demo-day">' + opts.map(([v, l]) => '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + UI.esc(l) + "</option>").join("") + "</select>" +
+      '<select id="demo-at" aria-label="Time (Eastern)"' + (cur ? "" : " disabled") + ">" + times.map(([v, l]) => '<option value="' + v + '"' + (v === fakeAt ? " selected" : "") + ">" + l + " ET</option>").join("") + "</select>";
+  }
   UI.mountDemoBar = function () {
     if (API.live || UI.$("#demo-bar")) return;
     const bar = document.createElement("div");
@@ -256,8 +345,15 @@
     bar.innerHTML = '<b>Demo mode</b><span>Sample data, saved only in this browser.</span>' +
       '<label for="demo-who">View as</label><select id="demo-who"><option value="">Logged out</option>' +
       groups.map(([name, has, label]) => '<optgroup label="' + name + '">' + people.filter(has).map(p => '<option value="' + UI.esc(p.id) + '">' + UI.esc(label(p)) + "</option>").join("") + "</optgroup>").join("") + "</select>" +
-      '<button type="button" id="demo-reset">Reset data</button>';
+      '<button type="button" id="demo-reset">Reset data</button>' + dayPicker();
     document.body.appendChild(bar);
+    // Day / time: preview the site as of another moment (kept while you browse; reloads the page)
+    const day = UI.$("#demo-day"), tm = UI.$("#demo-at");
+    const keep = () => {
+      try { if (day.value) localStorage.setItem(WHEN_KEY, JSON.stringify({ day: day.value, at: +tm.value })); else localStorage.removeItem(WHEN_KEY); } catch (e) { /* no storage */ }
+      location.href = location.pathname + location.hash;   // drops any ?today= so the pick wins
+    };
+    day.onchange = keep; tm.onchange = keep;
     const sel = UI.$("#demo-who");
     sel.value = API.demo.who() || "";
     sel.onchange = () => API.demo.setMe(sel.value);

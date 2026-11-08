@@ -87,12 +87,16 @@
     API.myRequests = async () => {
       const me = await API.session();
       if (!me) return [];
-      return q(sb.from("requests").select("*, coach:coaches(" + COACH_MINI + ")").eq("requester_id", me.id).order("starts_at"));
+      // your own requests, plus team reviews your mentor wrote down (the database only returns your team's)
+      return q(sb.from("requests").select("*, coach:coaches(" + COACH_MINI + ")").or("requester_id.eq." + me.id + ",and(by_coach.is.true,kind.eq.team)").order("starts_at"));
     };
     API.coachRequests = coachId => q(sb.from("requests").select("*, requester:profiles(" + PROFILE + ")").eq("coach_id", coachId).order("starts_at"));
     API.allRequests = () => q(sb.from("requests").select("*, requester:profiles(" + PROFILE + "), coach:coaches(" + COACH_MINI + ")").order("starts_at"));
     API.requestSession = r => q(sb.from("requests").insert(r).select().single());
+    API.saveSessionSettings = (c, mn, mx, k) => q(sb.rpc("save_session_settings", { c, mn, mx, k }));
     API.setRequestStatus = (id, status) => q(sb.from("requests").update({ status }).eq("id", id).select().single());
+    // a mentor writes down a session set up with their own team: booked straight away (see schema.sql)
+    API.writeSession = r => q(sb.rpc("write_session", { c: r.coach_id, p: r.kind === "team" ? null : r.requester_id, k: r.kind, s: r.starts_at, e: r.ends_at, n: r.note || "" }));
 
     API.profiles = () => q(sb.from("profiles").select(PROFILE).order("created_at"));
     API.setRole = (id, role) => q(sb.from("profiles").update({ role }).eq("id", id));
@@ -194,6 +198,7 @@
       req("m1", "u-jeiss", "team", 5, 14, 16, "accepted", "Scrim block VOD review");
       req("m1", "u-irem", "team", 7, 20, 21, "accepted", "Mock checkpoint debrief");
       req("m1", "u-lumi", "individual", 8, 22, 23, "pending", "Macro rotations");
+      req("m1", "u-neotep", "team", 8, 20, 21, "accepted", "Draft practice, planned on Discord"); requests[requests.length - 1].by_coach = true;   // written by the mentor
       req("m1", "u-jeiss", "individual", 9, 20, 20.5, "declined", "Quick question on item builds");
       req("m1", "u-irem", "team", 11, 20, 22, "pending", "Final prep: drafts");
       req("m1", "u-lumi", "team", 12, 15, 16, "cancelled");
@@ -281,6 +286,10 @@
     const isStaff = () => !!me() && me().role === "staff";
     const isCoach = c => !!S.me && S.coaches.some(x => x.id === c && x.profile_id === S.me);
     const overlap = (a1, a2, b1, b2) => new Date(a1) < new Date(b2) && new Date(b1) < new Date(a2);
+    const now = () => new Date(window.UI ? UI.now() : Date.now());
+    // a request that holds its time in a coach's hours: a booked session, or a waiting request that can still be
+    // answered. Hours with one in them can't be removed or moved until it's declined or cancelled.
+    const holds = r => r.status === "accepted" || (r.status === "pending" && new Date(r.starts_at) > now());
     const prof = id => S.profiles.find(p => p.id === id) || null;
     const coachMini = id => { const c = S.coaches.find(x => x.id === id); return c ? { id: c.id, kind: c.kind, slot: c.slot, name: c.name, team_name: c.team_name, badge_id: c.badge_id } : null; };
 
@@ -301,6 +310,14 @@
     API.watch = (table, cb) => { const w = { table, cb }; watchers.push(w); return () => watchers.splice(watchers.indexOf(w), 1); };
 
     API.coaches = () => wait(S.coaches.slice().sort((a, b) => (a.kind === b.kind ? a.slot - b.slot : a.kind === "mentor" ? -1 : 1)));
+    // same rules as the database's save_session_settings
+    API.saveSessionSettings = (id, mn, mx, k) => {
+      const c = S.coaches.find(x => x.id === id);
+      if (!c) return fail("That coach doesn't exist.");
+      if (!isStaff() && !isCoach(id)) return fail("You don't have permission to do that.");
+      if (![30, 60, 90, 120].includes(mn) || ![30, 60, 90, 120].includes(mx) || mn > mx || !["both", "team", "individual"].includes(k)) return fail("Those settings don't work together.");
+      Object.assign(c, { min_minutes: mn, max_minutes: mx, session_kinds: k }); save(); return wait(c);
+    };
     API.updateCoach = (id, patch) => {
       const c = S.coaches.find(x => x.id === id);
       if (!c) return fail("That coach doesn't exist.");
@@ -338,11 +355,11 @@
       const b = S.availability.find(x => x.id === id);
       if (!b) return wait(null);
       if (!isStaff() && !isCoach(b.coach_id)) return fail("You don't have permission to do that.");
-      if (S.requests.some(r => r.coach_id === b.coach_id && r.status === "accepted" && new Date(r.starts_at) >= new Date(b.starts_at) && new Date(r.ends_at) <= new Date(b.ends_at))) return fail("These hours have booked sessions. Cancel those sessions first.");
+      if (S.requests.some(r => r.coach_id === b.coach_id && holds(r) && new Date(r.starts_at) >= new Date(b.starts_at) && new Date(r.ends_at) <= new Date(b.ends_at))) return fail("These hours have a session or a waiting request in them. Decline or cancel it first.");
       S.availability = S.availability.filter(x => x.id !== id); save(); return wait(null);
     };
     // same rules as the database's save_hours: post (blockId = null) or change a block; overlapping or
-    // touching hours join into one block, and booked sessions have to stay inside
+    // touching hours join into one block, and booked sessions and waiting requests have to stay inside
     API.saveHours = (coachId, blockId, starts_at, ends_at) => {
       if (!isStaff() && !isCoach(coachId)) return fail("You don't have permission to do that.");
       let s = new Date(starts_at), e = new Date(ends_at);
@@ -363,20 +380,20 @@
       }
       const gone = (old ? [old] : []).concat(joined);
       const inside = (r, a, b) => new Date(r.starts_at) >= a && new Date(r.ends_at) <= b;
-      if (S.requests.some(r => r.coach_id === coachId && r.status === "accepted" && !inside(r, s, e) && gone.some(x => inside(r, new Date(x.starts_at), new Date(x.ends_at)))))
-        return fail("A booked session would be outside the new hours. Cancel it first, or keep it inside.");
+      if (S.requests.some(r => r.coach_id === coachId && holds(r) && !inside(r, s, e) && gone.some(x => inside(r, new Date(x.starts_at), new Date(x.ends_at)))))
+        return fail("A session or waiting request would be outside the new hours. Decline or cancel it first, or keep it inside.");
       S.availability = S.availability.filter(x => !gone.includes(x));
       const row = { id: rid(), coach_id: coachId, starts_at: s.toISOString(), ends_at: e.toISOString() };
       S.availability.push(row); save();
       return wait(Object.assign({ joined: joined.length }, row));
     };
     // same rules as the database's remove_hours: take a stretch of time out of a coach's hours, splitting blocks
-    // around it; not while a booked session is in it
+    // around it; not while a booked session or a waiting request is in it
     API.removeHours = (coachId, starts_at, ends_at) => {
       if (!isStaff() && !isCoach(coachId)) return fail("You don't have permission to do that.");
       const s = new Date(starts_at), e = new Date(ends_at);
       if (e <= s) return fail("Hour out has to be after hour in.");
-      if (S.requests.some(r => r.coach_id === coachId && r.status === "accepted" && new Date(r.starts_at) < e && new Date(r.ends_at) > s)) return fail("A booked session is in those hours. Cancel it first.");
+      if (S.requests.some(r => r.coach_id === coachId && holds(r) && new Date(r.starts_at) < e && new Date(r.ends_at) > s)) return fail("A session or waiting request is in those hours. Decline or cancel it first.");
       const hit = S.availability.filter(x => x.coach_id === coachId && new Date(x.starts_at) < e && new Date(x.ends_at) > s);
       S.availability = S.availability.filter(x => !hit.includes(x));
       hit.forEach(x => {
@@ -387,7 +404,9 @@
     };
     API.busy = coachId => wait(S.requests.filter(r => r.coach_id === coachId && ["pending", "accepted"].includes(r.status)).map(r => ({ starts_at: r.starts_at, ends_at: r.ends_at, status: r.status })));
 
-    API.myRequests = () => wait(S.me ? S.requests.filter(r => r.requester_id === S.me).map(r => Object.assign({}, r, { coach: coachMini(r.coach_id) })).sort((a, b) => a.starts_at.localeCompare(b.starts_at)) : []);
+    // your own requests, plus team reviews your mentor wrote down for your team
+    const teamReview = r => r.by_coach && r.kind === "team" && S.teams.some(t => t.coach_id === r.coach_id && (t.member_ids || []).includes(S.me));
+    API.myRequests = () => wait(S.me ? S.requests.filter(r => r.requester_id === S.me || teamReview(r)).map(r => Object.assign({}, r, { coach: coachMini(r.coach_id) })).sort((a, b) => a.starts_at.localeCompare(b.starts_at)) : []);
     API.coachRequests = coachId => (isStaff() || isCoach(coachId)) ? wait(S.requests.filter(r => r.coach_id === coachId).map(r => Object.assign({}, r, { requester: prof(r.requester_id) })).sort((a, b) => a.starts_at.localeCompare(b.starts_at))) : wait([]);
     API.allRequests = () => isStaff() ? wait(S.requests.map(r => Object.assign({}, r, { requester: prof(r.requester_id), coach: coachMini(r.coach_id) })).sort((a, b) => a.starts_at.localeCompare(b.starts_at))) : fail("You don't have permission to do that.");
     API.requestSession = r => {
@@ -399,11 +418,35 @@
       if (!onTeam && (isStaff() || S.coaches.some(x => x.profile_id === S.me))) return fail("Only players can request sessions.");
       const mins = (new Date(r.ends_at) - new Date(r.starts_at)) / 6e4;
       if (mins < 30 || mins > 120) return fail("Sessions run from 30 minutes to 2 hours.");
-      if (new Date(r.starts_at) < new Date()) return fail("That time has already passed.");
+      if (mins < (c.min_minutes || 30) || mins > (c.max_minutes || 120)) return fail("That length is outside what this coach takes.");
+      if ((c.session_kinds || "both") !== "both" && c.session_kinds !== r.kind) return fail("This coach doesn't take that kind of session.");
+      if (new Date(r.starts_at) < new Date(window.UI ? UI.now() : Date.now())) return fail("That time has already passed.");
       if (!S.availability.some(b => b.coach_id === r.coach_id && new Date(b.starts_at) <= new Date(r.starts_at) && new Date(b.ends_at) >= new Date(r.ends_at))) return fail("That time is outside the hours this coach posted.");
       if (S.requests.some(x => x.coach_id === r.coach_id && x.status === "accepted" && overlap(x.starts_at, x.ends_at, r.starts_at, r.ends_at))) return fail("That time is already booked.");
       if (S.requests.filter(x => x.requester_id === S.me && x.status === "pending").length >= 5) return fail("You already have 5 requests waiting. Cancel one or wait for answers.");
-      const row = { id: rid(), coach_id: r.coach_id, requester_id: S.me, kind: r.kind, starts_at: r.starts_at, ends_at: r.ends_at, note: (r.note || "").slice(0, 500), status: "pending", created_at: new Date().toISOString() };
+      const row = { id: rid(), coach_id: r.coach_id, requester_id: S.me, kind: r.kind, starts_at: r.starts_at, ends_at: r.ends_at, note: (r.note || "").slice(0, 500), status: "pending", created_at: new Date(window.UI ? UI.now() : Date.now()).toISOString() };
+      S.requests.push(row); save(); return wait(row);
+    };
+    // same rules as the database's write_session: a mentor writes down a session set up with their own team (a team
+    // review, for the whole team) or one of its players (individual). It's booked straight away, inside their hours;
+    // waiting requests at that time are declined, as when accepting.
+    API.writeSession = r => {
+      const c = S.coaches.find(x => x.id === r.coach_id);
+      if (!c) return fail("That coach doesn't exist.");
+      if (!isStaff() && !isCoach(c.id)) return fail("You don't have permission to do that.");
+      const team = S.teams.find(t => t.coach_id === c.id);
+      if (!team) return fail("Only mentors with a team can write sessions.");
+      if (!["team", "individual"].includes(r.kind)) return fail("Pick team review or individual.");
+      if (r.kind === "individual" && !(team.member_ids || []).includes(r.requester_id)) return fail("You can only write sessions for players on your own team.");
+      const mins = (new Date(r.ends_at) - new Date(r.starts_at)) / 6e4;
+      if (mins < 30 || mins > 240) return fail("Written sessions run from 30 minutes to 4 hours.");
+      if (new Date(r.starts_at) < now()) return fail("That time has already passed.");
+      if (!S.availability.some(b => b.coach_id === c.id && new Date(b.starts_at) <= new Date(r.starts_at) && new Date(b.ends_at) >= new Date(r.ends_at))) return fail("That time is outside your posted hours.");
+      if (S.requests.some(x => x.coach_id === c.id && x.status === "accepted" && overlap(x.starts_at, x.ends_at, r.starts_at, r.ends_at))) return fail("That time is already booked.");
+      const when = now().toISOString();
+      S.requests.forEach(x => { if (x.coach_id === c.id && x.status === "pending" && overlap(x.starts_at, x.ends_at, r.starts_at, r.ends_at)) { x.status = "declined"; x.decided_at = when; } });
+      const row = { id: rid(), coach_id: c.id, requester_id: r.kind === "team" ? c.profile_id : r.requester_id, kind: r.kind, starts_at: r.starts_at, ends_at: r.ends_at, note: (r.note || "").slice(0, 500),
+        status: "accepted", by_coach: true, created_at: when, decided_at: when };
       S.requests.push(row); save(); return wait(row);
     };
     API.setRequestStatus = (id, status) => {
@@ -415,7 +458,7 @@
         || (r.requester_id === S.me && ["pending", "accepted"].includes(r.status) && status === "cancelled");
       if (!ok) return fail("You can't change this request.");
       if (status === "accepted" && S.requests.some(x => x.id !== id && x.coach_id === r.coach_id && x.status === "accepted" && overlap(x.starts_at, x.ends_at, r.starts_at, r.ends_at))) return fail("That time overlaps hours or a session that's already there.");
-      r.status = status; r.decided_at = new Date().toISOString();
+      r.status = status; r.decided_at = new Date(window.UI ? UI.now() : Date.now()).toISOString();
       if (status === "accepted") S.requests.forEach(x => { if (x.id !== id && x.coach_id === r.coach_id && x.status === "pending" && overlap(x.starts_at, x.ends_at, r.starts_at, r.ends_at)) { x.status = "declined"; x.decided_at = r.decided_at; } });
       save(); return wait(r);
     };

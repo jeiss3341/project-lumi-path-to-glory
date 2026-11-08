@@ -31,6 +31,9 @@
   const cmeta = c => slot(c) + ((c.kind === "mentor" ? c.team_name : c.focus) ? " · " + (c.kind === "mentor" ? c.team_name : c.focus) : "");
   const coachOf = id => D.coaches.find(c => c.id === id);
   const teamOf = uid => D.teams.find(t => (t.member_ids || []).includes(uid));
+  // a team review the mentor wrote down belongs to the mentor's team; anything else to the player's
+  const teamFor = r => r.by_coach && r.kind === "team" ? D.teams.find(t => t.coach_id === r.coach_id) : teamOf(r.requester_id);
+  const whoOf = r => UI.party(r, (teamFor(r) || {}).name);
 
   /* ---------- data per day ---------- */
   const blocksOn = (ymd, cid) => D.avail.filter(b => UI.dayOf(b.starts_at) === ymd && (!cid || b.coach_id === cid));
@@ -50,7 +53,7 @@
   const fullBtn = () => '<button type="button" class="btn ghost sc-fullbtn" data-full>' + (ST.full ? "Close full view" : "Expand ⤢") + "</button>";
   const axis = () => '<div class="sc-row sc-axis"><span class="sc-name"><span class="k">ET</span></span><div class="sc-track">' +
     Array.from({ length: SPAN / 60 }, (_, i) => '<span class="sc-tick" style="left:' + (i * 60 / SPAN * 100) + '%">' + tickLabel(UI.DAY_START / 60 + i) + "</span>").join("") + "</div></div>";
-  const nowLine = ymd => { if (ymd !== UI.todayYmd()) return ""; const m = minsIn(new Date().toISOString(), ymd); return m >= UI.DAY_START && m <= UI.DAY_END ? '<i class="sc-now" style="left:' + pos(m) + '%" title="Now"></i>' : ""; };
+  const nowLine = ymd => { if (ymd !== UI.todayYmd()) return ""; const m = minsIn(new Date(UI.now()).toISOString(), ymd); return m >= UI.DAY_START && m <= UI.DAY_END ? '<i class="sc-now" style="left:' + pos(m) + '%" title="Now"></i>' : ""; };
   // rows grouped into Mentors / Assistant coaches; `keep` decides which coaches show, `track` draws a row
   function grouped(keep, track) {
     return [["mentor", "Mentors"], ["assistant", "Assistant coaches"]].map(([k, label]) => {
@@ -74,7 +77,7 @@
       body = '<div class="sc-tl"><div class="sc-tl-in">' + axis() +
         grouped(c => !ST.hide || blocksOn(d, c.id).length, c => row(c,
           blocksOn(d, c.id).map(b => '<button type="button" class="sc-bar hrs" data-blk="' + esc(b.id) + '" style="' + place(b.starts_at, b.ends_at, d) + '" title="' + esc(cname(c) + " · " + etRange(b.starts_at, b.ends_at) + " ET") + '"><span>' + etShort(b.starts_at, b.ends_at) + "</span></button>").join("") +
-          reqsOn(d, c.id).filter(r => r.status === "accepted" || r.status === "pending").map(r => '<button type="button" class="sc-bar ses ' + r.status + '" data-req="' + esc(r.id) + '" style="' + place(r.starts_at, r.ends_at, d) + '" title="' + esc(WORD[r.status] + " · " + UI.who(r.requester) + " · " + etRange(r.starts_at, r.ends_at)) + '"></button>').join("") +
+          reqsOn(d, c.id).filter(r => r.status === "accepted" || r.status === "pending").map(r => '<button type="button" class="sc-bar ses ' + r.status + '" data-req="' + esc(r.id) + '" style="' + place(r.starts_at, r.ends_at, d) + '" title="' + esc(WORD[r.status] + " · " + whoOf(r) + " · " + etRange(r.starts_at, r.ends_at)) + '"></button>').join("") +
           nowLine(d))) + "</div></div>";
     } else {
       body = '<div class="sc-tl"><div class="sc-tl-in sc-week"><div class="sc-wrow sc-whead"><span class="sc-name"></span>' + wdays.map(d => '<span class="' + (d.ymd === ST.day ? "on" : "") + '">' + d.dow + " " + d.n + "</span>").join("") + "<span>Total</span></div>" +
@@ -106,14 +109,14 @@
         (list.length ? '<div class="sc-tl"><div class="sc-tl-in">' + axis() +
           grouped(c => list.some(r => r.coach_id === c.id), c => row(c,
             blocksOn(d, c.id).map(b => '<span class="sc-bg" style="' + place(b.starts_at, b.ends_at, d) + '"></span>').join("") +
-            list.filter(r => r.coach_id === c.id).map(r => '<button type="button" class="sc-bar req ' + r.status + '" data-req="' + esc(r.id) + '" style="' + place(r.starts_at, r.ends_at, d) + '" title="' + esc(WORD[r.status] + " · " + UI.who(r.requester) + " · " + etRange(r.starts_at, r.ends_at) + " ET") + '"><span>' + esc(UI.who(r.requester)) + "</span></button>").join("") +
+            list.filter(r => r.coach_id === c.id).map(r => '<button type="button" class="sc-bar req ' + r.status + '" data-req="' + esc(r.id) + '" style="' + place(r.starts_at, r.ends_at, d) + '" title="' + esc(WORD[r.status] + " · " + whoOf(r) + " · " + etRange(r.starts_at, r.ends_at) + " ET") + '"><span>' + esc(whoOf(r)) + "</span></button>").join("") +
             nowLine(d))) + "</div></div>"
           : '<p class="sc-none big">No requests on ' + esc(UI.date(D.days.find(x => x.ymd === d).d, { weekday: "long", month: "short", day: "numeric" })) + " with these filters.</p>");
     } else {
       const list = D.reqs.filter(shown).slice().sort((a, b) => a.starts_at.localeCompare(b.starts_at));
       const byDay = D.days.map(d => [d, list.filter(r => UI.dayOf(r.starts_at) === d.ymd)]).filter(([, l]) => l.length);
       body = byDay.length ? byDay.map(([d, l]) => '<h4 class="sc-lh">' + esc(UI.date(d.d, { weekday: "long", month: "long", day: "numeric" })) + (d.events[0] ? ' <small>' + esc(d.events[0].title) + "</small>" : "") + '</h4><ul class="sc-list">' +
-        l.map(r => '<li><button type="button" class="sc-li" data-req="' + esc(r.id) + '"><span class="t">' + etRange(r.starts_at, r.ends_at) + ' <small>ET</small></span><span class="c">' + esc(cname(coachOf(r.coach_id))) + '</span><span class="p">' + esc(UI.who(r.requester)) + " · " + (r.kind === "team" ? "Team review" : "Individual") + "</span>" + chip(r.status) + '<span class="more">Details ›</span></button></li>').join("") + "</ul>").join("")
+        l.map(r => '<li><button type="button" class="sc-li" data-req="' + esc(r.id) + '"><span class="t">' + etRange(r.starts_at, r.ends_at) + ' <small>ET</small></span><span class="c">' + esc(cname(coachOf(r.coach_id))) + '</span><span class="p">' + esc(whoOf(r)) + " · " + (r.kind === "team" ? "Team review" : "Individual") + "</span>" + chip(r.status) + '<span class="more">Details ›</span></button></li>').join("") + "</ul>").join("")
         : '<p class="sc-none big">No requests match these filters.</p>';
     }
     return strip.replace('class="sc-days"', 'class="sc-days' + (ST.rView === "list" ? " dim" : "") + '"') + tools + body;
@@ -131,7 +134,7 @@
         const b = e.target.closest("[data-do]"); if (!b) return;
         if (b.dataset.do === "close") return d.close();
         // Accept / Decline / Cancel session: say what will happen first (UI.askRequest), then act
-        const r = D.reqs.find(x => x.id === b.dataset.id), s = b.dataset.do, t = r && teamOf(r.requester_id);
+        const r = D.reqs.find(x => x.id === b.dataset.id), s = b.dataset.do, t = r && teamFor(r);
         UI.askRequest({ r, status: s, coach: r && cname(coachOf(r.coach_id)), team: t && t.name, reqs: D.reqs }).then(ok => ok &&
           UI.act(b, async () => { await API.setRequestStatus(r.id, s); d.close(); await ctx.rerender(); },
             { accepted: "Accepted for the coach.", declined: "Declined for the coach.", cancelled: "Session cancelled." }[s]));
@@ -143,18 +146,19 @@
   const yours = (a, b) => UI.onEastern(new Date(a)) ? "" : '<br><span class="muted">Your time: ' + esc(UI.time(a) + "–" + UI.time(b)) + "</span>";
   function openReq(id) {
     const r = D.reqs.find(x => x.id === id); if (!r) return;
-    const c = coachOf(r.coach_id), t = teamOf(r.requester_id), d = dlg(), day = UI.dayOf(r.starts_at);
+    const c = coachOf(r.coach_id), t = teamFor(r), d = dlg(), day = UI.dayOf(r.starts_at);
     const also = UI.overlapGroup(r, D.reqs).filter(x => x.id !== r.id);
-    d.innerHTML = '<div class="sc-dtop"><div><span class="k">Request · ' + esc(cname(c)) + '</span><h3 id="sc-dlg-title">' + (r.kind === "team" ? "Team review" : "Individual session") + "</h3></div>" + chip(r.status) + "</div>" +
+    d.innerHTML = '<div class="sc-dtop"><div><span class="k">' + (r.by_coach ? "Written by " : "Request · ") + esc(cname(c)) + '</span><h3 id="sc-dlg-title">' + (r.kind === "team" ? "Team review" : "Individual session") + "</h3></div>" + chip(r.status) + "</div>" +
       '<dl class="sc-kv">' +
         kv("When", esc(UI.date(UI.etAt(day, 720), { weekday: "long", month: "long", day: "numeric" })) + "<br><b>" + etRange(r.starts_at, r.ends_at) + " ET</b> · " + esc(UI.dur(r.starts_at, r.ends_at)) + yours(r.starts_at, r.ends_at)) +
         kv("Coach", esc(cname(c)) + ' <span class="muted">' + esc(cmeta(c)) + "</span>") +
-        kv("From", esc(UI.who(r.requester)) + ' <span class="muted">@' + esc((r.requester && r.requester.username) || "") + "</span>" + (t ? "<br>" + esc(t.name) + (t.coach_id === r.coach_id ? ' <span class="sc-tag">Coach\'s team</span>' : ' <span class="sc-tag other">Other team</span>') : '<br><span class="muted">Not on a team</span>')) +
-        kv("Wants to work on", r.note ? "“" + esc(r.note) + "”" : '<span class="muted">No note added.</span>') +
-        // when it was sent, and its place among overlapping requests ("2nd of 2")
-        kv("Sent", esc(UI.sentAt(r.created_at)) + (also.length ? ' <span class="cc-otag">' + UI.sentRank(r, D.reqs) + "</span>" : "")) +
+        kv(r.by_coach ? "With" : "From", r.by_coach && r.kind === "team" ? esc(whoOf(r)) + ' <span class="sc-tag">Coach\'s team</span>' : esc(UI.who(r.requester)) + ' <span class="muted">@' + esc((r.requester && r.requester.username) || "") + "</span>" + (t ? "<br>" + esc(t.name) + (t.coach_id === r.coach_id ? ' <span class="sc-tag">Coach\'s team</span>' : ' <span class="sc-tag other">Other team</span>') : '<br><span class="muted">Not on a team</span>')) +
+        kv(r.by_coach ? "Note" : "Wants to work on", r.note ? "“" + esc(r.note) + "”" : '<span class="muted">No note added.</span>') +
+        // when it was sent (or written down by the mentor), and its place among overlapping requests ("2nd of 2")
+        (r.by_coach ? kv("Written", "By " + esc(cname(c)) + " · " + esc(UI.sentAt(r.created_at)))
+                    : kv("Sent", esc(UI.sentAt(r.created_at)) + (also.length ? ' <span class="cc-otag">' + UI.sentRank(r, D.reqs) + "</span>" : ""))) +
         // other waiting requests for this coach at the same time, with who asked first
-        (also.length ? kv("Also waiting", '<ul class="sc-in">' + also.map(x => '<li><button type="button" class="linkbtn" data-req="' + esc(x.id) + '">' + etRange(x.starts_at, x.ends_at) + " · " + esc(UI.who(x.requester)) + "</button>" +
+        (also.length ? kv("Also waiting", '<ul class="sc-in">' + also.map(x => '<li><button type="button" class="linkbtn" data-req="' + esc(x.id) + '">' + etRange(x.starts_at, x.ends_at) + " · " + esc(whoOf(x)) + "</button>" +
             ' <span class="muted small">' + UI.sentGap(x, r) + "</span></li>").join("") +
           '</ul><span class="muted small">Same time as this one. Accepting this declines ' + (also.length === 1 ? "it" : "them") + ".</span>") : "") +
         (r.decided_at ? kv(WORD[r.status], esc(UI.date(r.decided_at, { weekday: "short", month: "short", day: "numeric" }))) : "") +
@@ -174,7 +178,7 @@
       '<dl class="sc-kv">' +
         kv("When", esc(UI.date(UI.etAt(day, 720), { weekday: "long", month: "long", day: "numeric" })) + "<br><b>" + etRange(b.starts_at, b.ends_at) + " ET</b> · " + esc(UI.dur(b.starts_at, b.ends_at)) + yours(b.starts_at, b.ends_at)) +
         kv("Coach", esc(cmeta(c))) +
-        kv("In these hours", inside.length ? '<ul class="sc-in">' + inside.map(r => '<li><button type="button" class="linkbtn" data-req="' + esc(r.id) + '">' + etRange(r.starts_at, r.ends_at) + " · " + esc(UI.who(r.requester)) + "</button> " + chip(r.status) + "</li>").join("") + "</ul>" : '<span class="muted">Nothing booked or waiting yet.</span>') +
+        kv("In these hours", inside.length ? '<ul class="sc-in">' + inside.map(r => '<li><button type="button" class="linkbtn" data-req="' + esc(r.id) + '">' + etRange(r.starts_at, r.ends_at) + " · " + esc(whoOf(r)) + "</button> " + chip(r.status) + "</li>").join("") + "</ul>" : '<span class="muted">Nothing booked or waiting yet.</span>') +
       '</dl><div class="sc-dact"><button type="button" class="linkbtn" data-do="close">Close</button></div>';
     if (!d.open) d.showModal();
   }

@@ -16,7 +16,7 @@ window.PTG = {
   /* Step text marks: **words** = yellow highlighter, _words_ = red squiggle underline, \n = line break. */
   steps: [
     { t: "Meet your Mentor.", d: "Day 1, **Mon Nov 9**: every team meets the mentor coaching them for the two weeks." },
-    { t: "Book Sessions...", d: "Mentors post their availability.\nPlayers book 30–60 minute team or individual reviews, like booking an office hour!" },
+    { t: "Book Sessions...", d: "Mentors post their availability.\nPlayers book 30–120 minute team or individual reviews, like booking an office hour!" },
     { t: "Play and Compete!", d: "Designated scrim days each week, **the Mock Checkpoint Series on Sunday Nov 15,** then **the Final Checkpoint Series on Sunday Nov 22.**" }
   ],
 
@@ -24,7 +24,7 @@ window.PTG = {
     { date: "2026-11-09", kind: "kickoff", short: "Day 1", title: "Event begins", note: "Teams meet their mentors and session requests open." },
     { date: "2026-11-11", kind: "scrim", short: "Scrim", title: "Scrim Day 1", note: "Weekday scrim block. Exact weekday to be confirmed.", tentative: true },
     { date: "2026-11-14", kind: "scrim", short: "Scrim", title: "Scrim Day 2", note: "Saturday scrim block. Mentors watch live or review after.", tentative: true },
-    { date: "2026-11-15", kind: "mock", short: "Mock", title: "Mock Checkpoint Series", note: "A full practice run of the checkpoint format. Mentors review the games with their teams afterwards." },
+    { date: "2026-11-15", kind: "mock", short: "Mock", title: "Mock Checkpoint Series", note: "A full practice run of the checkpoint format. Checkpoint activates after 4 games, one fewer than the Final." },
     { date: "2026-11-18", kind: "scrim", short: "Prio", title: "Prio Scrim Day 1", note: "Priority scrim block. Exact weekday to be confirmed.", tentative: true },
     { date: "2026-11-21", kind: "scrim", short: "Prio", title: "Prio Scrim Day 2", note: "Saturday priority scrims, the last practice before the Final Checkpoint Series.", tentative: true },
     { date: "2026-11-22", kind: "final", short: "Final", title: "Final Checkpoint Series", note: "The checkpoint that counts. Closes out the event." }
@@ -76,7 +76,15 @@ window.PTG = {
   art: {
     m2: "art/m2.webp", // Prison Officer Abigail (Dylan)
     m3: "art/m3.webp", // Shoichi (Chibiarc)
-    // a1: "art/a1.webp",
+    a1: "art/a1.webp", // Blair (Baeksu)
+    a2: "art/a2.webp", // Coraline (Jalja)
+    a4: "art/a4.webp", // Squortle
+  },
+  // Headshots for the small assistant cards: square chibi crops in site/art/heads/.
+  artHead: {
+    a1: "art/heads/a1.webp",
+    a2: "art/heads/a2.webp",
+    a4: "art/heads/a4.webp",
   },
 
   // Character pfps for the mentor files' character pool (shown black & white). Name must match the pool exactly.

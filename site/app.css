@@ -6,6 +6,12 @@ img{max-width:100%}
 /* Smaller badge title on narrow screens so "INSTRUCTOR" never clips. */
 @media (max-width:420px){.b-role{font-size:29px}}
 
+/* Office Hours has its own page (index.html?hours) */
+html:not(.hours-page) #book{display:none}
+.hours-page main>section:not(#book){display:none}
+.hours-page #book .no{display:none}
+.bk-locked{margin:0;padding:clamp(22px,4vw,36px)}
+
 /* ---------- top bar + login ---------- */
 .topbar .code{color:#fff;text-decoration:none}
 .auth{display:flex;align-items:center;gap:8px;flex:none}
@@ -14,7 +20,25 @@ button.cta{border:0;font:inherit;letter-spacing:inherit;text-transform:inherit;c
 .topbar .cta.discord:hover{background:var(--ink)}
 .topbar .ghost-cta{background:transparent;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.75)}
 .topbar .ghost-cta:hover{background:var(--ink);box-shadow:none}
-.me-chip{display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none;text-transform:none;letter-spacing:.02em;max-width:200px}
+.me-menu{position:relative}
+.me-chip{display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none;text-transform:none;letter-spacing:.02em;max-width:200px;background:none;border:0;padding:4px 0;font:inherit;cursor:pointer}
+.me-caret{flex:none;width:0;height:0;margin-top:4px;border:4px solid transparent;border-top-color:#fff}
+.me-pop{display:none;position:absolute;right:0;top:calc(100% + 10px);min-width:190px;background:var(--paper);color:var(--ink);box-shadow:0 14px 28px -10px rgba(0,0,0,.7);font:600 11.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase}
+.me-pop::before{content:"";position:absolute;left:0;right:0;top:-12px;height:12px}   /* keeps the menu open while the mouse crosses the gap */
+.me-menu.open .me-pop{display:block}
+@media (hover:hover){.me-menu:hover .me-pop{display:block}}
+.me-pop a,.me-pop button{display:block;width:100%;padding:13px 14px;text-align:left;color:inherit;text-decoration:none;background:none;border:0;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}
+.me-pop a:hover,.me-pop button:hover,.me-pop a:focus-visible,.me-pop button:focus-visible{background:var(--red);color:#fff}
+.me-links:not(:empty){border-bottom:1px solid var(--paper-rule)}
+/* a coach's session settings */
+.ss-pop{border:0;padding:clamp(20px,4vw,28px);width:min(460px,calc(100vw - 32px));background:var(--paper);color:var(--ink)}
+.ss-pop::backdrop{background:rgba(0,0,0,.65)}
+.ss-pop h3{font:900 28px/1 var(--f-display);letter-spacing:-.03em;text-transform:uppercase;margin:0 0 8px}
+.ss-pop p{margin:0 0 18px;color:var(--ink-soft)}
+.ss-q{display:grid;gap:7px;margin-bottom:16px;justify-items:start}
+.ss-q>span{font:600 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase}
+.ss-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-top:22px}
+.ss-reset{background:none;border:0;padding:0;font:600 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--red-deep);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .me-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .me-chip:hover span{text-decoration:underline;text-underline-offset:4px}
 .av{border-radius:50%;object-fit:cover;flex:none;display:inline-block;vertical-align:middle}
@@ -109,6 +133,7 @@ dialog#bk-pop::backdrop{background:rgba(10,8,6,.6)}
 .bk-req .btn{justify-self:start}
 .bk-req .bk-seg button{padding:8px 10px}
 .bk-fine{font:400 12.5px/1.45 var(--f-type);color:var(--ink-soft);margin:0}
+.bk-rule{margin-top:6px}
 @media (max-width:880px){ .bk-body{grid-template-columns:minmax(0,1fr)} }
 .mine{margin-top:32px;background-color:var(--kraft);background-image:var(--grain);padding:clamp(16px,3vw,26px);border-radius:3px;box-shadow:var(--lift);color:var(--ink)}
 .mine:empty{display:none}
@@ -122,6 +147,7 @@ dialog#bk-pop::backdrop{background:rgba(10,8,6,.6)}
 .mine-note{margin:10px 0 0;font:400 13px/1.4 var(--f-type);color:#5a4630}
 .mine-note a{color:inherit}
 .req-list li > :last-child{justify-self:end}
+.req-list li > .rq-who:last-child{justify-self:start}   /* a row with no Cancel keeps its text in line with the others */
 .rq-when{font:700 15px/1.3 var(--f-type)}
 .rq-who{font-size:14px;color:var(--ink-soft)}
 @media (max-width:640px){.req-list li{grid-template-columns:92px minmax(0,1fr)}.req-list .rq-who{grid-column:1/-1}}
@@ -129,13 +155,15 @@ dialog#bk-pop::backdrop{background:rgba(10,8,6,.6)}
 .st-pending{color:#a06c12}
 .st-accepted{color:#fff;background:var(--green);border-color:var(--green)}
 .st-declined{color:var(--red-deep)}
+.st-done{color:#1f6e43}
+.st-expired{color:#7d776f;border-style:dashed}
 .st-cancelled,.st-withdrawn{color:#8f887e}
 .st-waitlist{color:#4f6286}
 .linkbtn{appearance:none;border:0;background:none;color:var(--red-deep);font:600 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:6px 4px;text-decoration:underline;text-underline-offset:3px}
 .linkbtn:disabled{opacity:.5;cursor:not-allowed}
 .empty-note{color:var(--ink-soft);margin:6px 0 0}
 .empty-note.on-dark{color:var(--muted)}
-.mb-foot{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mb-foot{display:flex;justify-content:flex-end;align-items:center;gap:8px}
 .mb-foot a{font:600 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:#ff8a80;text-decoration:none}
 .mb-foot a:hover{text-decoration:underline}
 
@@ -147,6 +175,7 @@ dialog#bk-pop::backdrop{background:rgba(10,8,6,.6)}
 #demo-bar{position:fixed;left:0;right:0;bottom:0;z-index:55;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;background:#f2c94c;color:#1e1a0e;font:500 13px/1.3 var(--f-mono);padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));box-shadow:0 -6px 18px rgba(0,0,0,.35)}
 #demo-bar b{text-transform:uppercase;letter-spacing:.12em}
 #demo-bar select,#demo-bar button{font:inherit;padding:5px 8px;border:1.5px solid #1e1a0e;background:#fff8dc;color:#1e1a0e;border-radius:0}
+#demo-bar #demo-day{max-width:220px}
 #demo-bar button{cursor:pointer}
 body:has(#demo-bar){padding-bottom:64px}
 @media (max-width:640px){#demo-bar>span{display:none}}
@@ -157,13 +186,21 @@ body:has(#demo-bar){padding-bottom:64px}
 .gate{padding:clamp(24px,4vw,44px);max-width:640px}
 .gate h2{font:900 clamp(30px,4vw,46px)/.95 var(--f-display);letter-spacing:-.045em;text-transform:uppercase;margin:10px 0 14px}
 .gate p{margin:0 0 20px;max-width:52ch}
-.id-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:20px;align-items:center;background:var(--badge);color:#f4f4f2;border-radius:16px;padding:20px 22px;box-shadow:var(--lift);border-left:12px solid var(--red)}
-.id-card .mono-label{color:#a5a5aa}
-.id-card h1{font:900 clamp(30px,4.4vw,50px)/.95 var(--f-display);letter-spacing:-.04em;text-transform:uppercase;margin:6px 0 4px;overflow-wrap:anywhere}
-.id-card .av-ph{background:var(--red)}
-.mono-sub{font:500 12px/1.4 var(--f-mono);color:#b3b3b8;margin:0 0 10px;letter-spacing:.06em;overflow-wrap:anywhere}
-.id-card .barcode{width:120px;height:34px;color:#f4f4f2}
-@media (max-width:640px){.id-card{grid-template-columns:auto minmax(0,1fr);padding:16px}.id-card .barcode{display:none}}
+/* desk header: who you are, and three numbers for the tab you're on (each opens that part of the desk) */
+.dhead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px 28px;align-items:center;padding:20px 24px}
+.dh-who{display:flex;gap:16px;align-items:center;min-width:0}
+.dh-who .mono-label{color:var(--ink-soft)}
+.dhead h1{font:900 clamp(26px,3.6vw,38px)/.95 var(--f-display);letter-spacing:-.04em;text-transform:uppercase;margin:4px 0 6px;overflow-wrap:anywhere}
+.dh-sub{margin:0;font:500 12px/1.4 var(--f-mono);color:var(--ink-soft);overflow-wrap:anywhere}
+.dh-stats{display:grid;grid-template-columns:repeat(3,minmax(110px,auto));gap:8px}
+.dh-stats:empty{display:none}
+.dh-stat{appearance:none;border:0;border-top:4px solid var(--ink);background:#fff;color:var(--ink);display:grid;gap:4px;align-content:start;text-align:left;padding:10px 14px;cursor:pointer;font:inherit;min-width:0}
+.dh-stat:hover{background:#f4f1ea}
+.dh-stat.hot{border-top-color:var(--red)}
+.dh-stat b{font:900 22px/1 var(--f-display);letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dh-stat span{font:600 10px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+@media (max-width:820px){.dhead{grid-template-columns:minmax(0,1fr)}.dh-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:420px){.dhead{padding:16px}.dh-stat{padding:9px 10px}.dh-stat b{font-size:17px;white-space:normal;overflow-wrap:anywhere}}
 .rchips{display:flex;flex-wrap:wrap;gap:6px}
 .rchip{display:inline-block;font:600 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:6px 8px;background:#3a3a40;color:#f4f4f2;white-space:nowrap}
 .rchip.green{background:var(--green);color:#fff}
@@ -420,6 +457,8 @@ dialog#cc-dlg.wide{width:min(800px,calc(100vw - 32px))}
 .cc-mode button+button{border-left:2px solid var(--ink)}
 .cc-mode button[aria-pressed="true"]{background:var(--ink);color:#fff}
 .cc-hint{margin:0 0 12px}
+.cc-hintrow{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap;margin:0 0 12px}
+.cc-hintrow .cc-hint{margin:0}
 /* a day: a full-size day button underneath, the hour and session chips on top as their own buttons */
 .cc-day{position:relative;background:var(--paper);color:var(--ink);padding:8px 7px;min-height:104px;display:flex;flex-direction:column;gap:4px;min-width:0}
 .cc-day .hit{position:absolute;inset:0;appearance:none;border:0;background:none;padding:0;cursor:pointer;z-index:0}
@@ -438,6 +477,15 @@ dialog#cc-dlg.wide{width:min(800px,calc(100vw - 32px))}
 .cc-day.has-hrs:hover{background:#ecdec8}
 .cc-day.has-hrs.on{background:#fff}
 .cc-legend .lg.hrs-tint{background:#f1e6d4;box-shadow:inset 0 0 0 1px #d9c7a8}
+/* days that are over: how many sessions were done and requests expired; click one to see what happened */
+.cc-day.was{background:#ece9e2}
+.cc-day.was:hover{background:#e3dfd6}
+.cc-day.was .cd-top small,.cc-day.was .cd-top b{color:#7d776f}
+.cc-day.was.on{background:#fff;box-shadow:inset 0 0 0 2px var(--ink)}
+.cc-day > .chip-st{justify-self:start;align-self:flex-start;font-size:9.5px;padding:3px 5px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.cc-legend .lg.dn{background:#fff;box-shadow:inset 0 0 0 1.5px #1f6e43}
+.cc-legend .lg.ex{background:#fff;box-shadow:none;outline:1.5px dashed #7d776f;outline-offset:-1.5px}
+.cc-row.gone{border-left-color:#c9c4ba}
 .cc-legend{display:flex;gap:6px 14px;flex-wrap:wrap;margin:10px 0 0;font:500 11px/1.4 var(--f-mono);color:var(--ink-soft)}
 .cc-legend .lg{display:inline-block;width:12px;height:10px;margin-right:5px;vertical-align:-1px}
 .cc-legend .evdot{position:static;display:inline-block;margin-right:5px}
@@ -507,8 +555,28 @@ dialog#cc-dlg.wide{width:min(800px,calc(100vw - 32px))}
 .hp-pl td.s.sel{background:#1f6e43}
 .hp-pl td.add,.hp-pl td.add:hover{background:var(--kraft-ink)}
 .hp-pl td.rm,.hp-pl td.rm:hover{background:repeating-linear-gradient(135deg,#f2c4c0 0 3px,#fff 3px 6px);box-shadow:inset 1.5px 0 0 var(--red),inset -1.5px 0 0 var(--red)}
-.hp-pl td.s.skip{box-shadow:inset 0 0 0 2px var(--ink)}
+.hp-pl td.skip{box-shadow:inset 0 0 0 2px var(--red-deep)}   /* removing: a session or waiting request in the way */
 .hp-pl td.past,.hp-pl td.past:hover{background:#efede8;box-shadow:none;cursor:default}
+/* Write a session: only your free hours can be picked */
+.hp-pl.wp td{cursor:default;height:24px}
+.hp-pl.wp td:not(.h):not(.s),.hp-pl.wp td:not(.h):not(.s):hover{background:#efede8}
+.hp-pl.wp td.s:not(.past),.hp-pl.wp td.s:not(.past):hover{background:var(--green)}
+.hp-pl.wp td.can{cursor:pointer}
+/* the time being written gets its own blue, so it can't be mistaken for Adding hours (brown) or a booked session (green) */
+:root{--pick:#2a5ca8}
+.hp-pl.wp td.pick,.hp-pl.wp td.pick:hover{background:var(--pick)}
+.hp-side.is-pick{border-top-color:var(--pick)}
+.hp-hint.pick{border-left-color:var(--pick)}
+.hp-tag.pick{background:var(--pick)}
+.hp-key i.pick{background:var(--pick);border-color:var(--pick)}
+.hp-pl thead .wd{display:block;position:relative;padding:6px 2px 7px;text-align:center;font:600 10px/1.2 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.hp-pl thead .wd b{display:block;font:800 16px/1 var(--f-display);color:var(--ink);margin-top:2px}
+.hp-key i.off{background:#efede8}
+.hp-fld{display:grid;gap:6px;min-width:0}
+.hp-fld .hp-sub{margin:0}
+.hp-fld .bk-seg{justify-self:start}
+.hp-fld select,.hp-fld input{font:700 13.5px/1.2 var(--f-type);padding:7px 6px;border:1.5px solid var(--ink);border-radius:0;background:#fff;color:var(--ink);width:100%;min-width:0}
+.hp-fld input::placeholder{color:#a8a299;font-weight:400}
 /* the key: on the right under the panel, one per line */
 .hp-right{display:flex;flex-direction:column;gap:14px;min-width:0;overflow-anchor:none}   /* the browser doesn't shift the page to follow the panel as it grows */
 .hp-key{display:grid;gap:7px;font:500 11.5px/1.4 var(--f-mono);color:var(--ink-soft);padding:12px 16px;border:1px solid #d8d3c9}

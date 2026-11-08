@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   const { $, $$, esc, pad } = UI;
-  const S = { me: null, coaches: [], myCoach: null, tab: null, staffTab: "teams", teamOpen: null, coachEdit: null };
+  const S = { me: null, coaches: [], myCoach: null, tab: null, staffTab: "teams", teamOpen: null, coachEdit: null, pday: null };
   let watching = false;
 
   boot();
@@ -32,10 +32,10 @@
     if (S.me.role === "staff") tabs.push(["staff", "Staff"]);
     const want = location.hash.slice(1);
     S.tab = tabs.some(t => t[0] === want) ? want : (tabs.some(t => t[0] === S.tab) ? S.tab : tabs[0][0]);
-    renderHead();
     $("#desk-tabs").innerHTML = tabs.map(t => '<button type="button" role="tab" class="dtab" data-tab="' + t[0] + '" aria-selected="' + (t[0] === S.tab) + '">' + esc(t[1]) + "</button>").join("");
     $("#desk-tabs").onclick = e => { const b = e.target.closest(".dtab"); if (b) { S.tab = b.dataset.tab; history.replaceState(null, "", "#" + S.tab); $$(".dtab").forEach(x => x.setAttribute("aria-selected", String(x === b))); render(); } };
     if (!watching) {
+      addEventListener("hashchange", () => { const b = $('.dtab[data-tab="' + location.hash.slice(1) + '"]'); if (b) b.click(); });   // the profile menu's links, while already on the desk
       watching = true;
       API.watch("requests", () => render());
       API.watch("availability", () => { if (S.tab === "coach") render(); });
@@ -43,19 +43,67 @@
     render();
   }
 
-  function renderHead() {
-    const c = S.myCoach;
-    const roles = S.isPlayer ? ['<span class="rchip">Player</span>'] : [];
-    if (c) roles.unshift('<span class="rchip green">' + (c.kind === "assistant" ? "Assistant " : "Mentor ") + pad(c.slot) + "</span>");
-    if (S.me.role === "staff") roles.push('<span class="rchip red">Staff</span>');
-    $("#desk-head").innerHTML = '<div class="id-card">' + UI.avatar(S.me, 64) +
-      '<div><span class="mono-label">Your desk · ID // 2026</span><h1>' + esc(UI.who(S.me)) + "</h1>" +
-      '<p class="mono-sub">@' + esc(S.me.username || "") + (c ? " · " + esc(c.badge_id) : "") + '</p><div class="rchips">' + roles.join("") + "</div></div>" +
-      UI.barcode(S.me.id, 120, 34) + "</div>";
+  /* ---------- the header: who you are, and the three numbers that matter on the tab you're on ----------
+     Each number is a button that opens the part of the desk that handles it. */
+  const T = iso => new Date(iso).getTime();
+  const waitingIn = list => list.filter(r => r.status === "pending" && T(r.starts_at) > UI.now()).length;
+  const nextIn = list => list.filter(r => r.status === "accepted" && T(r.ends_at) > UI.now()).sort((a, b) => T(a.starts_at) - T(b.starts_at))[0];
+  const whenShort = r => r ? UI.date(r.starts_at, { weekday: "short" }) + " " + UI.time(r.starts_at) : "None booked";   // in the viewer's time, like the rest of the desk
+  const plural = (n, one, many) => n === 1 ? one : many;
+  async function headStats() {
+    const now = UI.now();
+    if (S.tab === "coach") {
+      const c = S.myCoach, [reqs, hours] = await Promise.all([API.coachRequests(c.id), API.availability(c.id)]);
+      const w = waitingIn(reqs), h = Math.round(hours.filter(x => T(x.ends_at) > now).reduce((n, x) => n + (T(x.ends_at) - Math.max(T(x.starts_at), now)) / 6e4, 0) / 30) / 2;
+      return [{ v: w, k: plural(w, "Request waiting", "Requests waiting"), hot: w > 0, go: "coach:waiting" },
+        { v: whenShort(nextIn(reqs)), k: "Next session", go: "coach:coming" },
+        { v: h + " h", k: "Hours posted", hot: h === 0, go: "coach:hours" }];
+    }
+    if (S.tab === "staff") {
+      const [reqs, hours] = await Promise.all([API.allRequests(), API.allAvailability()]);
+      const w = waitingIn(reqs), b = reqs.filter(r => r.status === "accepted" && T(r.ends_at) > now).length;
+      const none = S.coaches.filter(c => !hours.some(x => x.coach_id === c.id && T(x.ends_at) > now)).length;
+      return [{ v: w, k: plural(w, "Request waiting", "Requests waiting"), hot: w > 0, go: "staff:requests" },
+        { v: b, k: plural(b, "Session booked", "Sessions booked"), go: "staff:requests" },
+        { v: none, k: plural(none, "Coach with no hours", "Coaches with no hours"), hot: none > 0, go: "staff:hours" }];
+    }
+    const [mine, teams] = await Promise.all([API.myRequests(), API.teams()]);
+    const team = teams.find(t => (t.member_ids || []).includes(S.me.id)), w = waitingIn(mine);
+    return [{ v: team ? team.name : "No team", k: "Your team", go: "player:team" },
+      { v: whenShort(nextIn(mine)), k: "Next session", go: "player:reqs" },
+      { v: w, k: plural(w, "Request waiting", "Requests waiting"), hot: w > 0, go: "player:reqs" }];
+  }
+  let headTok = 0;
+  async function renderHead() {
+    const c = S.myCoach, roles = [], tok = ++headTok;
+    if (c) roles.push((c.kind === "assistant" ? "Assistant " : "Mentor ") + pad(c.slot));
+    if (S.isPlayer) roles.push("Player");
+    if (S.me.role === "staff") roles.push("Staff");
+    const head = $("#desk-head");
+    if (!head.querySelector(".dhead")) head.innerHTML = '<header class="sheet dhead"><div class="dh-who">' + UI.avatar(S.me, 52) + '<div><span class="mono-label"></span><h1></h1><p class="dh-sub"></p></div></div><div class="dh-stats"></div></header>';
+    head.querySelector(".mono-label").textContent = "Your desk · " + roles.join(" · ");
+    head.querySelector("h1").textContent = UI.who(S.me);
+    head.querySelector(".dh-sub").textContent = "@" + (S.me.username || "");
+    const stats = await headStats().catch(() => []);
+    if (tok !== headTok) return;   // a newer one is on its way
+    head.querySelector(".dh-stats").innerHTML = stats.map(s => '<button type="button" class="dh-stat' + (s.hot ? " hot" : "") + '" data-go="' + s.go + '" title="' + esc(s.v + " · " + s.k) + '"><b>' + esc(s.v) + "</b><span>" + esc(s.k) + "</span></button>").join("");
+    head.onclick = e => { const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go); };
+  }
+  // a header number: switch to its tab, then bring its part of the desk into view
+  async function go(g) {
+    const [tab, where] = g.split(":");
+    if (tab === "staff") S.staffTab = where;
+    S.tab = tab; history.replaceState(null, "", "#" + tab);
+    $$(".dtab").forEach(x => x.setAttribute("aria-selected", String(x.dataset.tab === tab)));
+    await render();
+    if (tab === "coach" && where === "hours") PTGCoachCal.mode("hours");
+    const t = $({ waiting: "#d-waiting", coming: "#d-coming", hours: "#cc-panel", team: "#d-team", reqs: "#d-reqs" }[where] || "#desk-tabs") || $("#desk-tabs");
+    t.scrollIntoView({ block: "start" });   // straight there (a smooth scroll can be cut short while the desk redraws)
   }
 
   async function render() {
     if (!S.me) return;
+    renderHead();   // its numbers follow the tab and the latest data
     const body = $("#desk-body");
     try {
       if (S.tab === "coach") await renderCoach(body);
@@ -71,43 +119,71 @@
     const [reqs, teams] = await Promise.all([API.myRequests().catch(() => []), API.teams().catch(() => [])]);
     const team = teams.find(t => (t.member_ids || []).includes(S.me.id));
     const coach = team && S.coaches.find(c => c.id === team.coach_id);
-    const now = new Date();
+    const now = new Date(UI.now());
     const upcoming = reqs.filter(r => new Date(r.ends_at) > now);
-    const past = reqs.filter(r => new Date(r.ends_at) <= now);
+    // Your sessions: both weeks. Upcoming days show what's booked or waiting; days that are over show what happened
+    // (done, expired). Click a day to list it below.
+    const days = UI.eventDays(), dayOf = r => UI.dayOf(r.starts_at), longDate = y => UI.date(UI.etAt(y, 720), { weekday: "long", month: "long", day: "numeric" });
+    const over = y => UI.etAt(y, UI.DAY_END).getTime() <= UI.now();
+    const count = (n, w) => n ? '<span class="chip-st st-' + w + '">' + n + " " + w + "</span>" : "";
+    const pcell = d => {
+      const s = reqs.filter(r => dayOf(r) === d.ymd).map(UI.shown), n = k => s.filter(x => x === k).length, ev = d.events[0], sel = S.pday === d.ymd, was = over(d.ymd);
+      return '<div class="cc-day' + (was ? " was" : "") + (sel ? " on" : "") + (d.ymd === UI.todayYmd() ? " today" : "") + '" data-pday="' + d.ymd + '">' +
+        '<button type="button" class="hit" aria-pressed="' + sel + '" aria-label="' + esc(longDate(d.ymd)) + '"></button>' +
+        '<span class="cd-top"><small>' + d.dow + "</small><b>" + d.n + "</b>" + (ev ? '<i class="evdot ' + ev.kind + '" title="' + esc(ev.title) + '"></i>' : "") + "</span>" +
+        (n("accepted") ? '<span class="ses-btn cd-acc">' + n("accepted") + (n("accepted") === 1 ? " session" : " sessions") + "</span>" : "") +
+        (n("pending") ? '<span class="ses-btn cd-pen">' + n("pending") + " waiting</span>" : "") +
+        count(n("done"), "done") + count(n("expired"), "expired") + "</div>";
+    };
+    const pl = S.pday ? reqs.filter(r => dayOf(r) === S.pday).sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at)) : [];
+    const dayList = !S.pday ? '<p class="empty-note">Click a day to see its sessions. Days that are over show what happened.</p>'
+      : '<div class="cc-dhead"><h3>' + esc(longDate(S.pday)) + '</h3><button type="button" class="linkbtn js-pclose">Close</button></div>' +
+        (pl.length ? reqTable(pl, "player") : '<p class="empty-note">' + (over(S.pday) ? "Nothing happened on this day." : "No sessions or requests on this day.") + "</p>");
     body.innerHTML =
-      '<section class="sheet dpanel wide-panel"><h2>Your team</h2>' +
+      '<section class="sheet dpanel wide-panel" id="d-team"><h2>Your team</h2>' +
         (team ? '<p class="big-name">' + esc(team.name) + '</p><p>Mentor: <b>' + esc(coach ? UI.coachName(coach) : "To be assigned") + "</b></p>" +
           '<ul class="plain">' + (team.players || []).map(p => "<li>" + esc(p.ign) + (p.discord ? ' <span class="muted">@' + esc(p.discord) + "</span>" : "") + "</li>").join("") + "</ul>" +
-          (coach ? '<a class="btn" href="index.html?coach=' + encodeURIComponent(coach.id) + '#book">Request a session with ' + esc(UI.bare(UI.coachName(coach))) + "</a>" : "")
+          (coach ? '<a class="btn" href="index.html?hours&coach=' + encodeURIComponent(coach.id) + '">Request a session with ' + esc(UI.bare(UI.coachName(coach))) + "</a>" : "")
           : "<p>You're not on a team for this event.</p>") +
       "</section>" +
-      '<section class="sheet dpanel wide-panel"><div class="dp-head"><h2>Your session requests</h2><a class="btn" href="index.html#book">Request a session</a></div>' +
+      '<section class="sheet dpanel wide-panel" id="d-reqs"><div class="dp-head"><h2>Your session requests</h2><a class="btn" href="index.html?hours">Request a session</a></div>' +
         '<p class="muted">Times are in your time zone (' + esc(UI.tz) + ").</p>" +
         (upcoming.length ? reqTable(upcoming, "player") : '<p class="empty-note">No upcoming requests.</p>') +
-        (past.length ? '<details class="past"><summary>Past requests (' + past.length + ")</summary>" + reqTable(past, "past") + "</details>" : "") +
-      "</section>";
+      "</section>" +
+      '<section class="sheet dpanel wide-panel" id="d-cal"><h2>Your sessions</h2>' +
+        '<div class="cal2 cc-cal">' + [1, 2].map(w => '<span class="wkl">Week ' + w + "</span>" + days.filter(d => d.week === w).map(pcell).join("")).join("") + "</div>" +
+        '<div class="cc-legend"><span><i class="lg acc"></i>Booked session</span><span><i class="lg pen"></i>Request waiting</span><span><i class="lg dn"></i>Done</span><span><i class="lg ex"></i>Expired</span><span><i class="evdot kickoff"></i>Kickoff</span><span><i class="evdot scrim"></i>Scrim day</span><span><i class="evdot mock"></i>Checkpoint</span></div>' +
+        dayList + "</section>";
     body.onclick = e => {
       const c = e.target.closest(".js-cancel");
-      if (c) UI.act(c, async () => { await API.setRequestStatus(c.dataset.id, "cancelled"); await render(); }, "Request cancelled.");
+      if (c) return UI.act(c, async () => { await API.setRequestStatus(c.dataset.id, "cancelled"); await render(); }, "Request cancelled.");
+      if (e.target.closest(".js-pclose")) { S.pday = null; return render(); }
+      const d = e.target.closest("[data-pday]");
+      if (d) { S.pday = S.pday === d.dataset.pday ? null : d.dataset.pday; render(); }
     };
   }
 
-  function reqTable(list, mode) {
-    return '<div class="tbl"><table><thead><tr><th>When</th><th>' + (mode === "coach" ? "From" : "Coach") + "</th><th>Session</th><th>Status</th><th></th></tr></thead><tbody>" +
-      list.map(r => "<tr><td>" + esc(UI.range(r.starts_at, r.ends_at)) + "</td><td>" +
-        (mode === "coach" ? esc(UI.who(r.requester)) : esc(UI.bare(UI.coachName(r.coach)))) + "</td><td>" + (r.kind === "team" ? "Team review" : "Individual") +
-        (r.note ? '<div class="muted small">' + esc(r.note) + "</div>" : "") + "</td><td>" + UI.statusChip(r.status) + "</td><td>" +
-        (mode !== "past" && ["pending", "accepted"].includes(r.status) && (mode === "player" || r.status === "accepted") ? '<button type="button" class="linkbtn js-cancel" data-id="' + esc(r.id) + '">Cancel</button>' : "") +
-        "</td></tr>").join("") + "</tbody></table></div>";
+  // mode: "player" / "coach" (with Cancel), "past" / "coach-past" (no buttons). Statuses as they are now: a waiting
+  // request nobody answered in time shows Expired, a booked session that's over shows Done.
+  function reqTable(list, mode, teamName) {
+    const from = mode === "coach" || mode === "coach-past";
+    return '<div class="tbl"><table><thead><tr><th>When</th><th>' + (from ? "From" : "Coach") + "</th><th>Session</th><th>Status</th><th></th></tr></thead><tbody>" +
+      list.map(r => { const s = UI.shown(r); return "<tr><td>" + esc(UI.range(r.starts_at, r.ends_at)) + "</td><td>" +
+        (from ? esc(UI.party(r, teamName)) : esc(UI.bare(UI.coachName(r.coach)))) + "</td><td>" + (r.kind === "team" ? "Team review" : "Individual") +
+        // a session the mentor wrote down (set up with the team on Discord, say)
+        (r.by_coach ? '<div class="muted small">' + (from ? "Written by you" : "Booked by your mentor") + "</div>" : "") +
+        (r.note ? '<div class="muted small">' + esc(r.note) + "</div>" : "") + "</td><td>" + UI.statusChip(s) + "</td><td>" +
+        ((mode === "player" && r.requester_id === S.me.id && (s === "pending" || s === "accepted")) || (mode === "coach" && s === "accepted") ? '<button type="button" class="linkbtn js-cancel" data-id="' + esc(r.id) + '">Cancel</button>' : "") +
+        "</td></tr>"; }).join("") + "</tbody></table></div>";
   }
 
   /* ================================================== coach calendar */
   async function renderCoach(body) {
     const c = S.myCoach;
-    const [blocks, reqs, teams] = await Promise.all([API.availability(c.id), API.coachRequests(c.id), API.teams().catch(() => [])]);
+    const [blocks, reqs, teams, profiles] = await Promise.all([API.availability(c.id), API.coachRequests(c.id), API.teams().catch(() => []), API.profiles().catch(() => [])]);
     const myTeam = teams.find(t => t.coach_id === c.id);
     const onTeam = r => !!(myTeam && (myTeam.member_ids || []).includes(r.requester_id));
-    const now = new Date();
+    const now = new Date(UI.now());
     const pending = reqs.filter(r => r.status === "pending" && new Date(r.starts_at) > now);
     const upcoming = reqs.filter(r => r.status === "accepted" && new Date(r.ends_at) > now);
     // another waiting request at the same time (accepting one declines the other)
@@ -126,12 +202,13 @@
       '<div class="slip-act"><button type="button" class="linkbtn js-open" data-id="' + esc(r.id) + '">Details ›</button></div></article>';
 
     body.innerHTML =
-      '<section class="dpanel-flat"><div class="dp-head"><h2>Requests waiting <span class="count">' + pending.length + "</span></h2><span class=\"muted\">Times in your time zone (" + esc(UI.tz) + ")</span></div>" +
+      '<section class="dpanel-flat" id="d-waiting"><div class="dp-head"><h2>Requests waiting <span class="count">' + pending.length + "</span></h2><span class=\"muted\">Times in your time zone (" + esc(UI.tz) + ")</span></div>" +
         (pending.length ? '<div class="slips">' + pending.map(slip).join("") + "</div>" : '<p class="empty-note on-dark">Nothing waiting. New requests show up here as players send them.</p>') + "</section>" +
       // the calendar (Hours | Sessions) lives in coachcal.js
       '<section class="sheet dpanel wide-panel" id="cc-panel"></section>' +
-      '<section class="sheet dpanel wide-panel"><h2>Coming up</h2>' + (upcoming.length ? reqTable(upcoming, "coach") : '<p class="empty-note">No accepted sessions yet.</p>') + "</section>";
-    PTGCoachCal.mount($("#cc-panel"), { coach: c, blocks, reqs, teams, rerender: render });
+      '<section class="sheet dpanel wide-panel" id="d-coming"><h2>Coming up</h2>' + (upcoming.length ? reqTable(upcoming, "coach", myTeam && myTeam.name) : '<p class="empty-note">No accepted sessions coming up.</p>') +
+        "</section>";
+    PTGCoachCal.mount($("#cc-panel"), { coach: c, blocks, reqs, teams, profiles, rerender: render });   // profiles: your team's names for Write a session
 
     // Requests waiting cards and Coming up (the calendar handles its own clicks)
     body.onclick = e => {
@@ -139,7 +216,7 @@
       if (open) return PTGCoachCal.openReq(open.dataset.id, "*|pending");   // the list-and-details pop-up, with every waiting request
       // Cancel in Coming up: say what will happen first (UI.askRequest), then act
       const can = e.target.closest(".js-cancel-acc, .js-cancel"); if (!can) return;
-      const r = reqs.find(x => x.id === can.dataset.id), t = r && teams.find(x => (x.member_ids || []).includes(r.requester_id));
+      const r = reqs.find(x => x.id === can.dataset.id), t = r && (r.by_coach && r.kind === "team" ? myTeam : teams.find(x => (x.member_ids || []).includes(r.requester_id)));
       UI.askRequest({ r, status: "cancelled", team: t && t.name, reqs }).then(ok => ok && UI.act(can, async () => { await API.setRequestStatus(r.id, "cancelled"); await render(); }, "Session cancelled."));
     };
   }

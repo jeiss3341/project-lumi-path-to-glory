@@ -423,24 +423,65 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .assist-head{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline;margin-bottom:24px}
 .assist-head h3{font:900 clamp(24px,3vw,36px)/1 var(--f-display);letter-spacing:-.035em;text-transform:uppercase;margin:0}
 .assist-head p{margin:0;color:var(--muted);max-width:62ch}
-.assist-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
-@media (max-width:980px){.assist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:520px){.assist-grid{grid-template-columns:minmax(0,1fr)}}
+/* small cards on the left, the tall card on the right. The cards sit in a strip inside a window:
+   a slide moves the strip, then the cards that left are removed. */
+.as-stage{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:22px 46px;align-items:stretch}
+.as-left{display:grid;gap:14px;align-content:start;min-width:0}
+.as-view{overflow:hidden;padding:14px;margin:-14px;min-width:0}
+.as-track{--g:20px;display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-auto-columns:calc((100% - var(--g)) / 2);gap:20px var(--g)}
+.as-meta{display:flex;align-items:center;gap:14px;font:500 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.as-meta span{white-space:nowrap}
+.as-meta .arrows{flex:none}
+.as-bar{flex:1;height:2px;background:rgba(255,255,255,.14);overflow:hidden}
+.as-bar i{display:block;height:100%;background:var(--red);transform-origin:left;animation:asBar 4s linear forwards}
+.paused .as-bar i{animation-play-state:paused}
+@keyframes asBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.as-card{cursor:pointer;transition:box-shadow .15s ease;-webkit-user-select:none;user-select:none}   /* quick clicks shouldn't highlight the card */
+.as-card:hover{box-shadow:var(--lift),0 0 0 2px rgba(255,255,255,.55)}
+.as-card.on{box-shadow:var(--lift),0 0 0 2.5px var(--red)}
+.as-hit{position:absolute;inset:0;z-index:4;background:none;border:0;padding:0;cursor:pointer;border-radius:12px}
+.as-hit:focus-visible{outline:2px solid #fff;outline-offset:-3px}
+.as-card .mb-foot a{position:relative;z-index:5}
+/* the tall card, leaning the opposite way from the Instructor card above it, with the details beside it */
+.as-main{display:grid;min-width:0}
+.as-tall{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px;align-items:stretch;min-width:0}
+.as-tall .badge{width:100%;transform:rotate(2.5deg)}
+.as-tall .b-role{font-size:31px}
+.as-badge{display:grid;min-width:0}
+.as-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.as-facts{margin:0;display:grid;grid-template-columns:minmax(0,1fr);border-top:1px dashed #4a4a50;font:500 13px/1.45 var(--f-mono);color:#ececee}
+.as-facts dt,.as-facts dd{margin:0}
+.as-facts dt{padding-top:9px;font-size:10px;line-height:1.9;letter-spacing:.12em;text-transform:uppercase;color:#a0a0a6}
+.as-facts dd{padding:3px 0 9px;border-bottom:1px dashed #4a4a50}
+.as-facts .ph{color:#9a9aa1}
+.as-go{align-self:flex-start;margin-top:auto;background:var(--red);color:#fff;text-decoration:none;font:600 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:13px 11px;line-height:1.3}
+.as-go:hover{background:#fff;color:var(--ink)}
+@media (max-width:1220px){.as-stage{grid-template-columns:minmax(0,1fr)}.as-main{order:-1}}   /* below this the details beside the tall card get too narrow */
+@media (max-width:520px){
+  .as-track{--g:12px;row-gap:12px}
+  .as-tall{grid-template-columns:minmax(0,1fr)}
+  .as-card .mb-body{padding:11px 10px 12px;gap:6px}
+  .as-card .mb-role{font-size:18px}
+  .as-card .mb-name{font-size:13px}
+  .as-card .mb-icon{width:44px}
+  .as-card .mb-focus{font-size:9.5px}
+  .as-card .b-top{font-size:9px;letter-spacing:.06em}
+  .as-card .mb-sticker{width:46px}
+  .as-card .mb-foot{flex-wrap:wrap;gap:6px}
+}
+@media (prefers-reduced-motion:reduce){.as-bar{display:none}}
 .mini-badge{background:var(--badge);color:#f4f4f2;border-radius:12px;display:grid;grid-template-columns:22px minmax(0,1fr);overflow:hidden;box-shadow:var(--lift);min-width:0;position:relative}
 .mini-badge::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.1),transparent 34%);pointer-events:none}
-.mini-badge:nth-child(odd){transform:rotate(-1.2deg)}
-.mini-badge:nth-child(even){transform:rotate(1deg)}
 .mini-badge .b-strip span{font-size:7.5px;letter-spacing:.26em}
 .mini-badge .b-strip::before,.mini-badge .b-strip::after{width:6px;height:6px}
 .mb-body{padding:14px 14px 16px;display:grid;gap:8px;min-width:0}
 .mb-role{font:900 26px/.9 var(--f-display);font-stretch:108%;text-transform:uppercase}
 .mb-name{font:800 17px/1.1 var(--f-display);text-transform:uppercase;overflow-wrap:anywhere}
-/* wear on some assistant badges: fine scratches, scuffs, tape residue, a red pen tick */
+/* wear on some assistant badges: fine scratches, scuffs, a red pen tick */
 .mini-badge .wear{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.1;stroke-linecap:round;mix-blend-mode:screen}
 .mini-badge .wear *{vector-effect:non-scaling-stroke}
 .mini-badge .wear .faint{stroke:rgba(255,255,255,.3);stroke-width:.8}
 .mini-badge .wear .scuff{fill:rgba(255,255,255,.13);stroke:none;filter:blur(6px)}
-.mini-badge .wear .tape{fill:rgba(236,230,214,.2);stroke:rgba(236,230,214,.28);stroke-width:.6;stroke-dasharray:2 2}
 .mini-badge .wear .ink{stroke:var(--red);stroke-width:2.2;opacity:.75;filter:url(#pencil)}
 /* sticker on an assistant badge (right side, next to the icon) */
 .mb-sticker{position:absolute;right:8%;top:44%;width:clamp(58px,30%,76px);height:auto;transform:rotate(var(--tilt,8deg));z-index:3;pointer-events:none;
@@ -455,7 +496,11 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .mb-icon-ph{font:900 26px/1 var(--f-display);color:transparent;-webkit-text-stroke:1.5px var(--red);opacity:.85}
 .mb-focus{font:500 11px/1.5 var(--f-mono);color:#b3b3b8;letter-spacing:.04em}
 .mb-focus .ph{color:#8d8d93}
-.mini-badge .b-team{font-size:10px;padding:5px 8px}
+.mini-badge .b-team{font-size:9px;padding:3px 6px;white-space:nowrap}
+.mb-nameline{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 8px;min-width:0}
+.mb-nameline .b-team{margin-top:1px}
+.b-nameline{display:flex;flex-wrap:wrap;align-items:flex-start;gap:5px 10px;min-width:0}
+.b-nameline .b-team{font-size:9px;padding:3px 6px;margin-top:2px;white-space:nowrap}
 
 /* office hours: appointment book */
 .sent-stamp{position:absolute;right:14px;top:46px;transform:rotate(-12deg)}
