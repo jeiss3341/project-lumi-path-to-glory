@@ -104,7 +104,12 @@ window.PTG = {
     "Training Director Katja": "Katja", "Instructor Fiora": "Fiora", "Researcher Barbara": "Barbara",
     "Student Council President Elena": "Elena", "Academy Laura": "Laura", "Academy Theodore": "Theodore",
     "Academy Estelle": "Estelle", "Transfer Student Bianca": "Bianca", "Rebellious Nicky": "Nicky",
-    "Prison Officer Abigail": "Abigail", "Shoichi": "Shoichi"
+    "Prison Officer Abigail": "Abigail", "Shoichi": "Shoichi", "Blair": "Blair", "Coraline": "Coraline"
+  },
+  // In-game test subject IDs, printed on the cards (from the official Eternal Return wiki's list of characters).
+  subjects: {
+    Katja: "24M-RFT75", Fiora: "14M-RFT02", Barbara: "16M-RFT15", Elena: "22M-RFT52", Laura: "21M-RFT49", Theodore: "23M-RFT65",
+    Estelle: "22M-RFT58", Bianca: "20M-RFT45", Nicky: "20M-RFT43", Abigail: "23M-RFT70", Shoichi: "16M-RFT23", Blair: "25M-RFT87", Coraline: "26M-RFT90"
   },
 
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).
@@ -154,9 +159,9 @@ window.PTG = {
     { id: "m6", kind: "mentor", slot: 6, badge_id: "INS-0476-TH", name: "", team_name: "", display_skin: "Academy Theodore" },
     { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "", team_name: "", display_skin: "Academy Estelle" },
     { id: "m8", kind: "mentor", slot: 8, badge_id: "INS-0478-BT", name: "", team_name: "", display_skin: "Transfer Student Bianca" },
-    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "",
+    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "Blair",
       sticker: "art/stickers/baeksu.webp", sticker_at: { top: "26%", tilt: -16 } }, // die-cut sticker that follows the drawing's outline
-    { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "", display_skin: "",
+    { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "", display_skin: "Coraline",
       sticker: "art/stickers/jalja.webp" }, // small chibi sticker on the card's empty right side
     { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "", display_skin: "" },
     { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "", display_skin: "" },

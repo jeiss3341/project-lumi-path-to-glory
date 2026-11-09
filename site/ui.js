@@ -109,14 +109,25 @@
   const bare = s => String(s).replace(/^\[|\]$/g, "");
   UI.bare = bare;
 
-  UI.barcode = function (seed, w, h) {
-    w = w || 120; h = h || 28;
-    let s = 7;
-    for (const c of String(seed)) s = (s * 31 + c.charCodeAt(0)) >>> 0;
-    const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  /* A real Code 128 barcode (the standard used on shipping labels). */
+  const CODE128 = "212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232".split(" ");
+  // the four digits a barcode reads: the date it's given, or a serial scrambled from the whole ID
+  UI.barDigits = function (seed, date) {
+    if (date) return date;
+    let n = 2166136261;
+    for (const c of String(seed)) n = Math.imul(n ^ c.charCodeAt(0), 16777619);
+    n = Math.imul(n ^ (n >>> 15), 2246822519); n = (n ^ (n >>> 13)) >>> 0;
+    return String(n % 10000).padStart(4, "0");
+  };
+  UI.barcode = function (seed, w, h, date) {
+    h = h || 28;
+    const digits = UI.barDigits(seed, date);
+    const codes = [105, +digits.slice(0, 2), +digits.slice(2)];   // start, in the digit-pairs mode, then the digits
+    codes.push(codes.reduce((sum, v, i) => sum + v * (i || 1), 0) % 103);   // check value
+    const widths = codes.map(v => CODE128[v]).join("") + "2331112";   // stop
     let x = 0, r = "";
-    while (x < w) { const bw = 1 + Math.floor(rnd() * 3); if (rnd() > 0.32) r += '<rect x="' + x + '" width="' + bw + '" height="' + h + '"/>'; x += bw + 1; }
-    return '<svg class="barcode" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="none" aria-hidden="true" fill="currentColor">' + r + "</svg>";
+    [...widths].forEach((b, i) => { if (i % 2 === 0) r += '<rect x="' + x + '" width="' + b + '" height="' + h + '"/>'; x += +b; });
+    return '<svg class="barcode"' + ' viewBox="0 0 ' + x + " " + h + '" preserveAspectRatio="none" aria-hidden="true" fill="currentColor">' + r + "</svg>";
   };
 
   // Art for a coach's ID badge: a file from PTG.art, else the Katja crop from the poster, else a placeholder.
@@ -137,11 +148,15 @@
     const base = (c && C.skins[c.display_skin]) || (c && c.name) || "?";
     return '<div class="ph-art"><span class="L">' + UI.esc(base.charAt(0)) + '</span><span class="cap">Display art<br>' + UI.esc((c && c.display_skin) || "To be chosen") + "</span></div>";
   };
+  // a card's character: the box prints its in-game Subject ID (24M-RFT75).
+  const charOf = c => { const seed = (C.coachSeed || []).find(x => x.id === c.id) || {}; return C.skins && C.skins[c.display_skin || seed.display_skin]; };   // a blank skin in saved data falls back to the event content
+  UI.subjectId = c => (C.subjects && C.subjects[charOf(c)]) || "";
+  UI.cardId = c => UI.subjectId(c) || c.badge_id;
   UI.badge = function (c) {
     return '<div class="badge"><div class="b-strip"><span>FACULTY · PATH TO GLORY</span></div><div class="b-body">' +
       '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>ID // 2026</span></div>' +
       '<div class="b-role">' + (c.kind === "assistant" ? "Assistant" : "Instructor") + "</div>" +
-      '<div class="b-row"><span class="b-id">' + UI.esc(c.badge_id) + "</span>" + UI.barcode(c.badge_id, 92, 24) + "</div>" +
+      '<div class="b-row"><span class="b-id">' + UI.esc(UI.cardId(c)) + "</span>" + "</div>" +
       '<div class="b-art">' + UI.art(c) + "</div>" +
       '<div class="b-name"><small>NAME</small><div class="b-nameline"><b>[' + UI.esc(bare(UI.coachName(c))) + ']</b><span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div></div></div>";
   };

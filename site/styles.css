@@ -123,7 +123,6 @@ h1,h2,h3,h4{text-wrap:balance}
 .b-role{font:900 34px/.9 var(--f-display);font-stretch:108%;letter-spacing:-.01em;text-transform:uppercase}
 .b-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .b-id{border:1.5px solid var(--red);font:500 11px/1 var(--f-mono);letter-spacing:.12em;padding:5px 8px;white-space:nowrap}
-.b-row .barcode{width:92px;height:24px;color:#f4f4f2;flex:none}
 .b-art{position:relative;aspect-ratio:4/5;background:#141416;overflow:hidden;container-type:inline-size}
 .b-art::before,.b-art::after{content:"";position:absolute;width:22px;height:22px;z-index:2;border:0 solid var(--red)}
 .b-art::before{top:8px;right:8px;border-width:2px 2px 0 0}

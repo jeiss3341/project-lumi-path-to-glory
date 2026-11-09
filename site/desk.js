@@ -293,7 +293,7 @@
       const editing = S.coachEdit && coaches.find(c => c.id === S.coachEdit);
       const slotOf = c => (c.kind === "assistant" ? "A" : "M") + pad(c.slot);
       inner = '<p class="muted">Link each slot to the coach\'s Discord account once they\'ve logged in here; linked coaches get the calendar on their desk. Mentor files are edited here only.</p><div class="tbl"><table><thead><tr><th>Slot</th><th>Coach</th><th>Discord account</th><th></th></tr></thead><tbody>' +
-        coaches.map(c => '<tr data-id="' + esc(c.id) + '"' + (editing && editing.id === c.id ? ' class="on"' : "") + '><td><b>' + slotOf(c) + '</b><div class="small muted">' + esc(c.badge_id) + "</div></td>" +
+        coaches.map(c => '<tr data-id="' + esc(c.id) + '"' + (editing && editing.id === c.id ? ' class="on"' : "") + '><td><b>' + slotOf(c) + '</b><div class="small muted">' + esc(UI.cardId(c)) + "</div></td>" +
           "<td><b>" + esc(UI.bare(UI.coachName(c))) + '</b><div class="small muted">' + esc((c.kind === "mentor" ? c.team_name : c.focus) || "") + "</div></td>" +
           '<td><select class="cell-in" name="profile_id" aria-label="Discord account for ' + esc(slotOf(c)) + '"><option value="">Not linked</option>' + profiles.map(p => '<option value="' + esc(p.id) + '"' + (p.id === c.profile_id ? " selected" : "") + ">" + esc(UI.who(p)) + " @" + esc(p.username || "") + "</option>").join("") + "</select></td>" +
           '<td class="row-btns"><button type="button" class="btn ghost js-save-coach">Save link</button><button type="button" class="btn js-edit-file">Edit file</button></td></tr>').join("") + "</tbody></table></div>";

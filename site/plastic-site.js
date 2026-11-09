@@ -8,10 +8,10 @@
   document.body.appendChild(box);
   function paint() {
     const now = document.documentElement.dataset.plastic || "none";
-    box.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.s === now));
+    box.querySelectorAll("button[data-s]").forEach(b => b.setAttribute("aria-pressed", b.dataset.s === now));
   }
   box.addEventListener("click", e => {
-    const b = e.target.closest("button");
+    const b = e.target.closest("button[data-s]");
     if (!b) return;
     if (b.dataset.s === "none") delete document.documentElement.dataset.plastic;
     else document.documentElement.dataset.plastic = b.dataset.s;

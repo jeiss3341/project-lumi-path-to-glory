@@ -146,7 +146,7 @@
     $("#goal-line").textContent = C.event.goal;
     $("#pitch").textContent = C.event.pitch;
     $("#tz").textContent = UI.tz;
-    $("#ticket-stub").insertAdjacentHTML("afterbegin", UI.barcode("PTG-1116", 60, 40));
+    $("#ticket-stub").insertAdjacentHTML("afterbegin", UI.barcode("PTG-1014", 60, 40, "1014"));
     const st = UI.status();
     $("#ticket-status").textContent = st.phase === "before" ? "Class starts in " + st.days + (st.days === 1 ? " day" : " days")
       : st.phase === "live" ? "In session · day " + st.day + " of 14" : "Class dismissed";
@@ -260,7 +260,7 @@
       const m = ms[fi];
       $("#fac-badge").innerHTML = UI.badge(m);
       const clip = '<svg class="clip" viewBox="0 0 44 112" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M30 40 V96 a10 10 0 0 1 -20 0 V22 a14 14 0 0 1 28 0 V88 a4 4 0 0 1 -8 0 V40"/></svg>';
-      const top = side => '<div class="info-top"><span>Mentor file ' + pad(m.slot) + " / " + pad(ms.length) + side + "</span><span>" + esc(m.badge_id) + "</span></div>";
+      const top = side => '<div class="info-top"><span>Mentor file ' + pad(m.slot) + " / " + pad(ms.length) + side + "</span><span>" + esc(UI.cardId(m)) + "</span></div>";
       const chips = (list, ph) => list && list.length ? list.map(p => "<span>" + esc(p) + "</span>").join("") : ph;
       const flipBtn = label => '<button type="button" class="flip-btn js-flip" aria-pressed="false">' + label + "</button>";
       const dz = k => (m.doodles || []).includes(k); // red pencil doodles this mentor's file gets
@@ -377,7 +377,7 @@
       // optional sticker slapped on the empty right side (from the coach row, or the event content as a fallback)
       (sticker ? '<img class="mb-sticker" src="' + esc(sticker) + '" alt="" width="240" height="240" style="' + (at.top ? "top:" + esc(at.top) + ";" : "") + (at.tilt != null ? "--tilt:" + Number(at.tilt) + "deg" : "") + '">' : "") +
       '<div class="b-strip"><span>FACULTY · PATH TO GLORY</span></div><div class="mb-body">' +
-      '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>' + esc(a.badge_id) + "</span></div>" +
+      '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>' + esc(UI.cardId(a)) + "</span></div>" +
       '<div class="mb-role">Assistant</div><div class="mb-nameline"><div class="mb-name">[' + esc(name) + ']</div><span class="b-team">' + esc(UI.bare(UI.coachTeam(a))) + "</span></div>" +
       // icon between the name and the role focus: a headshot from PTG.artHead (e.g. a1: "art/heads/a1.webp"), else an empty slot
       '<div class="mb-icon">' + (C.artHead && C.artHead[a.id] ? '<img src="' + esc(C.artHead[a.id]) + '" alt="' + esc(name) + ' icon">' : '<span class="mb-icon-ph" aria-hidden="true">?</span>') + "</div>" +
