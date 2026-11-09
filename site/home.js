@@ -259,13 +259,12 @@
       fi = (i + ms.length) % ms.length;
       const m = ms[fi];
       $("#fac-badge").innerHTML = UI.badge(m);
-      const clip = '<svg class="clip" viewBox="0 0 44 112" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M30 40 V96 a10 10 0 0 1 -20 0 V22 a14 14 0 0 1 28 0 V88 a4 4 0 0 1 -8 0 V40"/></svg>';
       const top = side => '<div class="info-top"><span>Mentor file ' + pad(m.slot) + " / " + pad(ms.length) + side + "</span><span>" + esc(UI.cardId(m)) + "</span></div>";
       const chips = (list, ph) => list && list.length ? list.map(p => "<span>" + esc(p) + "</span>").join("") : ph;
       const flipBtn = label => '<button type="button" class="flip-btn js-flip" aria-pressed="false">' + label + "</button>";
       const dz = k => (m.doodles || []).includes(k); // red pencil doodles this mentor's file gets
       const front =
-        '<article class="sheet info face front">' + clip + top("") +
+        '<article class="sheet info face front">' + top("") +
         "<h3>" + UI.ph(m.name, UI.coachName(m)) + (dz("burst") ? DOODLE.burst : "") + (dz("chibi") ? DOODLE.chibi : "") + "</h3>" +
         '<span class="team-tag">' + esc(UI.bare(UI.coachTeam(m))) + "</span>" +
         '<div class="info-grid">' +
