@@ -182,6 +182,26 @@
       '<div class="b-art" data-coach="' + UI.esc(c.id) + '">' + UI.art(c) + "</div>" +
       '<div class="b-name"><small>NAME</small><div class="b-nameline"><b>[' + UI.esc(bare(UI.coachName(c))) + ']</b><span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div></div></div>";
   };
+  // a long name gets a little smaller, just until it shares one line with the team tag (never below 15px)
+  UI.fitNames = (root = document) => root.querySelectorAll(".b-nameline").forEach(line => {
+    const b = line.querySelector("b"), t = line.querySelector(".b-team");
+    if (!b || !line.offsetWidth) return;
+    b.style.fontSize = b.style.lineHeight = "";
+    b.style.lineHeight = getComputedStyle(b).lineHeight;   // the line keeps its full height, so a shrunk name doesn't make the card shorter
+    const oneLine = () => b.offsetHeight < parseFloat(getComputedStyle(b).fontSize) * 1.6 && (!t || !t.textContent || t.offsetTop - b.offsetTop < 8);
+    for (let px = parseFloat(getComputedStyle(b).fontSize); !oneLine() && px > 15; px -= 0.5) b.style.fontSize = px - 0.5 + "px";
+  });
+  let fitWait = 0;
+  const fitSoon = () => { clearTimeout(fitWait); fitWait = setTimeout(UI.fitNames, 30); };
+  // runs right after a card is added, before the browser draws it, so the name never shows at full size first and then jumps
+  new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(n => {
+    if (n.nodeType !== 1) return;
+    if (n.matches(".b-nameline")) UI.fitNames(n.parentNode);
+    else if (n.querySelector(".b-nameline")) UI.fitNames(n);
+  })))
+    .observe(document.documentElement, { childList: true, subtree: true });
+  addEventListener("resize", fitSoon);
+  if (document.fonts) document.fonts.ready.then(fitSoon);
 
   /* ---------- feedback ---------- */
   UI.toast = function (msg, kind) {

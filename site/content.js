@@ -85,12 +85,12 @@ window.PTG = {
     a1: "art/a1.webp", // Blair (Baeksu)
     a2: "art/a2.webp", // Coraline (Jalja)
     a4: "art/a4-card.png", // Squortle, chosen by staff
-    a9: "art/a9-card.webp", // Chibiarc, chosen by staff
-    a3: "art/a3-card.webp", // CamperonDuty, chosen by staff
+    a9: "art/a9-original.png", // Chibiarc, chosen by staff, exact hyunwoo2.png
+    a3: "art/a3-original.png", // CamperonDuty, chosen by staff, exact rozzi2.png
     a5: "art/a5-card.png", // Jignut, chosen by staff
     a6: "art/a6-card.png", // Kyroshoot, chosen by staff
-    a7: "art/a7-card.webp", // Superior, chosen by staff
-    a8: "art/a8-card.webp", // Nesious, chosen by staff
+    a7: "art/a7-original.png", // Superior, chosen by staff, exact sua2.png
+    a8: "art/a8-original.png", // Nesious, chosen by staff, exact yumin2.png
   },
   // Headshots for the small assistant cards: square chibi crops in site/art/heads/.
   artHead: {
