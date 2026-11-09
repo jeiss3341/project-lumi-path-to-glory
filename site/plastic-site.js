@@ -1,5 +1,6 @@
 /* Preview only: the picker for plastic-site.html */
 (function () {
+  if (!("plasticPreview" in document.documentElement.dataset)) return;   // never on the live addresses
   const styles = [["none", "No plastic"], ["a", "1. Clear sleeve"], ["b", "2. Laminated"], ["c", "3. Hard holder"], ["d", "4. Worn vinyl"]];
   const box = document.createElement("div");
   box.id = "plastic-pick";

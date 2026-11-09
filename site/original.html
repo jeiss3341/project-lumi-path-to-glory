@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Path to Glory · Project Lumi</title>
+<meta name="description" content="Path to Glory, Project Lumi's pre-season mentor event for the Eternal Return competitive scene. Nov 9–22, 2026.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23d6403a'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='14' fill='%23f3f2ee'%3EPTG%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=Reenie+Beanie&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="app.css">
+<!-- keeps the hero lanyard hidden until swing.js swings it in (swing.js clears this; it also clears itself after 5 s) -->
+<script>document.documentElement.classList.add("swing-pending")</script>
+<!-- index.html?hours shows only Office Hours; the main page leaves it out (rules in app.css) -->
+<script>if (new URLSearchParams(location.search).has("hours")) document.documentElement.classList.add("hours-page")</script>
+</head>
+<body>
+<!-- shared SVG filters: rubber-stamp ink that bleeds at the edges and skips in spots -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="ink-bleed" x="-15%" y="-30%" width="130%" height="160%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency=".055" numOctaves="2" seed="4" result="warp"/>
+    <feDisplacementMap in="SourceGraphic" in2="warp" scale="4" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+    <feGaussianBlur in="rough" stdDeviation=".6" result="bleed"/>
+    <feMerge result="inked"><feMergeNode in="bleed"/><feMergeNode in="rough"/></feMerge>
+    <feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="1" seed="11" result="speck"/>
+    <feColorMatrix in="speck" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -7 0 0 0 4.6" result="holes"/>
+    <feComposite in="inked" in2="holes" operator="in"/>
+  </filter>
+  <!-- graphite pencil: grainy, streaky coverage with slightly wobbly edges -->
+  <filter id="pencil" x="-5%" y="-15%" width="110%" height="130%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="1.2 .3" numOctaves="2" seed="2" result="grain"/>
+    <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -2.4 0 0 0 2.15" result="cover"/>
+    <feComposite in="SourceGraphic" in2="cover" operator="in" result="lead"/>
+    <feDisplacementMap in="lead" in2="grain" scale="1.4" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+<header class="topbar">
+  <div class="wrap">
+    <a class="code" href="index.html">PATH TO GLORY</a>
+    <nav aria-label="Sections">
+      <a href="#brief">Brief</a><a href="#schedule">Schedule</a><a href="#faculty">Faculty</a><a href="#rosters">Rosters</a><a href="#notes">Field notes</a><a href="#channels">Channels</a>
+    </nav>
+    <div class="auth" id="auth"></div>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap" aria-label="Path to Glory">
+    <div class="folder">
+      <div class="file-id"><span class="pill">PTG</span><br>MENTOR FILE<br>NO.1116</div>
+      <div class="folder-tape" aria-hidden="true"><span>PATH TO GLORY</span><span>PRE-SEASON MENTOR EVENT</span><span>*</span></div>
+      <article class="sheet hero-sheet">
+        <svg class="clip" viewBox="0 0 44 112" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M30 40 V96 a10 10 0 0 1 -20 0 V22 a14 14 0 0 1 28 0 V88 a4 4 0 0 1 -8 0 V40"/></svg>
+        <h1 class="title">Path to<br>Glory</h1>
+        <span class="pill-lg">MENTOR EVENT</span>
+        <p class="kicker">(01) Pre-season mentor event:</p>
+        <p class="lede" id="lede"></p>
+        <div class="range" aria-label="November 9 to November 22"><span>11/09</span><i></i><span>11/22</span></div>
+      </article>
+      <a class="ticket" href="#schedule">
+        <span class="stub" id="ticket-stub"><span>ADMIT ONE</span></span>
+        <span class="t-main">
+          <span class="t-label" id="ticket-status">Class starts</span>
+          <span class="t-date">NOV 9<sup>TH</sup> – 22<sup>ND</sup></span>
+          <span class="t-cta" id="ticket-cta">NOW IN SESSION</span>
+        </span>
+      </a>
+    </div>
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="98" fill="#d6403a"/>
+        <circle cx="100" cy="100" r="60" fill="none" stroke="#f3f2ee" stroke-width="2.5"/>
+        <g class="ring">
+          <path id="sealpath" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" fill="none"/>
+          <text fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="16" textLength="486" lengthAdjust="spacing"><textPath href="#sealpath">NOW IN SESSION ★ NOW IN SESSION ★</textPath></text>
+        </g>
+        <text x="100" y="96" text-anchor="middle" fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="21">PATH TO</text>
+        <text x="100" y="119" text-anchor="middle" fill="#f3f2ee" font-family="Archivo, Arial Black, sans-serif" font-weight="900" font-size="21">GLORY</text>
+      </svg>
+    </div>
+    <aside class="hero-side">
+      <div class="lanyard">
+        <div class="strap" aria-hidden="true">PATH TO GLORY · PATH TO GLORY</div>
+        <!-- Lanyard hardware, matte black: strap stitched through an O-ring, small knurled swivel, lobster clasp.
+             Drawn in a 40 x 110 window; the card's top edge is at y 180 and its punched slot at y 188-195.
+             The clasp's back leg runs behind the card: .clasp-back sits under the badge and only shows through the slot. -->
+        <div class="hook" aria-hidden="true">
+          <svg class="clasp-back" viewBox="140 90 40 110"><use href="#hw-claw"/></svg>
+          <svg class="clasp" viewBox="140 90 40 110">
+            <defs>
+              <linearGradient id="hw-blk"><stop offset="0" stop-color="#050506"/><stop offset=".12" stop-color="#1e2024"/><stop offset=".22" stop-color="#4a4e55"/><stop offset=".3" stop-color="#2b2d32"/><stop offset=".5" stop-color="#141518"/><stop offset=".7" stop-color="#26282c"/><stop offset=".82" stop-color="#3d4046"/><stop offset="1" stop-color="#050506"/></linearGradient>
+              <linearGradient id="hw-blkF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4d5158"/><stop offset=".35" stop-color="#1d1f23"/><stop offset=".6" stop-color="#2b2e33"/><stop offset="1" stop-color="#0a0a0c"/></linearGradient>
+              <radialGradient id="hw-dome" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#8d929a"/><stop offset=".4" stop-color="#2e3136"/><stop offset="1" stop-color="#070708"/></radialGradient>
+              <pattern id="hw-knurl" width="2.2" height="2.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.2" height="2.2" fill="rgba(255,255,255,.08)"/><path d="M0 0H2.2M0 0V2.2" stroke="rgba(0,0,0,.6)" stroke-width=".6"/></pattern>
+              <linearGradient id="hw-shade"><stop offset="0" stop-opacity=".6"/><stop offset=".18" stop-opacity="0"/><stop offset=".82" stop-opacity="0"/><stop offset="1" stop-opacity=".65"/></linearGradient>
+              <!-- below the card's top edge, only the front (left) half of the clasp is in front of the card -->
+              <clipPath id="hw-front"><path d="M100 50H220V180H160V240H100Z"/></clipPath>
+              <!-- lobster clasp at 80% wide x 60% tall, scaled around its bottom so the bend sits in the slot -->
+              <g id="hw-claw" transform="translate(160 194) scale(.8 .6) translate(-160 -194)">
+                <path d="M160 131C168 133 172.5 146 172.5 160C172.5 178 168 194 160 194C152 194 147.5 180 147.5 164C147.5 148 151 134 160 131Z M160 138C165 140 167.5 150 167.5 161C167.5 175 164.5 188 160 188C155.5 188 152.5 177 152.5 165C152.5 151 155 141 160 138Z" fill-rule="evenodd" fill="url(#hw-blkF)" stroke="rgba(0,0,0,.55)" stroke-width=".7"/>
+                <path d="M160 138C165 140 167.5 150 167.5 161C167.5 175 164.5 188 160 188C155.5 188 152.5 177 152.5 165C152.5 151 155 141 160 138Z" fill="none" stroke="rgba(255,255,255,.4)" stroke-width=".6"/>
+                <path d="M164.6 141.6L171.2 139.8M166.6 172L171.6 173.6" stroke="rgba(0,0,0,.7)" stroke-width=".8"/>
+                <path d="M171.6 145L177.4 147.2Q179 148.7 177.4 150.2L172 152.6Z" fill="url(#hw-blkF)" stroke="rgba(0,0,0,.55)" stroke-width=".6"/>
+                <path d="M174 147.4L174.6 151.2M175.8 148L176.3 150.8" stroke="rgba(0,0,0,.35)" stroke-width=".4"/>
+                <circle cx="167.6" cy="140" r="1.1" fill="url(#hw-dome)"/>
+              </g>
+            </defs>
+            <!-- rim of the punched slot -->
+            <rect x="152" y="188" width="16" height="7" rx="3.5" fill="none" stroke="rgba(255,255,255,.14)" stroke-width=".7"/>
+            <!-- everything above the clasp, moved down 25.2 to meet the shorter clasp -->
+            <g transform="translate(0 25.2)">
+              <!-- O-ring, then the strap folded through it and stitched -->
+              <path d="M147 88.5A13 13 0 1 0 173 88.5A13 13 0 1 0 147 88.5Z" fill="none" stroke="url(#hw-blkF)" stroke-width="2.4"/>
+              <path d="M147 88.5A13 13 0 1 0 173 88.5A13 13 0 1 0 147 88.5Z" fill="none" stroke="rgba(255,255,255,.18)" stroke-width=".5" transform="translate(-.5 -.6)"/>
+              <rect x="146" y="60" width="28" height="20" fill="#d6403a"/>
+              <rect x="146" y="71" width="28" height="9" fill="rgba(0,0,0,.12)"/>
+              <path d="M148 71.5H172" stroke="rgba(255,236,230,.6)" stroke-width=".8" stroke-dasharray="2 1.5"/>
+              <path d="M146 79H174V84Q174 89 169 89H151Q146 89 146 84Z" fill="#b5332e"/>
+              <rect x="146" y="79" width="28" height="1.2" fill="rgba(0,0,0,.35)"/>
+              <!-- jump ring -->
+              <circle cx="160" cy="104" r="3" fill="none" stroke="url(#hw-blk)" stroke-width="1.8"/>
+              <!-- swivel (the part that spins): caps, barrel, knurled band -->
+              <rect x="157" y="107" width="6" height="2.5" fill="url(#hw-blk)"/>
+              <rect x="155.5" y="109.5" width="9" height="12" fill="url(#hw-blk)"/><rect x="155.5" y="109.5" width="9" height=".6" fill="rgba(255,255,255,.45)"/><rect x="155.5" y="120.9" width="9" height=".6" fill="rgba(0,0,0,.5)"/>
+              <g class="hw-knurl"><rect x="155.3" y="112" width="9.4" height="6.5" fill="url(#hw-blk)"/><rect x="155.3" y="112" width="9.4" height="6.5" fill="url(#hw-knurl)"/><rect x="155.3" y="112" width="9.4" height="6.5" fill="url(#hw-shade)"/></g>
+              <rect x="157" y="121.5" width="6" height="2.5" fill="url(#hw-blk)"/>
+              <rect x="158.5" y="124" width="3" height="2" fill="url(#hw-blk)"/>
+              <!-- clasp eye -->
+              <circle cx="160" cy="128.2" r="2.8" fill="none" stroke="url(#hw-blkF)" stroke-width="2"/>
+            </g>
+            <use href="#hw-claw" clip-path="url(#hw-front)"/>
+          </svg>
+        </div>
+        <div id="hero-badge"></div>
+      </div>
+      <form class="goals" id="goals" onsubmit="return false">
+        <h3>Check your goals</h3>
+        <div id="goal-list"></div>
+        <small>ER COMP SCENE // 2026</small>
+      </form>
+    </aside>
+  </section>
+
+  <section class="sec wrap" id="brief">
+    <div class="sec-head"><span class="no">(02)</span><h2>The brief</h2></div>
+    <div class="brief">
+      <article class="sheet memo">
+        <dl class="memo-head">
+          <dt>TO</dt><dd>Developing ER players and teams</dd>
+          <dt>FROM</dt><dd>Project Lumi tournament staff</dd>
+          <dt>RE</dt><dd>Path to Glory, pre-season mentor event</dd>
+          <dt>WHEN</dt><dd>Mon Nov 9 – Sun Nov 22, 2026</dd>
+        </dl>
+        <p class="goal-line" id="goal-line"></p>
+        <p id="pitch"></p>
+        <h3>How it runs</h3>
+        <ol class="steps" id="steps"></ol>
+      </article>
+      <div class="brief-side">
+        <aside class="index roles-card" aria-label="Roles">
+          <h3>Who's who</h3>
+          <div id="roles"></div>
+        </aside>
+        <img class="desk-pen" src="art/fountain-pen.svg" alt="" aria-hidden="true" width="600" height="160">
+      </div>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="schedule">
+    <div class="sec-head"><span class="no">(03)</span><h2>Schedule</h2><p>Two weeks, <span class="squig">two Sundays that count</span>.</p></div>
+    <div class="sched">
+      <div class="sheet planner">
+        <div class="planner-top"><h3>November 2026</h3><span>Two-week planner</span></div>
+        <div class="dows" id="dows"></div>
+        <div id="weeks"></div>
+        <div class="legend"><span class="chip kickoff">Day 1</span><span class="scrim-mini"><img src="art/scrim-sticker.svg" alt="" width="24" height="24">Scrim</span><span class="chip mock">Mock</span><span class="chip final">Final</span></div>
+      </div>
+      <aside class="sheet dd" id="day-detail" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="faculty">
+    <div class="sec-head"><span class="no">(04)</span><h2>Faculty</h2><p>Eight main mentors, one per team. Each file carries their playstyle, character pool, competitive history and a short about-me.</p></div>
+    <div class="fac-nav">
+      <div class="fac-tabs" role="tablist" aria-label="Mentors" id="fac-tabs"></div>
+      <div class="arrows"><button class="arrow" id="prev" aria-label="Previous mentor">←</button><button class="arrow" id="next" aria-label="Next mentor">→</button></div>
+      <div class="as-meta fac-meta"><span id="fac-count"></span><div class="as-bar fac-bar" id="fac-bar"><i></i></div></div>
+    </div>
+    <div class="fac" id="fac">
+      <div class="fac-badge" id="fac-badge"></div>
+      <div class="info-flip" id="fac-info"></div>
+    </div>
+    <div class="assist">
+      <div class="assist-head"><h3>Assistant &amp; role coaches</h3><p>On standby for players on any team. Ask them about your character or role, request a team review or an individual session, or join the topic sessions they run.</p></div>
+      <div class="as-stage" id="assist"></div>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="book">
+    <div class="sec-head"><span class="no">(05)</span><h2>Office hours</h2><p>Pick a coach to see their week. Click a start time, choose how long, and send a request; the coach accepts or declines it. Times are Eastern (ET), 8 AM to 4 AM, and the request card also shows your own time (<span id="tz"></span>).</p></div>
+    <!-- coach cards; each opens #bk-pop with that coach's week planner (home.js, office hours) -->
+    <p class="sheet bk-locked" id="bk-locked" style="display:none">Office hours are for the players, mentors and staff in the event. If that's you, log in with Discord at the top of the page.</p>
+    <div class="sheet bk-sheet" id="bk-cards"></div>
+    <div class="mine" id="my-req"></div>
+  </section>
+
+  <section class="sec wrap" id="rosters">
+    <div class="sec-head"><span class="no">(05)</span><h2>Rosters</h2><p>Every team, its mentor, and the checkpoint standings.</p></div>
+    <article class="sheet roster">
+      <div class="roster-top">
+        <div><span class="mono-label" style="color:var(--ink-soft)">Form PTG-R · Nov 9–22</span><h3 id="rost-title">Team rosters</h3></div>
+        <div class="rost-seg" role="tablist" aria-label="Rosters or standings" id="rost-seg"></div>
+      </div>
+      <div id="rost-view" role="tabpanel" aria-labelledby="rost-title"></div>
+      <p class="rost-sum" id="rost-sum"></p>
+    </article>
+  </section>
+
+  <section class="sec wrap" id="notes">
+    <div class="sec-head"><span class="no">(06)</span><h2>Field notes</h2><p>Everything from the event is open to the public, so the whole scene can learn from it.</p></div>
+    <div class="notes">
+      <div class="cards" id="res"></div>
+      <article class="sheet oblig">
+        <span class="mono-label" style="color:var(--red-deep)">Mentor obligations</span>
+        <h3>What coaches commit to</h3>
+        <ul id="expect"></ul>
+        <p class="fine">Availability works like booking a doctor's appointment: a mentor posts free hours, players request a slot inside them, and the mentor accepts or declines.</p>
+      </article>
+    </div>
+    <div class="notice">
+      <div><span class="mono-label">Notice board</span><h3>Open seminars</h3><p id="sem-format"></p><p>Want a topic covered? Tell your mentor or post it in the Discord.</p></div>
+      <div class="slots" id="sem"></div>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="channels">
+    <div class="sec-head"><span class="no">(07)</span><h2>Channels</h2></div>
+    <div class="links" id="links"></div>
+  </section>
+
+  <footer class="wrap foot">
+    <span>Path to Glory * ( pre-season mentor event )</span>
+    <a href="#schedule">See the schedule →</a>
+  </footer>
+</main>
+<dialog id="bk-pop" aria-labelledby="bk-pop-title"></dialog>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="content.js"></script>
+<script src="api.js"></script>
+<script src="ui.js"></script>
+<script src="swing.js"></script>
+<script src="scroll.js"></script>
+<script src="home.js"></script>
+</body>
+</html>
