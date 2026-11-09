@@ -6,11 +6,17 @@ html[data-plastic="b"]{--t:34px;--m:6px;--r:21px;--pl-fill:rgba(255,255,255,.26)
 html[data-plastic="c"]{--t:34px;--m:15px;--r:15px;--pl-fill:rgba(226,232,237,.5);--pl-edge:rgba(255,255,255,.75);--pl-sheen:rgba(255,255,255,.03)}
 html[data-plastic="d"]{--t:34px;--m:16px;--r:20px;--pl-fill:rgba(255,255,255,.15);--pl-edge:rgba(255,255,255,.38);--pl-sheen:rgba(255,255,255,.04)}
 
-html[data-plastic] .lanyard #hero-badge{position:relative;margin-top:var(--t)}
+html[data-plastic] .lanyard #hero-badge{position:relative;isolation:isolate;margin-top:var(--t)}
+/* after the swing lands, drawn normally instead of on a graphics layer: sharper, like the Faculty card */
+html[data-plastic][data-plastic-settled] .lanyard #hero-badge,
+html[data-plastic][data-plastic-settled] .lanyard #hero-badge>.badge{will-change:auto}
 html[data-plastic] .lanyard #hero-badge::before,html[data-plastic] .lanyard #hero-badge::after{
   content:"";position:absolute;pointer-events:none;
-  inset:calc(var(--t)*-1) calc(var(--m)*-1) calc(var(--m)*-1);
-  border-radius:var(--r);
+  /* an invisible 2px border keeps the visible edge away from the edge of its layer, so it stays smooth when tilted */
+  inset:calc(var(--t)*-1 - 2px) calc(var(--m)*-1 - 2px) calc(var(--m)*-1 - 2px);
+  border:2px solid transparent;background-clip:padding-box;
+  border-radius:calc(var(--r) + 2px);
+  -webkit-mask-origin:padding-box;mask-origin:padding-box;
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 7' preserveAspectRatio='none'%3E%3Crect width='44' height='7' rx='3.5'/%3E%3C/svg%3E"),linear-gradient(#000,#000);
           mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 7' preserveAspectRatio='none'%3E%3Crect width='44' height='7' rx='3.5'/%3E%3C/svg%3E"),linear-gradient(#000,#000);
   -webkit-mask-position:50% 8px,0 0;mask-position:50% 8px,0 0;
