@@ -287,7 +287,7 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .info-flip.flipped .flip-card{transform:rotateY(180deg)}
 .info-flip .face a,.info-flip .face button{cursor:pointer}
 .info-grid p+p{margin-top:10px}
-.foot-btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.foot-btns{display:flex;flex-wrap:wrap;gap:12px 32px;align-items:center;margin-left:auto}
 .flip-btn{appearance:none;background:transparent;border:0;border-bottom:1.5px dashed currentColor;color:var(--red-deep);font:600 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:4px 0;cursor:pointer}
 .flip-btn:hover{color:var(--ink)}
 .back-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
