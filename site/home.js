@@ -234,7 +234,7 @@
           '<section class="hist-sec"><h4>Competitive history</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul>" + (dz("burger") ? DOODLE.burger : "") + "</section>" +
           "<section><h4>About me</h4>" + (m.about ? paras(m.about) : "<p>" + UI.ph("", "[A short about-me written by the mentor.]") + "</p>") + "</section>" +
         "</div>" +
-        '<div class="info-foot"><span>Main: ' + UI.ph(m.main_character, "[Main character]") + " · Display: " + UI.ph(m.display_skin, "[Display skin]") + '</span><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="index.html?hours" data-book="' + esc(m.id) + '">Request a session</a></span>' +
+        '<div class="info-foot"><span>Main: ' + UI.ph(m.main_character, "[Main character]") + " · Display: " + UI.ph(m.display_skin, "[Display skin]") + '</span><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="index.html?hours&coach=' + encodeURIComponent(m.id) + '">Request a session</a></span>' +
           (m.foot_scribble ? '<span class="scribble s-foot" aria-hidden="true">' + esc(m.foot_scribble).replace(/\n/g, "<br>") + "</span>" : "") + "</div>" +
         "</article>";
       const back =
@@ -329,7 +329,7 @@
       // icon between the name and the role focus: a headshot from PTG.artHead (e.g. a1: "art/heads/a1.webp"), else an empty slot
       '<div class="mb-icon">' + (C.artHead && C.artHead[a.id] ? '<img src="' + esc(C.artHead[a.id]) + '" alt="' + esc(name) + ' icon">' : '<span class="mb-icon-ph" aria-hidden="true">?</span>') + "</div>" +
       '<div class="mb-focus">' + UI.ph(a.focus, "[Role focus]") + "<br>" + UI.ph((a.pool || []).join(", "), "[Characters or topics]") + "</div>" +
-      '<div class="mb-foot"><a href="index.html?hours" data-book="' + esc(a.id) + '">Request ›</a></div></div>' +
+      '<div class="mb-foot"><a href="index.html?hours&coach=' + encodeURIComponent(a.id) + '">Request ›</a></div></div>' +
       '<button type="button" class="as-hit" data-a="' + esc(a.id) + '" aria-pressed="' + !!on + '" aria-label="Show ' + esc(name) + ' on the big card"></button></div>';
   }
 
@@ -344,7 +344,7 @@
     const a = AS.main, box = $("#assist .as-main");
     box.innerHTML = '<article class="as-tall"><div class="as-badge">' + UI.badge(a) + '</div><div class="as-side"><dl class="as-facts"><dt>Role focus</dt><dd>' + UI.ph(a.focus, "[Role focus]") +
       "</dd><dt>Characters</dt><dd>" + UI.ph((a.pool || []).join(", "), "[Characters or topics]") + "</dd><dt>About</dt><dd>" + UI.ph(a.about, "[Short intro]") +
-      '</dd><dt>Next open</dt><dd id="as-open"></dd></dl><a class="as-go" href="index.html?hours" data-book="' + esc(a.id) + '">Request a session ›</a></div></article>';
+      '</dd><dt>Next open</dt><dd id="as-open"></dd></dl><a class="as-go" href="index.html?hours&coach=' + encodeURIComponent(a.id) + '">Request a session ›</a></div></article>';
     if (fade) $(".as-badge", box).classList.add("swap");   // the same little rise as the Instructor card, on the wrapper so the card keeps its tilt
     asOpen();
   }
@@ -503,14 +503,6 @@
         const name = e.target.closest(".rost-coach");
         if (name && S.showMentor) S.showMentor(name.dataset.id);
       });
-      // "Request a session" on the faculty files and assistant badges
-      document.addEventListener("click", e => {
-        const b = e.target.closest("[data-book]");
-        const id = b && b.dataset.book;
-        if (!id || !coachById(id)) return;
-        e.preventDefault();
-        openCoach(id);
-      });
       pop.addEventListener("click", onPopClick);
       pop.addEventListener("input", e => { if (e.target.id === "bk-note") BK.note = e.target.value; });
       pop.addEventListener("close", () => { BK.wk = weeks()[0]; BK.coach = null; });   // the next coach starts back on the first week
@@ -519,7 +511,7 @@
         if (c) UI.act(c, async () => { await API.setRequestStatus(c.dataset.id, "cancelled"); await refreshBooking(); }, "Request cancelled.");
       });
       const asked = new URLSearchParams(location.search).get("coach");   // ?coach=m1 opens that coach right away
-      if (asked && coachById(asked)) openCoach(asked);
+      if (asked && coachById(asked) && $("#bk-cards").style.display !== "none") openCoach(asked);
     }
     refreshBooking();
   }

@@ -143,11 +143,7 @@
       '<div class="b-role">' + (c.kind === "assistant" ? "Assistant" : "Instructor") + "</div>" +
       '<div class="b-row"><span class="b-id">' + UI.esc(c.badge_id) + "</span>" + UI.barcode(c.badge_id, 92, 24) + "</div>" +
       '<div class="b-art">' + UI.art(c) + "</div>" +
-      // assistants carry a small team tag beside the name; mentors keep theirs on its own line
-      (c.kind === "assistant"
-        ? '<div class="b-name"><small>NAME</small><div class="b-nameline"><b>[' + UI.esc(bare(UI.coachName(c))) + ']</b><span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div></div></div>"
-        : '<div class="b-name"><small>NAME</small><b>[' + UI.esc(bare(UI.coachName(c))) + "]</b></div>" +
-          '<span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div>");
+      '<div class="b-name"><small>NAME</small><div class="b-nameline"><b>[' + UI.esc(bare(UI.coachName(c))) + ']</b><span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div></div></div>";
   };
 
   /* ---------- feedback ---------- */
@@ -351,7 +347,10 @@
     const day = UI.$("#demo-day"), tm = UI.$("#demo-at");
     const keep = () => {
       try { if (day.value) localStorage.setItem(WHEN_KEY, JSON.stringify({ day: day.value, at: +tm.value })); else localStorage.removeItem(WHEN_KEY); } catch (e) { /* no storage */ }
-      location.href = location.pathname + location.hash;   // drops any ?today= so the pick wins
+      // drop any ?today= so the pick wins, and always really reload: a link that differs only by #section wouldn't
+      const u = new URL(location.href);
+      u.searchParams.delete("today"); u.searchParams.delete("at");
+      if (u.href === location.href) location.reload(); else location.href = u.href;
     };
     day.onchange = keep; tm.onchange = keep;
     const sel = UI.$("#demo-who");

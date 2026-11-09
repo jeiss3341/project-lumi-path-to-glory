@@ -22,7 +22,7 @@ body{background-color:var(--desk);background-image:radial-gradient(110% 70% at 5
 a{color:inherit}
 :focus-visible{outline:2px solid var(--red);outline-offset:3px}
 h1,h2,h3,h4{text-wrap:balance}
-@media (min-width:1360px){html{zoom:1.1}}   /* everything 10% bigger where the screen has room; narrower screens keep their layouts */
+@media (min-width:1360px){html{zoom:1.05}}   /* everything 5% bigger where the screen has room; narrower screens keep their layouts */
 .wrap{max-width:1200px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .sheet{background-color:var(--paper);background-image:var(--grain);color:var(--ink);box-shadow:var(--lift);position:relative;color-scheme:light}   /* light paper: light tick boxes and menus */
 .ph{color:#8f887e;font-style:italic}
@@ -251,7 +251,10 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 /* faculty */
 .fac{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start}
 .fac-badge{display:flex;justify-content:center;padding-top:10px}
-.fac-badge .badge{transform:rotate(-2.5deg)}
+.fac-badge .badge{width:min(320px,100%);min-height:565px;transform:rotate(-2.5deg)}   /* the assistant tall card's proportions, a little larger */
+.fac-badge .b-art{aspect-ratio:5/7}   /* a taller picture on the Instructor card, using the spare room around the name */
+/* the punched lanyard slot on the tall cards */
+.fac-badge .badge::before,.as-tall .badge::before{content:"";position:absolute;top:8px;left:50%;width:16px;height:7px;margin-left:-8px;border-radius:3.5px;background:var(--desk);box-shadow:inset 0 1px 2px rgba(0,0,0,.8),0 0 0 .7px rgba(255,255,255,.14);z-index:3}
 .info{padding:clamp(22px,4vw,44px)}
 .info .clip{right:12%}
 .info-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:500 12px/1 var(--f-mono);letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;padding-bottom:14px;border-bottom:2px solid var(--ink)}
@@ -429,7 +432,7 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .as-stage{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:22px 46px;align-items:stretch}
 .as-left{display:grid;gap:14px;align-content:start;min-width:0}
 .as-view{overflow:hidden;padding:14px;margin:-14px;min-width:0}
-.as-track{--g:20px;display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-auto-columns:calc((100% - var(--g)) / 2);gap:20px var(--g)}
+.as-track{will-change:transform;--g:20px;display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-auto-columns:calc((100% - var(--g)) / 2);gap:20px var(--g)}
 .as-meta{display:flex;align-items:center;gap:14px;font:500 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .as-meta span{white-space:nowrap}
 .as-meta .arrows{flex:none}
@@ -446,9 +449,9 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 /* the tall card, leaning the opposite way from the Instructor card above it, with the details beside it */
 .as-main{display:grid;min-width:0}
 .as-tall{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px;align-items:stretch;min-width:0}
-.as-tall .badge{width:100%;transform:rotate(2.5deg)}
-.as-tall .b-role{font-size:31px}
+.as-tall .badge{width:100%;transform:rotate(2.5deg);will-change:transform}   /* its own layer, so its tilted text is not redrawn each time the cards slide */
 .as-badge{display:grid;min-width:0}
+.as-tall .b-role,.fac-badge .b-role{font-size:33px}
 .as-side{display:flex;flex-direction:column;gap:16px;min-width:0}
 .as-facts{margin:0;display:grid;grid-template-columns:minmax(0,1fr);border-top:1px dashed #4a4a50;font:500 13px/1.45 var(--f-mono);color:#ececee}
 .as-facts dt,.as-facts dd{margin:0}

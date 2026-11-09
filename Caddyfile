@@ -1,0 +1,11 @@
+# Railway handles https and tells the server which port to use.
+{
+	auto_https off
+	admin off
+}
+
+:{$PORT:8080} {
+	root * /srv
+	encode gzip
+	file_server
+}

@@ -24,7 +24,9 @@
     if (!el) return Promise.resolve();
     cancel();
     const from = scrollY;
-    const target = Math.max(0, Math.min(maxY(), el.getBoundingClientRect().top + scrollY - offset()));
+    // a section lands with its heading near the top, not its empty padding
+    const head = el.querySelector(":scope > .sec-head");
+    const target = Math.max(0, Math.min(maxY(), (head || el).getBoundingClientRect().top + scrollY - offset() - (head ? 28 : 0)));
     if (reduced() || Math.abs(target - from) < 2) { scrollTo(0, target); return Promise.resolve(); }
     return new Promise(done => {
       const t0 = performance.now();
