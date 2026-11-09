@@ -16,6 +16,20 @@
   }
   renderStatic();
   boot();
+  // the ticket stops just above the bottom of the window, on whatever screen this is (above the demo bar if it's showing)
+  function fitHero() {
+    const sheet = $(".hero-sheet"), ticket = $(".ticket");
+    if (!sheet || !ticket || HOURS_PAGE) return;
+    sheet.style.minHeight = "";
+    if (innerWidth <= 1120) return;
+    const zoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1, bar = $("#demo-bar");
+    const blocked = bar && !bar.classList.contains("min") ? bar.getBoundingClientRect().height : 0;
+    const room = innerHeight - blocked - 14 - (ticket.getBoundingClientRect().bottom + scrollY);
+    if (room > 0) sheet.style.minHeight = sheet.offsetHeight + Math.min(room, 220) / zoom + "px";
+  }
+  addEventListener("resize", fitHero);
+  addEventListener("load", () => { fitHero(); setTimeout(fitHero, 700); });
+  if (document.fonts) document.fonts.ready.then(fitHero);
   API.onAuth(() => boot());
   UI.mountDemoBar();
   if (!API.live && (window.PTG_CONFIG || {}).supabaseUrl) UI.toast("Couldn't reach the login service, so the site is showing demo data.", "bad");
@@ -33,7 +47,7 @@
       $("#bk-locked").style.display = inEvent ? "none" : "";
       $("#bk-cards").style.display = $("#my-req").style.display = inEvent ? "" : "none";
     }
-    renderHeroBadge(); renderFaculty(); renderAssist(); renderRosters(); initBooking();
+    renderHeroBadge(); renderFaculty(); renderAssist(); renderRosters(); initBooking(); fitHero();
     if (window.PTGSwing) PTGSwing.play();   // hero lanyard swings in once the badge is on the page
     if (!watching) {
       watching = true;

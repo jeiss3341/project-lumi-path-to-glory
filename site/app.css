@@ -184,7 +184,17 @@ dialog#bk-pop::backdrop{background:rgba(10,8,6,.6)}
 #demo-bar select,#demo-bar button{font:inherit;padding:5px 8px;border:1.5px solid #1e1a0e;background:#fff8dc;color:#1e1a0e;border-radius:0}
 #demo-bar #demo-day{max-width:220px}
 #demo-bar button{cursor:pointer}
-body:has(#demo-bar){padding-bottom:64px}
+body:has(#demo-bar:not(.min)){padding-bottom:64px}
+#demo-bar.min{left:auto;right:12px;bottom:12px;padding:0;background:none;box-shadow:none}
+#demo-bar.min>:not(#demo-hide){display:none}
+#demo-bar #demo-phone{margin-left:auto;font-weight:600}
+#demo-bar #demo-hide{font-weight:600}
+#phone-view{border:0;padding:0;background:transparent;margin:auto;width:fit-content;height:fit-content;max-height:none;overflow:visible}
+#phone-view[open]{display:flex;flex-direction:column;align-items:center;gap:10px}
+#phone-view::backdrop{background:rgba(0,0,0,.78)}
+#phone-view iframe{display:block;width:390px;height:min(780px,82vh);border:0;border-radius:18px;background:#14100c;box-shadow:0 0 0 8px #000,0 18px 50px rgba(0,0,0,.7)}
+.pv-close{background:#f2c94c;color:#1e1a0e;border:1.5px solid #1e1a0e;font:600 13px/1 var(--f-mono);padding:8px 12px;cursor:pointer}
+#demo-bar.min #demo-hide{margin:0;background:#f2c94c;box-shadow:0 4px 12px rgba(0,0,0,.45)}
 @media (max-width:640px){#demo-bar>span{display:none}}
 
 /* ---------- desk ---------- */

@@ -350,7 +350,7 @@
       '<select id="demo-at" aria-label="Time (Eastern)"' + (cur ? "" : " disabled") + ">" + times.map(([v, l]) => '<option value="' + v + '"' + (v === fakeAt ? " selected" : "") + ">" + l + " ET</option>").join("") + "</select>";
   }
   UI.mountDemoBar = function () {
-    if (API.live || UI.$("#demo-bar")) return;
+    if (API.live || UI.$("#demo-bar") || window.top !== window.self) return;   // not inside the phone preview either
     const bar = document.createElement("div");
     bar.id = "demo-bar";
     const people = API.demo.people();
@@ -365,6 +365,28 @@
       groups.map(([name, has, label]) => '<optgroup label="' + name + '">' + people.filter(has).map(p => '<option value="' + UI.esc(p.id) + '">' + UI.esc(label(p)) + "</option>").join("") + "</optgroup>").join("") + "</select>" +
       '<button type="button" id="demo-reset">Reset data</button>' + dayPicker();
     document.body.appendChild(bar);
+    // hide the bar to see the page as real visitors will; a small tab in the corner brings it back
+    const hide = document.createElement("button");
+    hide.type = "button"; hide.id = "demo-hide";
+    const setHidden = on => { bar.classList.toggle("min", on); hide.textContent = on ? "Demo" : "Hide"; hide.setAttribute("aria-label", on ? "Show the demo bar" : "Hide the demo bar"); };
+    let hidden = false;
+    try { hidden = localStorage.getItem("ptg-demo-hidden") === "1"; } catch (e) { /* storage blocked */ }
+    setHidden(hidden);
+    hide.onclick = () => { hidden = !hidden; setHidden(hidden); try { localStorage.setItem("ptg-demo-hidden", hidden ? "1" : "0"); } catch (e) { /* storage blocked */ } dispatchEvent(new Event("resize")); };
+    // Phone view: this same page at phone size, in a pop-up
+    const phone = document.createElement("button");
+    phone.type = "button"; phone.id = "demo-phone"; phone.textContent = "Phone view";
+    phone.onclick = () => {
+      const pop = document.createElement("dialog");
+      pop.id = "phone-view";
+      pop.setAttribute("aria-label", "Phone view");
+      pop.innerHTML = '<button type="button" class="pv-close">Close phone view</button><iframe title="This page at phone size" src="' + UI.esc(location.href) + '"></iframe>';
+      pop.onclick = e => { if (e.target === pop || e.target.closest(".pv-close")) pop.close(); };
+      pop.onclose = () => pop.remove();
+      document.body.appendChild(pop);
+      pop.showModal();
+    };
+    bar.append(phone, hide);
     // Day / time: preview the site as of another moment (kept while you browse; reloads the page)
     const day = UI.$("#demo-day"), tm = UI.$("#demo-at");
     const keep = () => {
