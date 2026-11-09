@@ -29,7 +29,7 @@
     ".ae-btns button{font:600 13px/1 var(--f-display);color:#f4f4f2;background:#1d2129;border:1px solid #3a3f49;border-radius:5px;padding:10px 12px;cursor:pointer}" +
     ".ae-btns button:disabled{opacity:.45;cursor:default}" +
     ".ae-btns .ae-save{background:#d6403a;border-color:#d6403a}" +
-    "@media (max-width:640px){.ae-stage{height:440px}}";
+    "@media (max-width:640px){.ae-stage{height:440px}.art-adjust-icon{right:8px;bottom:40px}}";
   document.head.appendChild(css);
 
   function open(card, head) {
