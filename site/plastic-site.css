@@ -1,38 +1,33 @@
-/* Preview only: plastic sleeves on the home page copy (plastic-site.html).
-   The hole is cut through the plastic alone. The card under it stays solid. */
+/* Preview only: plastic sleeve options on the lanyard card (practice site, never the live addresses).
+   The plastic is drawn on the holder around the card, so the card itself renders exactly as it always has
+   and stays smooth. The hole is cut through the plastic alone. */
 html[data-plastic="a"]{--t:34px;--m:18px;--r:20px;--pl-fill:rgba(255,255,255,.18);--pl-edge:rgba(255,255,255,.5);--pl-sheen:rgba(255,255,255,.05)}
 html[data-plastic="b"]{--t:34px;--m:6px;--r:21px;--pl-fill:rgba(255,255,255,.26);--pl-edge:rgba(255,255,255,.6);--pl-sheen:rgba(255,255,255,.04)}
 html[data-plastic="c"]{--t:34px;--m:15px;--r:15px;--pl-fill:rgba(226,232,237,.5);--pl-edge:rgba(255,255,255,.75);--pl-sheen:rgba(255,255,255,.03)}
 html[data-plastic="d"]{--t:34px;--m:16px;--r:20px;--pl-fill:rgba(255,255,255,.15);--pl-edge:rgba(255,255,255,.38);--pl-sheen:rgba(255,255,255,.04)}
 
-.badge{--k:1;--cr:16px}
-
-/* the card paints its own two halves, so it can stop clipping and let the plastic reach past its edges */
-html[data-plastic] .lanyard .badge{overflow:visible;background:transparent;isolation:isolate}
-html[data-plastic] .lanyard .badge .b-strip{border-radius:var(--cr) 0 0 var(--cr)}
-html[data-plastic] .lanyard .badge .b-body{background:var(--badge);border-radius:0 var(--cr) var(--cr) 0}
-
-html[data-plastic] .lanyard .badge::before,html[data-plastic] .lanyard .badge::after{
-  content:"";position:absolute;pointer-events:none;width:auto;height:auto;margin:0;
-  inset:calc(var(--t)*var(--k)*-1) calc(var(--m)*var(--k)*-1) calc(var(--m)*var(--k)*-1);
-  border-radius:calc(var(--r)*var(--k));
+html[data-plastic] .lanyard #hero-badge{position:relative;margin-top:var(--t)}
+html[data-plastic] .lanyard #hero-badge::before,html[data-plastic] .lanyard #hero-badge::after{
+  content:"";position:absolute;pointer-events:none;
+  inset:calc(var(--t)*-1) calc(var(--m)*-1) calc(var(--m)*-1);
+  border-radius:var(--r);
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 7' preserveAspectRatio='none'%3E%3Crect width='44' height='7' rx='3.5'/%3E%3C/svg%3E"),linear-gradient(#000,#000);
           mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 7' preserveAspectRatio='none'%3E%3Crect width='44' height='7' rx='3.5'/%3E%3C/svg%3E"),linear-gradient(#000,#000);
-  -webkit-mask-position:50% calc(8px*var(--k)),0 0;mask-position:50% calc(8px*var(--k)),0 0;
-  -webkit-mask-size:calc(44px*var(--k)) calc(7px*var(--k)),100% 100%;mask-size:calc(44px*var(--k)) calc(7px*var(--k)),100% 100%;
+  -webkit-mask-position:50% 8px,0 0;mask-position:50% 8px,0 0;
+  -webkit-mask-size:44px 7px,100% 100%;mask-size:44px 7px,100% 100%;
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
   -webkit-mask-composite:xor;mask-composite:exclude}
 
 /* behind the card: the clear plastic and its edge */
-html[data-plastic] .lanyard .badge::before{
-  z-index:-1;background:var(--pl-fill);box-shadow:inset 0 0 0 1.5px var(--pl-edge)}
+html[data-plastic] .lanyard #hero-badge::before{z-index:-1;background:var(--pl-fill);box-shadow:inset 0 0 0 1.5px var(--pl-edge)}
 /* over the card: one faint, soft sheen, no streaks */
-html[data-plastic] .lanyard .badge::after{
-  z-index:9;background:linear-gradient(135deg,var(--pl-sheen),transparent 45%)}
+html[data-plastic] .lanyard #hero-badge::after{z-index:9;background:linear-gradient(135deg,var(--pl-sheen),transparent 45%)}
 
-/* the lanyard's clip goes through the plastic's hole, so the card sits lower by the height of the plastic above it */
-html[data-plastic] .lanyard .badge{-webkit-mask:none;mask:none}
-html[data-plastic] .lanyard #hero-badge{margin-top:var(--t)}
+/* a solid card under the plastic: the same kind of mask as before, without the hole */
+html[data-plastic] .lanyard .badge{
+  -webkit-mask:linear-gradient(#000,#000);mask:linear-gradient(#000,#000)}
+html[data-plastic] .lanyard .badge::after{display:none}
+
 /* with no plastic the strap is longer by that same 34px, so the card stays in the same spot for every option */
 html[data-plastic-preview]:not([data-plastic]) .lanyard .strap{height:138px}
 
