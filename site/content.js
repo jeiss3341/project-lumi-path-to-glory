@@ -80,7 +80,7 @@ window.PTG = {
     m4: "art/hresvelg.webp", // Jan (Hresvelg)
     m5: "art/isterio.webp", // Luke (Isterio)
     m6: "art/kazcross.webp", // Henry (Kazcross)
-    m7: "art/magepower.webp", // Alex (Magepower)
+    m7: "art/magepower-original.png", // Alex (Magepower), exact alex2.png chosen by staff
     m8: "art/ioo-enhanced.webp", // Coraline (Ioo), Picsart-enhanced version chosen by staff
     a1: "art/a1.webp", // Blair (Baeksu)
     a2: "art/a2.webp", // Coraline (Jalja)
@@ -146,7 +146,7 @@ window.PTG = {
 
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).
   coachSeed: [
-    { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Actor", team_name: "team not found", display_skin: "Markus", art_fit: { x: -3.37, y: -8.09, z: 1.07 },
+    { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Actor", team_name: "team not found", display_skin: "Markus", art_fit: { x: -5.54, y: -9.47, z: 1.11 },
       playstyle: "I usually play the mage or ~~engage tank~~, either way I am running it down to make space for my teammates.",
       doodles: ["burst", "sparkles", "burger"], // red pencil doodles on the front of the file
       pool: ["Markus", "Niah", "Kenneth"],
@@ -175,7 +175,7 @@ window.PTG = {
       hobbies: ["Norms"],
       fav_teams: ["6789 · Squortle"] },
     // m3–m8 from the Coach Infographic form (Nov 9 export)
-    { id: "m3", kind: "mentor", slot: 3, badge_id: "INS-0473-BL", name: "Fwitchu", team_name: "Uberman", display_skin: "Irem", art_fit: { x: 8, y: -5.18, z: 1.26 },
+    { id: "m3", kind: "mentor", slot: 3, badge_id: "INS-0473-BL", name: "Fwitchu", team_name: "Uberman", display_skin: "Irem", art_fit: { x: 7.52, y: -6.01, z: 1.27 },
       playstyle: "I prefer to tempo out and make sure that the team is always strong on objectives. Big fan of triangle theory. I think limit-testing in practice is the best way to improve long-term. I play a variety of roles — ex. piggy bank that give all my credits away to my melee players /ᐠ ◞ ᆺ ◟マ",
       pool: ["Irem", "Leni"],
       doodles: ["piggy", "fish", "catnap"],
@@ -223,7 +223,7 @@ window.PTG = {
       fun_fact: "Peaked B tier on SSW teammate tier list",
       hobbies: ["Outside of gaming I'm a social advocate"],
       fav_teams: ["INCHEON WAVE", "Cadmus is my fav player tho"] },
-    { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "Magepower", team_name: "6789", display_skin: "Alex",
+    { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "Magepower", team_name: "6789", display_skin: "Alex", art_fit: { x: 5.95, y: -3.02, z: 1.65 },
       playstyle: "Killing excessive wildlife. Shotcaller, engage, frontline.",
       pool: ["Alex", "Fiora"],
       pool_note: "(idk markus, craver, anything op on patch)",
@@ -248,17 +248,17 @@ window.PTG = {
       fun_fact: "I'm a foodie",
       hobbies: ["I like traveling"],
       fav_teams: ["NRG · Rioori"] },
-    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", no_team: true, display_skin: "Blair", art_fit: { x: -7.92, y: -2.17, z: 1.18 }, head_fit: { x: -2.05, y: 25.13, z: 1.55 },
+    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", no_team: true, display_skin: "Blair", art_fit: { x: -7.62, y: -1.93, z: 1.18 }, head_fit: { x: -2.05, y: 25.13, z: 1.55 },
       sticker: "art/stickers/baeksu.webp", sticker_at: { top: "26%", tilt: -16 } }, // die-cut sticker that follows the drawing's outline
     { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "About 30", display_skin: "Coraline", art_fit: { x: 8.65, y: 0.87, z: 1.18 },
       sticker: "art/stickers/jalja.webp" }, // small chibi sticker on the card's empty right side
-    { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "Trigger", display_skin: "Rozzi", art_fit: { x: -2.54, y: -5.57, z: 1.06 }, head_fit: { x: 1.37, y: 11.96, z: 1.33 } },
-    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "6789", display_skin: "Tsubame", art_fit: { x: 0.82, y: -1.52, z: 1.14 }, head_fit: { x: -0.99, y: 13.6, z: 1.36 } },
-    { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "Locked In", display_skin: "Camilo", art_fit: { x: 3.58, y: 2.7, z: 1.1 }, head_fit: { x: 1.78, y: 14.32, z: 1.35 } },
-    { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "6789", display_skin: "Mai", art_fit: { x: -3.49, y: -9.57, z: 1.17 }, head_fit: { x: 1.36, y: 10.45, z: 1.3 } },
-    { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "No Flame", display_skin: "Sua", art_fit: { x: 10.35, y: 28.41, z: 2.87 }, head_fit: { x: -0.16, y: 9.19, z: 1.3 } },
-    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", no_team: true, display_skin: "Yumin", art_fit: { x: 0, y: 0, z: 1 }, head_fit: { x: -1.05, y: 9.86, z: 1.28 } },
-    { id: "a9", kind: "assistant", slot: 9, badge_id: "AST-0519-RC", name: "Chibiarc", team_name: "Uberman", display_skin: "Hyunwoo", art_fit: { x: 0.99, y: 3, z: 1.07 }, head_fit: { x: -1.39, y: 10.68, z: 1.31 },
+    { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "Trigger", display_skin: "Rozzi", art_fit: { x: -6.19, y: -9.67, z: 1.12 }, head_fit: { x: 1.37, y: 11.96, z: 1.33 } },
+    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "6789", display_skin: "Tsubame", art_fit: { x: 1.29, y: -5.71, z: 1.19 }, head_fit: { x: -0.99, y: 13.6, z: 1.36 } },
+    { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "Locked In", display_skin: "Camilo", art_fit: { x: 3.58, y: 4.37, z: 1.1 }, head_fit: { x: 1.78, y: 14.32, z: 1.35 } },
+    { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "6789", display_skin: "Mai", art_fit: { x: -3.19, y: -9.81, z: 1.17 }, head_fit: { x: 1.36, y: 10.45, z: 1.3 } },
+    { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "No Flame", display_skin: "Sua", art_fit: { x: 9.41, y: 28.45, z: 2.94 }, head_fit: { x: -0.16, y: 9.19, z: 1.3 } },
+    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", no_team: true, display_skin: "Yumin", art_fit: { x: -6.62, y: -9.33, z: 1.15 }, head_fit: { x: -1.05, y: 9.86, z: 1.28 } },
+    { id: "a9", kind: "assistant", slot: 9, badge_id: "AST-0519-RC", name: "Chibiarc", team_name: "Uberman", display_skin: "Hyunwoo", art_fit: { x: 1.29, y: 3, z: 1.07 }, head_fit: { x: -1.39, y: 10.68, z: 1.31 },
       playstyle: "Melee chungus.\n\nLowkey tho as long as its not triple ranged should be chill.",
       pool: ["Hyunwoo", "Shoichi"],
       pool_note: "(lol)",
