@@ -105,7 +105,9 @@
     return '<span class="av av-ph" style="width:' + size + "px;height:" + size + "px;font-size:" + Math.round(size * 0.42) + 'px" aria-hidden="true">' + UI.esc(name.trim().charAt(0).toUpperCase() || "?") + "</span>";
   };
   UI.coachName = c => c ? (c.name && c.name.trim() ? c.name : "[" + (c.kind === "assistant" ? "Assistant " : "Mentor ") + UI.pad(c.slot) + "]") : "[Coach]";
-  UI.coachTeam = c => c && c.team_name && c.team_name.trim() ? c.team_name : (c && c.kind === "assistant" ? "Any team" : "[Team TBA]");
+  // no_team in the event content hides the team tag for that coach
+  UI.noTeam = c => !!c && !!(c.no_team || ((C.coachSeed || []).find(x => x.id === c.id) || {}).no_team);
+  UI.coachTeam = c => UI.noTeam(c) ? "" : c && c.team_name && c.team_name.trim() ? c.team_name : (c && c.kind === "assistant" ? "Any team" : "[Team TBA]");
   const bare = s => String(s).replace(/^\[|\]$/g, "");
   UI.bare = bare;
 

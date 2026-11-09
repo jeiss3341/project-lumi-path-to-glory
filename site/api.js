@@ -118,7 +118,7 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v15";   // bump when the sample data changes, so browsers drop their old copy
+    const KEY = "ptg-demo-v16";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
@@ -284,7 +284,7 @@
     }
     function rid() { return Math.random().toString(36).slice(2, 10); }
     function load() {
-      try { ["v1", "v2", "v3", "v4"].forEach(v => localStorage.removeItem("ptg-demo-" + v)); } catch (e) { /* storage blocked */ }   // old sample data
+      try { Object.keys(localStorage).filter(k => /^ptg-demo-v\d+$/.test(k) && k !== KEY).forEach(k => localStorage.removeItem(k)); } catch (e) { /* storage blocked */ }   // old sample data, so it doesn't fill the browser's storage
       try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 5) return s; } catch (e) { /* storage blocked */ }
       return seed();
     }

@@ -613,7 +613,7 @@
     const card = c => {
       const next = nextHours(c);
       return '<button type="button" class="bk-card" data-coach="' + esc(c.id) + '"' + (next ? "" : " disabled") + "><b>" + esc(UI.bare(UI.coachName(c))) + "</b>" +
-        "<span>" + (c.kind === "assistant" ? "Assistant coach · any team" : "Mentor · " + esc(UI.bare(UI.coachTeam(c)))) + "</span>" +
+        "<span>" + (c.kind === "assistant" ? "Assistant coach" + (UI.coachTeam(c) ? " · " + esc(UI.bare(UI.coachTeam(c))) : "") : "Mentor · " + esc(UI.bare(UI.coachTeam(c)))) + "</span>" +
         "<em>" + (next ? "Next: " + esc(hoursLabel(next)) : "No hours posted yet") + "</em></button>";
     };
     $("#bk-cards").innerHTML = '<div class="bk-top"><h3>Book office hours</h3><span>Pick a coach to see their week.</span></div>' +
@@ -726,7 +726,7 @@
     const c = coachById(BK.coach), pop = $("#bk-pop");
     if (!c) return;
     const wks = weeks();
-    pop.innerHTML = '<div class="bk-top"><div><span class="k">' + (c.kind === "assistant" ? "Assistant coach · any team" : "Mentor · " + esc(UI.bare(UI.coachTeam(c)))) + '</span><h3 id="bk-pop-title">' + esc(UI.bare(UI.coachName(c))) + "</h3></div>" +
+    pop.innerHTML = '<div class="bk-top"><div><span class="k">' + (c.kind === "assistant" ? "Assistant coach" + (UI.coachTeam(c) ? " · " + esc(UI.bare(UI.coachTeam(c))) : "") : "Mentor · " + esc(UI.bare(UI.coachTeam(c)))) + '</span><h3 id="bk-pop-title">' + esc(UI.bare(UI.coachName(c))) + "</h3></div>" +
       '<div class="bk-tools">' + (wks.length === 1 ? '<span class="bk-wk-only">Week 2</span>' : '<div class="bk-seg">' + wks.map(w => '<button type="button" data-wk="' + w + '" aria-pressed="' + (BK.wk === w) + '">Week ' + w + "</button>").join("") + "</div>") +
         '<button type="button" class="linkbtn" data-close>Close</button></div></div>' +
       '<div class="bk-body"><div><p class="bk-step">' + (canRequest() ? "Click a start time" : "Week view") + " · Eastern (ET)</p>" + planner() + "</div>" + requestCard() + "</div>";

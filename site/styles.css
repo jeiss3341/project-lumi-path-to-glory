@@ -133,6 +133,7 @@ h1,h2,h3,h4{text-wrap:balance}
 .ph-art .cap{position:absolute;left:14px;right:14px;bottom:14px;font:500 10px/1.45 var(--f-mono);letter-spacing:.12em;color:#9a9aa1;text-transform:uppercase}
 .b-name small{display:block;font:500 10px/1 var(--f-mono);letter-spacing:.24em;color:#a5a5aa;margin-bottom:5px}
 .b-name b{display:block;font:800 21px/1.05 var(--f-display);letter-spacing:.01em;text-transform:uppercase;overflow-wrap:anywhere;color:#fff}
+.b-team:empty{display:none}
 .b-team{justify-self:start;background:var(--green);color:#fff;font:600 12px/1 var(--f-mono);letter-spacing:.1em;padding:6px 9px;text-transform:uppercase}
 
 /* ---------- section scaffolding ---------- */
