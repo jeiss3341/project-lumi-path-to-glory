@@ -3,6 +3,8 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-09
+- Faculty: instructor card art and character pool pictures: Fwitchu shows Irem (`site/art/fwitchu.webp`, pictures Irem and Leni), Hresvelg shows Jan (`site/art/hresvelg.webp`, pictures Jan and Hisui), Isterio shows Luke (`site/art/isterio.webp`, pictures Luke and Jackie), Kazcross shows Henry (`site/art/kazcross.webp`, pictures Henry and Camilo), Magepower shows Alex (`site/art/magepower.webp`, pictures Alex and Fiora), Ioo shows Coraline (`site/art/ioo.webp`, pictures Coraline and Celine; Coraline's subject ID was already listed).
+  - Needs info: these cards show the file number (INS-…) until Irem's, Jan's, Luke's, Henry's and Alex's in-game subject IDs are added to `subjects` in `site/content.js`.
 - Faculty: mentor files 03–08 filled in from the Coach Infographic form, front and back: 03 Fwitchu (Uberman), 04 Hresvelg (uberman), 05 Isterio (Blast), 06 Kazcross (The Casting Desk), 07 Magepower (6789), 08 Ioo (6789). Demo mentor logins renamed to match.
   - Mentor order is 03 Fwitchu, 04 Hresvelg, 05 Isterio, 06 Kazcross, 07 Magepower, 08 Ioo (this replaces the order from the "real mentor names" commit). Chibiarc stays as Assistant 09 with his Shoichi card art; his mentor doodles (chibi face, ears, fries) are removed. Mentor 03's card is back to the Researcher Barbara placeholder.
   - Form quotes added on the backs of Dylan's ("Head Empty") and Hresvelg's files. Magepower's back has a red pencil maple leaf and mushroom by Other Games ("Maphul" = MapleStory).

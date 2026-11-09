@@ -76,6 +76,12 @@ window.PTG = {
   art: {
     m1: "art/m1.png", // Markus (Actor)
     m2: "art/m2.webp", // Prison Officer Abigail (Dylan)
+    m3: "art/fwitchu.webp", // Irem (Fwitchu)
+    m4: "art/hresvelg.webp", // Jan (Hresvelg)
+    m5: "art/isterio.webp", // Luke (Isterio)
+    m6: "art/kazcross.webp", // Henry (Kazcross)
+    m7: "art/magepower.webp", // Alex (Magepower)
+    m8: "art/ioo.webp", // Coraline (Ioo)
     a1: "art/a1.webp", // Blair (Baeksu)
     a2: "art/a2.webp", // Coraline (Jalja)
     a4: "art/a4.webp", // Squortle
@@ -98,6 +104,18 @@ window.PTG = {
     Darko: "art/chars/darko.webp",
     Hyunwoo: "art/chars/hyunwoo.png",
     Shoichi: "art/chars/shoichi.png",
+    Irem: "art/chars/irem.png",
+    Leni: "art/chars/leni.png",
+    Jan: "art/chars/jan.webp",
+    Hisui: "art/chars/hisui.png",
+    Luke: "art/chars/luke.png",
+    Jackie: "art/chars/jackie.png",
+    Henry: "art/chars/henry.png",
+    Camilo: "art/chars/camilo.webp",
+    Alex: "art/chars/alex.png",
+    Fiora: "art/chars/fiora.png",
+    Coraline: "art/chars/coraline.png",
+    Celine: "art/chars/celine.png",
   },
 
   // Display skin → base character, for the placeholder art letter.
@@ -105,7 +123,7 @@ window.PTG = {
     "Training Director Katja": "Katja", "Instructor Fiora": "Fiora", "Researcher Barbara": "Barbara",
     "Student Council President Elena": "Elena", "Academy Laura": "Laura", "Academy Theodore": "Theodore",
     "Academy Estelle": "Estelle", "Transfer Student Bianca": "Bianca", "Rebellious Nicky": "Nicky",
-    "Prison Officer Abigail": "Abigail", "Shoichi": "Shoichi", "Blair": "Blair", "Coraline": "Coraline", "Markus": "Markus"
+    "Prison Officer Abigail": "Abigail", "Shoichi": "Shoichi", "Blair": "Blair", "Coraline": "Coraline", "Markus": "Markus", "Irem": "Irem", "Jan": "Jan", "Luke": "Luke", "Henry": "Henry", "Alex": "Alex"
   },
   // In-game test subject IDs, printed on the cards (from the official Eternal Return wiki's list of characters).
   subjects: {
@@ -144,7 +162,7 @@ window.PTG = {
       hobbies: ["Norms"],
       fav_teams: ["6789 · Squortle"] },
     // m3–m8 from the Coach Infographic form (Nov 9 export)
-    { id: "m3", kind: "mentor", slot: 3, badge_id: "INS-0473-BL", name: "Fwitchu", team_name: "Uberman", display_skin: "Researcher Barbara",
+    { id: "m3", kind: "mentor", slot: 3, badge_id: "INS-0473-BL", name: "Fwitchu", team_name: "Uberman", display_skin: "Irem",
       playstyle: "I prefer to tempo out and make sure that the team is always strong on objectives. Big fan of triangle theory. I think limit-testing in practice is the best way to improve long-term. I play a variety of roles — ex. piggy bank that give all my credits away to my melee players /ᐠ ◞ ᆺ ◟マ",
       pool: ["Irem", "Leni"],
       doodles: ["piggy", "fish", "catnap"],
@@ -156,7 +174,7 @@ window.PTG = {
       fun_fact: "I eat salmon ~3x a week /ᐠ • ˕ •マ 🐟",
       hobbies: ["I draw art and play guitar (but am bad)"],
       fav_teams: ["FN · E8"] },
-    { id: "m4", kind: "mentor", slot: 4, badge_id: "INS-0474-EP", name: "Hresvelg", team_name: "uberman", display_skin: "Student Council President Elena",
+    { id: "m4", kind: "mentor", slot: 4, badge_id: "INS-0474-EP", name: "Hresvelg", team_name: "uberman", display_skin: "Jan",
       playstyle: "Playstyle is a myth u either play correct or u play wrong",
       pool: ["Jan", "Hisui"],
       doodles: ["rightwrong", "housefire", "bird"],
@@ -168,7 +186,7 @@ window.PTG = {
       fun_fact: "Fwitchu burned my house down",
       hobbies: ["playing eternal return", "playing angry birds 2", "rage baiting squortle"],
       fav_teams: ["uberman · hresvelg"] },
-    { id: "m5", kind: "mentor", slot: 5, badge_id: "INS-0475-LA", name: "Isterio", team_name: "Blast", display_skin: "Academy Laura",
+    { id: "m5", kind: "mentor", slot: 5, badge_id: "INS-0475-LA", name: "Isterio", team_name: "Blast", display_skin: "Luke",
       playstyle: "I play melees and I run at the enemy carries in a straight line.",
       pool: ["Luke", "Jackie"],
       doodles: ["arrow", "nocoffee", "shuttle"],
@@ -180,7 +198,7 @@ window.PTG = {
       fun_fact: "I don't drink coffee",
       hobbies: ["Reading bad Chinese light novels", "larping in ER streams", "playing badminton"],
       fav_teams: ["Pointy End · SeolDaBi"] },
-    { id: "m6", kind: "mentor", slot: 6, badge_id: "INS-0476-TH", name: "Kazcross", team_name: "The Casting Desk", display_skin: "Academy Theodore",
+    { id: "m6", kind: "mentor", slot: 6, badge_id: "INS-0476-TH", name: "Kazcross", team_name: "The Casting Desk", display_skin: "Henry",
       playstyle: "I'm usually one of the primary commers and playmakers.",
       pool: ["Henry", "Camilo"],
       doodles: ["mic", "btier", "wave"],
@@ -192,7 +210,7 @@ window.PTG = {
       fun_fact: "Peaked B tier on SSW teammate tier list",
       hobbies: ["Outside of gaming I'm a social advocate"],
       fav_teams: ["INCHEON WAVE", "Cadmus is my fav player tho"] },
-    { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "Magepower", team_name: "6789", display_skin: "Academy Estelle",
+    { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "Magepower", team_name: "6789", display_skin: "Alex",
       playstyle: "Killing excessive wildlife. Shotcaller, engage, frontline.",
       pool: ["Alex", "Fiora"],
       pool_note: "(idk markus, craver, anything op on patch)",
@@ -205,7 +223,7 @@ window.PTG = {
       fun_fact: "I climb v8's.",
       hobbies: ["Bouldering."],
       fav_teams: ["Anyone who plays good ER."] },
-    { id: "m8", kind: "mentor", slot: 8, badge_id: "INS-0478-BT", name: "Ioo", team_name: "6789", display_skin: "Transfer Student Bianca",
+    { id: "m8", kind: "mentor", slot: 8, badge_id: "INS-0478-BT", name: "Ioo", team_name: "6789", display_skin: "Coraline",
       playstyle: "artillery and control mage player",
       pool: ["Coraline", "Celine"],
       doodles: ["rings", "eye", "bowl", "plane"],
