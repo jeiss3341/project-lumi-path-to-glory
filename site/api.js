@@ -111,7 +111,7 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v6";   // bump when the sample data changes, so browsers drop their old copy
+    const KEY = "ptg-demo-v8";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
@@ -132,7 +132,7 @@
       const hours = (coach, days, h1, h2) => days.forEach(i => availability.push({ id: rid(), coach_id: coach, starts_at: at(D[i], h1), ends_at: at(D[i], h2) }));
       hours("m1", WEEKDAYS, 20, 23); hours("m1", [5, 12], 14, 17);      // Actor: weeknights 8–11 PM, Saturday afternoons
       hours("m2", WEEKDAYS, 19, 22); hours("m2", [5], 13, 16);          // Dylan: weeknights 7–10 PM
-      hours("m3", [0, 2, 4, 7, 9, 11], 21, 25);                         // Chibiarc: Mon / Wed / Fri, 9 PM–1 AM
+      hours("m3", [0, 2, 4, 7, 9, 11], 21, 25);                         // Ioo: Mon / Wed / Fri, 9 PM–1 AM
       hours("m4", [1, 3, 5, 8, 10, 12], 18, 22);                        // Tue / Thu / Sat evenings
       hours("m5", NOT_SUN, 10, 12); hours("m5", NOT_SUN, 19, 21);       // two blocks a day
       hours("m6", [5, 6, 12, 13], 12, 18); hours("m6", [2, 9], 20, 22); // weekends + Wednesday nights
@@ -145,13 +145,14 @@
       hours("a5", EVERY, 9, 11);                                        // Jignut: mornings
       hours("a6", [3, 4, 5], 21, 27);                                   // Kyroshoot: week 1 only, 9 PM–3 AM
       hours("a7", [2, 9], 10, 12); hours("a7", [2, 9], 15, 17); hours("a7", [2, 9], 21, 23); hours("a7", [5], 11, 13);   // Superior: split days
+      hours("a9", [1, 3, 8, 10], 21, 24);                               // Chibiarc
       // a8 (Nesious) has no hours: tests "Hide coaches with no hours"
 
       // ---- accounts (one Discord login each) ----
       const P = (id, username, display_name, role) => ({ id, discord_id: String(1000 + profiles.length + 1), username, display_name, avatar_url: "", role: role || "player" });
       const profiles = [];
       [["u-staff", "lumi.staff", "Lumi Staff", "staff"],
-       ["u-neotep", "actor", "Actor"], ["u-dylan", "dylannn", "Dylan"], ["u-chibi", "chibiarc", "Chibiarc"],
+       ["u-neotep", "actor", "Actor"], ["u-dylan", "dylannn", "Dylan"], ["u-ioo", "ioo", "Ioo"], ["u-chibi", "chibiarc", "Chibiarc"],
        ["u-m4", "mentor4.test", "Test Mentor 4"], ["u-m5", "mentor5.test", "Test Mentor 5"], ["u-m6", "mentor6.test", "Test Mentor 6"],
        ["u-m7", "mentor7.test", "Test Mentor 7"], ["u-m8", "mentor8.test", "Test Mentor 8"],
        ["u-baeksu", "baeksu", "Baeksu"], ["u-jalja", "jalja", "Jalja"], ["u-camper", "camperonduty", "CamperonDuty"], ["u-squortle", "squortle", "Squortle"],
@@ -164,8 +165,8 @@
        ["u-zephyr", "zephyr", "Zephyr"], ["u-gale", "gale", "Gale"],
        ["u-rook", "rook", "Rook"], ["u-ember", "ember", "Ember"],
        ["u-solo", "newplayer", "New Player"]].forEach(a => profiles.push(P(...a)));
-      const LINK = { m1: "u-neotep", m2: "u-dylan", m3: "u-chibi", m4: "u-m4", m5: "u-m5", m6: "u-m6", m7: "u-m7", m8: "u-m8",
-        a1: "u-baeksu", a2: "u-jalja", a3: "u-camper", a4: "u-squortle", a5: "u-jignut", a6: "u-kyro", a7: "u-superior" };   // a8 stays unlinked
+      const LINK = { m1: "u-neotep", m2: "u-dylan", m3: "u-ioo", m4: "u-m4", m5: "u-m5", m6: "u-m6", m7: "u-m7", m8: "u-m8",
+        a1: "u-baeksu", a2: "u-jalja", a3: "u-camper", a4: "u-squortle", a5: "u-jignut", a6: "u-kyro", a7: "u-superior", a9: "u-chibi" };   // a8 stays unlinked
 
       // ---- teams (results: placements, shown on the site once that checkpoint's day has passed) ----
       const teams = [];

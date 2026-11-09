@@ -1,9 +1,6 @@
-/* Preview only: plastic sleeve options on the lanyard card (practice site, never the live addresses).
+/* The worn vinyl plastic sleeve on the lanyard card.
    The plastic is drawn on the holder around the card, so the card itself renders exactly as it always has
    and stays smooth. The hole is cut through the plastic alone. */
-html[data-plastic="a"]{--t:34px;--m:18px;--r:20px;--pl-fill:rgba(255,255,255,.18);--pl-edge:rgba(255,255,255,.5);--pl-sheen:rgba(255,255,255,.05)}
-html[data-plastic="b"]{--t:34px;--m:6px;--r:21px;--pl-fill:rgba(255,255,255,.26);--pl-edge:rgba(255,255,255,.6);--pl-sheen:rgba(255,255,255,.04)}
-html[data-plastic="c"]{--t:34px;--m:15px;--r:15px;--pl-fill:rgba(226,232,237,.5);--pl-edge:rgba(255,255,255,.75);--pl-sheen:rgba(255,255,255,.03)}
 html[data-plastic="d"]{--t:34px;--m:16px;--r:20px;--pl-fill:rgba(255,255,255,.15);--pl-edge:rgba(255,255,255,.38);--pl-sheen:rgba(255,255,255,.04)}
 
 html[data-plastic] .lanyard #hero-badge{position:relative;isolation:isolate;margin-top:var(--t)}
@@ -34,19 +31,6 @@ html[data-plastic] .lanyard .badge{
   -webkit-mask:linear-gradient(#000,#000);mask:linear-gradient(#000,#000)}
 html[data-plastic] .lanyard .badge::after{display:none}
 
-/* with no plastic the strap is longer by that same 34px, so the card stays in the same spot for every option */
-html[data-plastic-preview]:not([data-plastic]) .lanyard .strap{height:138px}
 
 /* plastic is on the lanyard card only; the Faculty and tall Assistant cards have no plastic and no hole */
 html[data-plastic-preview] .fac-badge .badge::before,html[data-plastic-preview] .as-tall .badge::before{display:none}
-
-/* the style picker */
-#plastic-pick{position:fixed;right:12px;bottom:64px;z-index:60;display:flex;flex-direction:column;gap:4px;padding:8px;background:#0b0e13;border:1px solid #3a3f49;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-#plastic-pick b{font:700 12px/1.2 var(--f-mono);color:#f4f4f2;padding:2px 4px 4px}
-#plastic-pick button{font:600 13px/1 var(--f-display);color:#f4f4f2;background:#1d2129;border:1px solid #3a3f49;border-radius:5px;padding:8px 10px;text-align:left;cursor:pointer}
-#plastic-pick button[aria-pressed="true"]{background:#d6403a;border-color:#d6403a}
-@media (max-width:640px){
-  #plastic-pick{left:8px;right:8px;flex-direction:row;flex-wrap:wrap;bottom:88px}
-  #plastic-pick b{display:none}
-  #plastic-pick button{flex:1 1 auto;padding:8px 6px;font-size:12px;text-align:center}
-}

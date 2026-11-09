@@ -706,7 +706,8 @@ insert into public.coaches (id, kind, slot, badge_id, name, team_name, display_s
   ('a5', 'assistant', 5, 'AST-0515-RC', '', '', ''),
   ('a6', 'assistant', 6, 'AST-0516-RC', '', '', ''),
   ('a7', 'assistant', 7, 'AST-0517-RC', '', '', ''),
-  ('a8', 'assistant', 8, 'AST-0518-RC', '', '', '')
+  ('a8', 'assistant', 8, 'AST-0518-RC', '', '', ''),
+  ('a9', 'assistant', 9, 'AST-0519-RC', '', '', '')
 on conflict (id) do nothing;
 
 insert into public.teams (name, coach_id, players, sort)

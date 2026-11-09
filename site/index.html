@@ -15,7 +15,7 @@
 <script>document.documentElement.classList.add("swing-pending")</script>
 <!-- index.html?hours shows only Office Hours; the main page leaves it out (rules in app.css) -->
 <script>if (new URLSearchParams(location.search).has("hours")) document.documentElement.classList.add("hours-page")</script>
-<script>(function(){if(["projectlumi.space","pathtoglory.projectlumi.space"].indexOf(location.hostname)>=0)return;var r=document.documentElement,s="a";r.dataset.plasticPreview="";try{s=localStorage.getItem("ptg-plastic")||"a"}catch(e){}if(s!=="none")r.dataset.plastic=s})()</script>
+<script>document.documentElement.dataset.plastic="d";document.documentElement.dataset.plasticPreview=""</script>
 <link rel="stylesheet" href="plastic-site.css">
 </head>
 <body>

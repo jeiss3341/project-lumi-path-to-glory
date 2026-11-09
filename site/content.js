@@ -76,10 +76,10 @@ window.PTG = {
   art: {
     m1: "art/m1.png", // Markus (Actor)
     m2: "art/m2.webp", // Prison Officer Abigail (Dylan)
-    m3: "art/m3.webp", // Shoichi (Chibiarc)
     a1: "art/a1.webp", // Blair (Baeksu)
     a2: "art/a2.webp", // Coraline (Jalja)
     a4: "art/a4.webp", // Squortle
+    a9: "art/m3.webp", // Shoichi (Chibiarc)
   },
   // Headshots for the small assistant cards: square chibi crops in site/art/heads/.
   artHead: {
@@ -142,7 +142,23 @@ window.PTG = {
       fun_fact: "I am not a norm terrorist actually rustska got 10k games",
       hobbies: ["Norms"],
       fav_teams: ["6789 · Squortle"] },
-    { id: "m3", kind: "mentor", slot: 3, badge_id: "INS-0473-BL", name: "Chibiarc", team_name: "uberman", display_skin: "Shoichi",
+    { id: "m3", kind: "mentor", slot: 3, badge_id: "INS-0473-BL", name: "Ioo", team_name: "", display_skin: "" },
+    { id: "m4", kind: "mentor", slot: 4, badge_id: "INS-0474-EP", name: "Fwitchu", team_name: "", display_skin: "Student Council President Elena" },
+    { id: "m5", kind: "mentor", slot: 5, badge_id: "INS-0475-LA", name: "Hresvelg", team_name: "", display_skin: "Academy Laura" },
+    { id: "m6", kind: "mentor", slot: 6, badge_id: "INS-0476-TH", name: "Isterio", team_name: "", display_skin: "Academy Theodore" },
+    { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "Kazcross", team_name: "", display_skin: "Academy Estelle" },
+    { id: "m8", kind: "mentor", slot: 8, badge_id: "INS-0478-BT", name: "Magepower", team_name: "", display_skin: "Transfer Student Bianca" },
+    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "Blair",
+      sticker: "art/stickers/baeksu.webp", sticker_at: { top: "26%", tilt: -16 } }, // die-cut sticker that follows the drawing's outline
+    { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "", display_skin: "Coraline",
+      sticker: "art/stickers/jalja.webp" }, // small chibi sticker on the card's empty right side
+    { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "", display_skin: "" },
+    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "", display_skin: "" },
+    { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "", display_skin: "" },
+    { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "", display_skin: "" },
+    { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "", display_skin: "" },
+    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", display_skin: "" },
+    { id: "a9", kind: "assistant", slot: 9, badge_id: "AST-0519-RC", name: "Chibiarc", team_name: "", display_skin: "Shoichi",
       playstyle: "Melee chungus.\n\nLowkey tho as long as its not triple ranged should be chill.",
       pool: ["Hyunwoo", "Shoichi"],
       pool_note: "(lol)",
@@ -154,21 +170,6 @@ window.PTG = {
       fun_fact: "mcdonald.",
       hobbies: ["GA (I like ga)"],
       fav_teams: ["N/a maybe gsxg?"],
-      ps: ["play fat chungus for uberman", "Leni + hyunwoo", "Anything with more than 200 auto range is too hard"] },
-    { id: "m4", kind: "mentor", slot: 4, badge_id: "INS-0474-EP", name: "", team_name: "", display_skin: "Student Council President Elena" },
-    { id: "m5", kind: "mentor", slot: 5, badge_id: "INS-0475-LA", name: "", team_name: "", display_skin: "Academy Laura" },
-    { id: "m6", kind: "mentor", slot: 6, badge_id: "INS-0476-TH", name: "", team_name: "", display_skin: "Academy Theodore" },
-    { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "", team_name: "", display_skin: "Academy Estelle" },
-    { id: "m8", kind: "mentor", slot: 8, badge_id: "INS-0478-BT", name: "", team_name: "", display_skin: "Transfer Student Bianca" },
-    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "Blair",
-      sticker: "art/stickers/baeksu.webp", sticker_at: { top: "26%", tilt: -16 } }, // die-cut sticker that follows the drawing's outline
-    { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "", display_skin: "Coraline",
-      sticker: "art/stickers/jalja.webp" }, // small chibi sticker on the card's empty right side
-    { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "", display_skin: "" },
-    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "", display_skin: "" },
-    { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "", display_skin: "" },
-    { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "", display_skin: "" },
-    { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "", display_skin: "" },
-    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", display_skin: "" }
+      ps: ["play fat chungus for uberman", "Leni + hyunwoo", "Anything with more than 200 auto range is too hard"] }
   ]
 };
