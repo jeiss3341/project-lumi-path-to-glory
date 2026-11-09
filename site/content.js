@@ -74,6 +74,7 @@ window.PTG = {
   // It fills the 4:5 art window on the ID badge (cropped to fit, anchored near the top).
   // m1 has no entry, so it keeps the crop from the event poster.
   art: {
+    m1: "art/m1.png", // Markus (Actor)
     m2: "art/m2.webp", // Prison Officer Abigail (Dylan)
     m3: "art/m3.webp", // Shoichi (Chibiarc)
     a1: "art/a1.webp", // Blair (Baeksu)
@@ -104,20 +105,20 @@ window.PTG = {
     "Training Director Katja": "Katja", "Instructor Fiora": "Fiora", "Researcher Barbara": "Barbara",
     "Student Council President Elena": "Elena", "Academy Laura": "Laura", "Academy Theodore": "Theodore",
     "Academy Estelle": "Estelle", "Transfer Student Bianca": "Bianca", "Rebellious Nicky": "Nicky",
-    "Prison Officer Abigail": "Abigail", "Shoichi": "Shoichi", "Blair": "Blair", "Coraline": "Coraline"
+    "Prison Officer Abigail": "Abigail", "Shoichi": "Shoichi", "Blair": "Blair", "Coraline": "Coraline", "Markus": "Markus"
   },
   // In-game test subject IDs, printed on the cards (from the official Eternal Return wiki's list of characters).
   subjects: {
     Katja: "24M-RFT75", Fiora: "14M-RFT02", Barbara: "16M-RFT15", Elena: "22M-RFT52", Laura: "21M-RFT49", Theodore: "23M-RFT65",
-    Estelle: "22M-RFT58", Bianca: "20M-RFT45", Nicky: "20M-RFT43", Abigail: "23M-RFT70", Shoichi: "16M-RFT23", Blair: "25M-RFT87", Coraline: "26M-RFT90"
+    Estelle: "22M-RFT58", Bianca: "20M-RFT45", Nicky: "20M-RFT43", Abigail: "23M-RFT70", Shoichi: "16M-RFT23", Blair: "25M-RFT87", Coraline: "26M-RFT90", Markus: "22M-RFT56"
   },
 
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).
   coachSeed: [
-    { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Actor", team_name: "team not found", display_skin: "Training Director Katja",
+    { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Actor", team_name: "team not found", display_skin: "Markus",
       playstyle: "I usually play the mage or ~~engage tank~~, either way I am running it down to make space for my teammates.",
       doodles: ["burst", "sparkles", "burger"], // red pencil doodles on the front of the file
-      pool: ["Niah", "Markus", "Kenneth"],
+      pool: ["Markus", "Niah", "Kenneth"],
       history: ["2 mickey mouses (ERCC S9, ERCT 1)", "some mcchickens (ERCS 2nd-3rd million times)"],
       about: "I play whatever's op on patch and good for team comp. 15 ranked games.\n\nStarted playing early access solos, stopped before official launch, came back season 4-5 and have played ercs every season since.",
       // back of the mentor file (flip side)

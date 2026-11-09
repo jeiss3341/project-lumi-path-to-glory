@@ -111,7 +111,7 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v5";   // bump when the sample data changes, so browsers drop their old copy
+    const KEY = "ptg-demo-v6";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
