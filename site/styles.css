@@ -40,7 +40,7 @@ h1,h2,h3,h4{text-wrap:balance}
 @media (max-width:420px){.topbar .code{font-size:10px;letter-spacing:.08em}}
 
 /* ---------- hero ---------- */
-.hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,330px);gap:24px;padding-block:4px 120px}
+.hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,330px);gap:24px;padding-block:19px 120px}
 .folder{position:relative;background-color:var(--kraft);background-image:var(--grain);border-radius:3px 12px 12px 12px;padding:118px clamp(18px,4.5vw,60px) 150px;margin-top:30px;box-shadow:var(--lift)}
 .folder::before{content:"";position:absolute;left:0;top:-30px;width:42%;height:31px;background:inherit;border-radius:10px 24px 0 0}
 .file-id{position:absolute;left:clamp(16px,3vw,32px);top:20px;font:500 13px/1.5 var(--f-mono);color:var(--kraft-ink);letter-spacing:.06em}
