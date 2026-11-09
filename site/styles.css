@@ -59,6 +59,7 @@ h1,h2,h3,h4{text-wrap:balance}
 
 .ticket{position:absolute;left:-14px;bottom:-60px;width:min(540px,94%);display:grid;grid-template-columns:84px minmax(0,1fr);background-color:#f8f7f4;background-image:var(--grain);color:var(--ink);text-decoration:none;transform:rotate(1.5deg);box-shadow:var(--lift);z-index:2;transition:transform .25s ease}
 .ticket:hover{transform:rotate(.5deg) translateY(-4px)}
+.ticket:hover::after{content:"";position:absolute;inset:-12px}   /* while it lifts, the hover area reaches past the edge, so the mouse can't fall off it and flicker */
 .ticket .stub{border-right:2px dashed #bdb9b0;display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px 12px}
 .ticket .stub .barcode{width:100%;height:44px;color:var(--ink)}
 .ticket .stub span{writing-mode:vertical-rl;transform:rotate(180deg);font:600 14px/1 var(--f-mono);letter-spacing:.3em}
