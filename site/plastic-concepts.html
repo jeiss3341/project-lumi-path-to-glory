@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plastic Sleeve Concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="app.css">
+<style>
+  html{zoom:1!important}
+  body{background:#0b0e13;margin:0}
+
+  .pc-bar{position:sticky;top:0;z-index:20;background:#0b0e13;border-bottom:1px solid #2a2e36;padding:14px 24px}
+  .pc-bar-in{max-width:1420px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
+  .pc-bar h1{font:900 20px/1 var(--f-display);color:#f4f4f2;margin:0;text-transform:uppercase}
+  .pc-btns{display:flex;flex-wrap:wrap;gap:6px}
+  .pc-btns button{font:700 14px/1 var(--f-display);color:#f4f4f2;background:#1d2129;border:1px solid #3a3f49;border-radius:6px;padding:10px 13px;cursor:pointer}
+  .pc-btns button[aria-pressed="true"]{background:#d6403a;border-color:#d6403a}
+  .pc-note{font:400 14px/1.3 var(--f-display);color:#b3b3b8;margin:0}
+
+  .pc-page{max-width:1420px;margin:0 auto;padding:28px 24px 70px}
+  .pc-page h2{font:800 22px/1 var(--f-display);color:#f4f4f2;margin:30px 0 12px}
+  .pc-page h2:first-child{margin-top:0}
+  .stage{display:flex;flex-wrap:wrap;justify-content:center;gap:76px 46px;padding:70px 34px 48px;border-radius:10px;background:#c6a981;
+    background-image:repeating-linear-gradient(0deg,rgba(90,60,25,.07) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(90,60,25,.06) 0 1px,transparent 1px 3px)}
+
+  /* --k shrinks the plastic for the small cards; --t is the room above the card for the hole, --m the clear edge */
+  .sl{--k:1;position:relative;z-index:1;width:320px}
+  .sl.inst{transform:rotate(-2.5deg)}
+  .sl.tall{width:300px;transform:rotate(2.5deg)}
+  .sl.mini{--k:.62;width:270px}
+  .sl .badge{transform:none}
+  .sl .as-tall{display:block}
+  .sl .as-card,.sl .as-card:hover{cursor:default;box-shadow:var(--lift)}
+  .sl-back,.sl-gloss{position:absolute;pointer-events:none;inset:calc(var(--t)*var(--k)*-1) calc(var(--m)*var(--k)*-1) calc(var(--m)*var(--k)*-1);border-radius:calc(var(--r)*var(--k))}
+  .sl-back{z-index:-1}
+  .sl-gloss{z-index:9;overflow:hidden}
+  .sl-slot{position:absolute;left:50%;width:calc(58px*var(--k));height:calc(11px*var(--k));margin-left:calc(-29px*var(--k));top:calc(var(--s)*var(--k));border-radius:6px;background:#2a2219;box-shadow:inset 0 2px 3px rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.35)}
+
+  /* today's card */
+  body[data-s="none"] .sl-back,body[data-s="none"] .sl-gloss{display:none}
+
+  /* with plastic on: no hole in the card, and the plastic's shine replaces the card's own */
+  body:not([data-s="none"]) .sl .badge::before,
+  body:not([data-s="none"]) .sl .badge::after,
+  body:not([data-s="none"]) .sl .mini-badge::after{display:none}
+  body:not([data-s="none"]) .sl .badge{box-shadow:0 3px 8px rgba(0,0,0,.45)}
+  body:not([data-s="none"]) .sl .as-card,body:not([data-s="none"]) .sl .as-card:hover{box-shadow:0 2px 5px rgba(0,0,0,.45)}
+
+  /* 1: like the poster, a clear sleeve a little bigger than the card */
+  body[data-s="a"] .sl{--t:34px;--m:18px;--r:20px;--s:12px}
+  body[data-s="a"] .sl-back{background:rgba(255,255,255,.2);box-shadow:0 26px 44px -16px rgba(0,0,0,.65),inset 0 0 0 1.5px rgba(255,255,255,.55),inset 0 0 14px rgba(255,255,255,.22)}
+  body[data-s="a"] .sl-gloss{background:linear-gradient(135deg,rgba(255,255,255,0.05),transparent 45%)}
+
+  /* 2: sealed tight around the card */
+  body[data-s="b"] .sl{--t:30px;--m:6px;--r:21px;--s:10px}
+  body[data-s="b"] .sl-back{background:rgba(255,255,255,.28);box-shadow:0 28px 46px -18px rgba(0,0,0,.75),inset 0 0 0 1px rgba(255,255,255,.65)}
+  body[data-s="b"] .sl-gloss{background:linear-gradient(135deg,rgba(255,255,255,0.04),transparent 45%)}
+
+  /* 3: stiff holder with a thick frame */
+  body[data-s="c"] .sl{--t:42px;--m:15px;--r:15px;--s:15px}
+  body[data-s="c"] .sl-back{background:linear-gradient(180deg,rgba(236,241,245,.62),rgba(214,222,228,.42));backdrop-filter:blur(3px);box-shadow:0 28px 44px -16px rgba(0,0,0,.7),inset 0 0 0 2px rgba(255,255,255,.8),inset 0 0 0 4px rgba(120,130,140,.28)}
+  body[data-s="c"] .sl-gloss{background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent 45%)}
+
+  /* 4: soft, used vinyl with creases and scuffs */
+  body[data-s="d"] .sl{--t:30px;--m:16px;--r:20px;--s:9px}
+  body[data-s="d"] .sl-back{background:rgba(255,255,255,.17);box-shadow:0 26px 42px -16px rgba(0,0,0,.65),inset 0 0 0 1.5px rgba(255,255,255,.42),inset 0 0 22px rgba(255,255,255,.18)}
+  body[data-s="d"] .sl-gloss{background:linear-gradient(135deg,rgba(255,255,255,0.04),transparent 45%)}
+
+  /* the cards never have a hole of their own */
+  .sl .badge::before{display:none}
+
+  /* the small cards stay as they are, with no plastic */
+  .sl.mini .sl-back,.sl.mini .sl-gloss{display:none}
+  body:not([data-s="none"]) .sl.mini .mini-badge::after{display:block}
+  body:not([data-s="none"]) .sl.mini .as-card,body:not([data-s="none"]) .sl.mini .as-card:hover{box-shadow:var(--lift)}
+
+  @media (max-width:640px){
+    .pc-bar{padding:12px 16px}
+    .pc-page{padding:20px 16px 50px}
+    .stage{padding:56px 12px 36px;gap:64px 20px}
+    .sl.inst,.sl.tall{zoom:.82}
+  }
+</style>
+</head>
+<body data-s="a">
+<div class="pc-bar"><div class="pc-bar-in">
+  <h1>Plastic preview</h1>
+  <div class="pc-btns" id="btns"></div>
+  <p class="pc-note">Preview only. Your real site hasn't changed.</p>
+</div></div>
+<main class="pc-page">
+  <h2>Instructors</h2>
+  <div class="stage" id="inst"></div>
+  <h2>Assistants</h2>
+  <div class="stage" id="tall"></div>
+  <h2>Small assistant cards</h2>
+  <div class="stage" id="mini"></div>
+</main>
+<script src="config.js"></script>
+<script src="content.js"></script>
+<script src="api.js"></script>
+<script src="ui.js"></script>
+<script>
+  (async () => {
+    const C = window.PTG, esc = UI.esc;
+    const WEAR = {
+      scratches: '<path d="M118 9 L172 33"/><path class="faint" d="M128 6 L178 27"/><path d="M146 41 C158 45 172 47 192 54"/><path class="faint" d="M104 20 l9 3 M181 15 l6 4"/>',
+      scuff: '<ellipse class="scuff" cx="26" cy="128" rx="44" ry="20"/><path d="M8 130 L62 108"/><path class="faint" d="M16 138 L54 121 M38 134 l16 -5"/><path d="M4 118 l6 -2"/>',
+      gouge: '<path d="M4 76 C60 64 118 68 198 42"/><path class="faint" d="M10 81 C64 70 120 74 196 49"/><path class="faint" d="M70 30 l3 1 M150 96 l4 -1 M30 104 l2 2"/>',
+      marked: '<path class="ink" d="M156 64 l6 7 l15 -17"/><path class="faint" d="M168 70 L194 58"/>',
+      nicks: '<path d="M196 92 l-7 3 M197 99 l-5 1"/><path class="faint" d="M60 14 L96 6 M120 128 L160 118"/><ellipse class="scuff" cx="178" cy="18" rx="26" ry="12"/>'
+    };
+    const WEAR_BY_SLOT = ["", "scratches", "", "scuff", "gouge", "", "marked", "nicks"];
+
+    // the same small card as the home page, without the click and Request links
+    function small(a, i) {
+      const seed = C.coachSeed.find(c => c.id === a.id) || {}, name = UI.bare(UI.coachName(a));
+      const wear = WEAR[WEAR_BY_SLOT[i % WEAR_BY_SLOT.length]];
+      const sticker = a.sticker || seed.sticker, at = a.sticker_at || seed.sticker_at || {};
+      return '<div class="mini-badge as-card">' +
+        (wear ? '<svg class="wear" viewBox="0 0 200 140" preserveAspectRatio="none" aria-hidden="true">' + wear + "</svg>" : "") +
+        (sticker ? '<img class="mb-sticker" src="' + esc(sticker) + '" alt="" width="240" height="240" style="' + (at.top ? "top:" + esc(at.top) + ";" : "") + (at.tilt != null ? "--tilt:" + Number(at.tilt) + "deg" : "") + '">' : "") +
+        '<div class="b-strip"><span>FACULTY · PATH TO GLORY</span></div><div class="mb-body">' +
+        '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>' + esc(a.badge_id) + "</span></div>" +
+        '<div class="mb-role">Assistant</div><div class="mb-nameline"><div class="mb-name">[' + esc(name) + ']</div><span class="b-team">' + esc(UI.bare(UI.coachTeam(a))) + "</span></div>" +
+        '<div class="mb-icon">' + (C.artHead && C.artHead[a.id] ? '<img src="' + esc(C.artHead[a.id]) + '" alt="">' : '<span class="mb-icon-ph" aria-hidden="true">?</span>') + "</div>" +
+        '<div class="mb-focus">' + UI.ph(a.focus, "[Role focus]") + "<br>" + UI.ph((a.pool || []).join(", "), "[Characters or topics]") + "</div>" +
+        '<div class="mb-foot"><a>Request ›</a></div></div></div>';
+    }
+    const wrap = (cls, inner) => '<div class="sl ' + cls + '"><div class="sl-back"><i class="sl-slot"></i></div>' + inner + '<div class="sl-gloss"></div></div>';
+
+    const list = await API.coaches();
+    const inst = list.filter(c => c.kind !== "assistant"), asst = list.filter(c => c.kind === "assistant");
+    document.getElementById("inst").innerHTML = inst.map(c => wrap("inst", '<div class="fac-badge">' + UI.badge(c) + "</div>")).join("");
+    document.getElementById("tall").innerHTML = asst.map(c => wrap("tall", '<div class="as-tall">' + UI.badge(c) + "</div>")).join("");
+    document.getElementById("mini").innerHTML = asst.map((c, i) => wrap("mini", small(c, i))).join("");
+
+    const styles = [["none", "No plastic"], ["a", "1. Clear sleeve"], ["b", "2. Laminated"], ["c", "3. Hard holder"], ["d", "4. Worn vinyl"]];
+    const box = document.getElementById("btns");
+    const pick = s => {
+      document.body.dataset.s = s;
+      box.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.s === s));
+    };
+    box.innerHTML = styles.map(s => '<button type="button" data-s="' + s[0] + '">' + s[1] + "</button>").join("");
+    box.addEventListener("click", e => { const b = e.target.closest("button"); if (b) pick(b.dataset.s); });
+    pick("a");
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+  .ac-page{max-width:1240px;margin:0 auto;padding:44px clamp(16px,3vw,28px) 90px}
+  .ac-intro h1{font:900 clamp(30px,4.4vw,52px)/.95 var(--f-display);letter-spacing:-.04em;text-transform:uppercase;margin:0 0 12px}
+  .ac-intro p{margin:0;max-width:70ch;color:var(--muted)}
+  .ac-c{margin-top:70px}
+  .ac-c>h2{font:900 clamp(22px,2.6vw,30px)/1 var(--f-display);letter-spacing:-.03em;text-transform:uppercase;margin:0 0 6px}
+  .ac-c>h2 span{color:var(--red)}
+  .ac-c>p{margin:0 0 24px;max-width:78ch;color:var(--muted)}
+
+  /* the sketch: main on one side, four subs on the other, arrows under the subs */
+  .ac-stage{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:22px;align-items:stretch}
+  .ac-main{display:grid;min-width:0}
+  .ac-right{display:grid;gap:14px;align-content:start;min-width:0}
+  /* the cards sit in a strip inside a window; a slide moves the strip left, then the cards that left are removed */
+  .ac-subs{display:grid;gap:20px;min-width:0}
+  .ac-view{overflow:hidden;padding:14px;margin:-14px;min-width:0}
+  .ac-track{--c:2;--r:2;--g:20px;display:grid;grid-auto-flow:column;grid-template-rows:repeat(var(--r),auto);grid-auto-columns:calc((100% - (var(--c) - 1) * var(--g)) / var(--c));gap:20px var(--g)}
+  .ac-stage.rows .ac-track{--r:1}
+  .ac-meta{display:flex;align-items:center;gap:14px;font:500 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .ac-meta span{white-space:nowrap}
+  .ac-bar{flex:1;height:2px;background:rgba(255,255,255,.14);overflow:hidden}
+  .ac-bar i{display:block;height:100%;background:var(--red);transform-origin:left;animation:acBar 4s linear forwards}
+  .paused .ac-bar i{animation-play-state:paused}
+  @keyframes acBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .ac-meta .arrows{flex:none}
+
+  /* the real sub card, made clickable (Request stays its own link) */
+  .ac-sub{cursor:pointer;transition:box-shadow .15s ease}
+  /* small cards: straight unless the panel picks a tilt. The tilt belongs to the card, so it doesn't change during a slide */
+  .ac-track .ac-sub{transform:none}
+  body[data-tilt="one"] .ac-track .ac-sub{transform:rotate(-1.2deg)}
+  body[data-tilt="check"] .ac-track .ac-sub[data-c="0"]{transform:rotate(-1.2deg)}
+  body[data-tilt="check"] .ac-track .ac-sub[data-c="1"]{transform:rotate(1.2deg)}
+  body[data-tilt="check"] .ac-stage.top .ac-track .ac-sub[data-p="0"]{transform:rotate(-1.2deg)}
+  body[data-tilt="check"] .ac-stage.top .ac-track .ac-sub[data-p="1"]{transform:rotate(1.2deg)}
+  .ac-sub:hover{box-shadow:var(--lift),0 0 0 2px rgba(255,255,255,.55)}
+  .ac-sub.on{box-shadow:var(--lift),0 0 0 2.5px var(--red)}
+  .ac-hit{position:absolute;inset:0;z-index:4;background:none;border:0;padding:0;cursor:pointer;border-radius:12px}
+  .ac-hit:focus-visible{outline:2px solid #fff;outline-offset:-3px}
+  .ac-sub .mb-foot a{position:relative;z-index:5}
+  .mini-badge .wear .ink{filter:none}
+  .ac-in{animation:acIn .28s ease both}
+  @keyframes acIn{from{opacity:0}to{opacity:1}}
+
+  /* main: the badge, big */
+  .ac-big,.ac-ban{transform:none!important}
+  .ac-big{grid-template-columns:34px minmax(0,1fr)}
+  .ac-big .b-strip span{font-size:10px}
+  .ac-big .mb-sticker{width:clamp(96px,27%,140px);top:30%}
+  .ac-big .mb-body{padding:22px 24px 24px;gap:14px;align-content:start}
+  .ac-big .b-top{font-size:13px}
+  .ac-big .mb-role{font-size:clamp(34px,4vw,54px)}
+  .ac-big .mb-name{font-size:clamp(23px,2.7vw,34px)}
+  .ac-big .mb-icon{width:124px}
+  .ac-big .mb-icon-ph{font-size:54px}
+  .ac-big .mb-focus{font-size:14px}
+  .ac-facts{margin:0;display:grid;grid-template-columns:96px minmax(0,1fr);gap:0;border-top:1px dashed #4a4a50;font:500 13px/1.45 var(--f-mono);color:#d9d9dc}
+  .ac-facts dt,.ac-facts dd{margin:0;padding:9px 0;border-bottom:1px dashed #4a4a50}
+  .ac-facts dt{font-size:10px;line-height:1.9;letter-spacing:.12em;text-transform:uppercase;color:#a0a0a6}
+  .ac-foot{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-top:auto}
+  .ac-big .mb-body{display:flex;flex-direction:column}
+  .ac-go{background:var(--red);color:#fff;text-decoration:none;font:600 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:13px 16px}
+  .ac-go:hover{background:#fff;color:var(--ink)}
+  .ac-big .b-team,.ac-ban .b-team{font-size:11px;padding:4px 7px}
+
+  /* main: paper file, kraft folder */
+  .ac-file{padding:clamp(20px,2.6vw,30px);display:flex;flex-direction:column;gap:14px;min-width:0}
+  .ac-file.kraft{background-color:var(--kraft);color:var(--kraft-ink);border-radius:3px}
+  .ac-file .mono-label{color:var(--ink-soft)}
+  .ac-file.kraft .mono-label{color:var(--kraft-ink)}
+  .ac-fh{display:flex;align-items:center;gap:16px}
+  .ac-fh h3{font:900 clamp(30px,3.6vw,44px)/.95 var(--f-display);letter-spacing:-.04em;text-transform:uppercase;margin:0;overflow-wrap:anywhere;color:var(--ink)}
+  .ac-fh p{margin:6px 0 0;font:500 12px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+  .ac-fh .mb-icon{width:84px;flex:none}
+  .ac-file.kraft .sc-kv dt{color:var(--kraft-ink)}
+  .ac-file.kraft .sc-kv dt,.ac-file.kraft .sc-kv dd{border-bottom-color:rgba(60,40,20,.35)}
+  .ac-file .sc-kv dd .ph{color:#8b857b}
+  .ac-file.kraft .sc-kv dd .ph{color:rgba(60,40,20,.62)}
+  .ac-file .btn{align-self:flex-start;margin-top:auto}
+
+  /* layout 5: the main across the top, four subs in a row */
+  .ac-stage.top{grid-template-columns:minmax(0,1fr)}
+  .ac-stage.top .ac-track{--c:4;--r:1}
+  /* layout 3: a wider main, and only two cards showing */
+  .ac-stage.two{grid-template-columns:minmax(0,8fr) minmax(0,4fr)}
+  .ac-stage.two .ac-track{--c:1;--r:2}
+  .ac-ban{grid-template-columns:34px minmax(0,1fr)}
+  .ac-ban .b-strip span{font-size:10px}
+  .ac-ban-body{display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,1fr);gap:26px;padding:24px 28px;align-items:center;min-width:0}
+  .ac-ban .mb-icon{width:150px}
+  .ac-ban .mb-icon-ph{font-size:64px}
+  .ac-ban .mb-role{font-size:clamp(30px,4.8vw,64px)}
+  .ac-ban .mb-name{font-size:clamp(23px,2.6vw,32px)}
+  .ac-ban .mb-nameline{margin-top:6px}
+  .ac-ban .b-top{margin-bottom:12px;font-size:12px}
+  .ac-ban .mb-focus{font-size:13px;margin-top:12px}
+  .ac-ban .mb-sticker{display:none}
+  .ac-ban-side{display:grid;gap:14px;align-content:center;min-width:0}
+  .ac-ban .ac-go{justify-self:start}
+
+  /* main: the tall card the mentors have, with the details beside it */
+  .ac-tall{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px;align-items:stretch;min-width:0}
+  .ac-tall .badge{width:100%;transform:rotate(2.5deg)}   /* the opposite way from the Instructor card above it */
+  .ac-tall .b-role{font-size:31px}
+  .ac-tall-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+  .ac-tall-side .ac-facts{grid-template-columns:minmax(0,1fr)}
+  .ac-tall-side .ac-facts dt{border-bottom:0;padding-bottom:0}
+  .ac-tall-side .ac-facts dd{padding-top:3px;color:#ececee}
+  .ac-tall-side .ac-facts .ph{color:#9a9aa1}
+  .ac-tall-side .ac-go{align-self:flex-start;margin-top:auto}
+  .ac-stage.two .ac-tall{grid-template-columns:minmax(0,320px) minmax(0,1fr)}
+
+  @media (max-width:980px){
+    .ac-stage,.ac-stage.two{grid-template-columns:minmax(0,1fr)}
+    .ac-stage.top .ac-track,.ac-stage.two .ac-track{--c:2;--r:1}
+    .ac-ban-body{grid-template-columns:minmax(0,1fr);gap:16px;padding:20px}
+    .ac-ban .mb-icon{width:96px}
+  }
+  @media (max-width:520px){
+    .ac-subs{gap:12px}
+    .ac-track{--g:12px;row-gap:12px}
+    .ac-sub .mb-body{padding:11px 10px 12px;gap:6px}
+    .ac-sub .mb-role{font-size:18px}
+    .ac-sub .mb-name{font-size:13px}
+    .ac-sub .mb-icon{width:44px}
+    .ac-sub .mb-focus{font-size:9.5px}
+    .ac-sub .b-top{font-size:9px;letter-spacing:.06em}
+    .ac-sub .mb-sticker{width:46px}
+    .ac-sub .mb-foot{flex-wrap:wrap;gap:6px}
+    .ac-big .mb-body{padding:18px 16px 18px}
+    .ac-tall,.ac-stage.two .ac-tall{grid-template-columns:minmax(0,1fr)}
+    .ac-facts{grid-template-columns:minmax(0,1fr)}
+    .ac-facts dt{border-bottom:0;padding-bottom:0}
+    .ac-file .sc-kv{grid-template-columns:minmax(0,1fr)}
+    .ac-file .sc-kv dt{border-bottom:0;padding-bottom:0}
+  }
+  /* the two switches at the top: which side the big section is on, and which way the cards slide */
+  .ac-ctl{display:flex;flex-wrap:wrap;gap:12px 26px;margin-top:22px;font:600 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .ac-ctl>div{display:flex;align-items:center;gap:10px}
+  .ac-ctl .bk-seg{border-color:var(--paper)}
+  .ac-ctl .bk-seg button{background:transparent;color:var(--paper)}
+  .ac-ctl .bk-seg button+button{border-left-color:var(--paper)}
+  .ac-ctl .bk-seg button[aria-pressed="true"]{background:var(--red);color:#fff}
+  @media (min-width:981px){
+    .ac-stage{--m:5fr;--s:6fr}
+    .ac-stage.two{--m:8fr;--s:4fr}
+    body[data-side="left"] .ac-stage:not(.top){grid-template-columns:minmax(0,var(--m)) minmax(0,var(--s))}
+    body[data-side="right"] .ac-stage:not(.top){grid-template-columns:minmax(0,var(--s)) minmax(0,var(--m))}
+    body[data-side="right"] .ac-stage:not(.top) .ac-main{order:2}
+  }
+  .ac-ctl a{color:var(--paper);align-self:center}
+  /* under Faculty: the small panel that switches layouts, above the demo bar */
+  .ac-pick{position:fixed;right:max(16px,env(safe-area-inset-right,0px));z-index:56;max-width:calc(100vw - 32px);background:#0e0c0a;border:1px solid rgba(255,255,255,.28);padding:12px 14px;box-shadow:0 10px 26px -8px rgba(0,0,0,.8)}
+  .ac-pick .ac-ctl{margin:0;gap:10px 18px}
+  @media (prefers-reduced-motion:reduce){.ac-in{animation:none}.ac-bar{display:none}}

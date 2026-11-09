@@ -1,0 +1,12 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Assistants Under Faculty</title>
+<body style="background:#14100c">
+<script>
+/* Temporary: the real site (index.html, untouched) with the assistant layouts swapped in under Faculty. */
+fetch("index.html", { cache: "no-store" }).then(r => r.text()).then(html => {
+  const extra = '<link rel="stylesheet" href="assist-concepts.css"><script>window.AC_IN_PAGE = true<\/script><script src="assist-concepts.js"><\/script></body>';
+  document.open(); document.write(html.replace("</body>", extra)); document.close();
+});
+</script>
+</body>
