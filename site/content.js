@@ -11,7 +11,7 @@ window.PTG = {
     pitch: "Break down the barrier & create a bridge for developing players to talk and learn from the best teams in the ER Comp Scene."
   },
 
-  goals: ["Learn from the best players", "2 Tourney Days", "2 Week Event"],
+  goals: ["Learn from the best players", "Sharpen your game sense", "Grow with your team"],
 
   /* Step text marks: **words** = yellow highlighter, _words_ = red squiggle underline, \n = line break. */
   steps: [

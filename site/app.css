@@ -10,6 +10,9 @@ img{max-width:100%}
 html:not(.hours-page) #book{display:none}
 .hours-page main>section:not(#book){display:none}
 .hours-page #book .no{display:none}
+/* desk and Office Hours: no section links in the top bar; the logo goes back to the main site */
+.hours-page .topbar nav{display:none}
+.hours-page .auth,.topbar .wrap:not(:has(nav)) .auth{margin-left:auto}
 .bk-locked{margin:0;padding:clamp(22px,4vw,36px)}
 
 /* ---------- top bar + login ---------- */

@@ -154,7 +154,7 @@
     const big = C.schedule.find(e => (e.kind === "mock" || e.kind === "final") && e.date >= UI.todayYmd());
     let cta = "NOW IN SESSION";
     if (st.phase === "after") cta = "GGS · THANKS FOR PLAYING";
-    else if (st.phase === "before") cta = "DAY 1 · MON NOV 9";
+    else if (st.phase === "before" || st.day === 1) cta = "DAY 1 · MON NOV 9";   // before the event and all through the first day
     else if (big) {
       const name = big.kind === "mock" ? "MOCK CHECKPOINT SERIES" : "FINAL CHECKPOINT SERIES";
       const n = Math.round((new Date(big.date + "T12:00:00") - new Date(UI.todayYmd() + "T12:00:00")) / 864e5);
