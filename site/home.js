@@ -223,11 +223,20 @@
   }
 
   /* ================================================== faculty + rosters */
-  // the swinging card is a random mentor or assistant who has a picture, picked once per page load so a redraw can't change it
+  // the swinging card is a random mentor or assistant who has a picture, picked once per page load so a redraw can't change it.
+  // This browser remembers the last 5 cards it showed and skips them, so a reload never repeats a recent one.
   let heroPick = null;
+  const HERO_SKIP = 5, HERO_KEY = "ptg-hero-recent";
   function renderHeroBadge() {
     const ms = S.coaches.filter(c => UI.artSrc(c));
-    const m = ms.find(x => x.id === heroPick) || ms[Math.floor(Math.random() * ms.length)];
+    let m = ms.find(x => x.id === heroPick);
+    if (!m && ms.length) {
+      let recent = [];
+      try { recent = JSON.parse(localStorage.getItem(HERO_KEY)) || []; } catch (e) { /* storage blocked */ }
+      const fresh = ms.filter(c => !recent.slice(-Math.min(HERO_SKIP, ms.length - 1)).includes(c.id));
+      m = fresh[Math.floor(Math.random() * fresh.length)];
+      try { localStorage.setItem(HERO_KEY, JSON.stringify(recent.concat(m.id).slice(-HERO_SKIP))); } catch (e) { /* storage blocked or full */ }
+    }
     heroPick = m ? m.id : null;
     $("#hero-badge").innerHTML = m ? UI.badge(m) : "";
   }
