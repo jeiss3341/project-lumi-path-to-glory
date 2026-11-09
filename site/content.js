@@ -128,7 +128,7 @@ window.PTG = {
   // In-game test subject IDs, printed on the cards (from the official Eternal Return wiki's list of characters).
   subjects: {
     Katja: "24M-RFT75", Fiora: "14M-RFT02", Barbara: "16M-RFT15", Elena: "22M-RFT52", Laura: "21M-RFT49", Theodore: "23M-RFT65",
-    Estelle: "22M-RFT58", Bianca: "20M-RFT45", Nicky: "20M-RFT43", Abigail: "23M-RFT70", Shoichi: "16M-RFT23", Blair: "25M-RFT87", Coraline: "26M-RFT90", Markus: "22M-RFT56"
+    Estelle: "22M-RFT58", Bianca: "20M-RFT45", Nicky: "20M-RFT43", Abigail: "23M-RFT70", Shoichi: "16M-RFT23", Blair: "25M-RFT87", Coraline: "26M-RFT90", Markus: "22M-RFT56", Irem: "22M-RFT64", Jan: "18M-RFT35", Luke: "18M-RFT36", Henry: "25M-RFT86", Alex: "14M-RFT13"
   },
 
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).
