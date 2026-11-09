@@ -2,6 +2,9 @@
 
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
+## 2026-11-09
+- Faculty doodles adjusted after the mentor file footer changed: Dylan's "# NORMS terrorist" note moved to the empty left side of the footer (it was overlapping Request a session), and Actor's burger lifted above the dashed line.
+
 ## 2026-11-05
 - Assistant & role coaches: now 8 assistants (a5–a8 added, badges AST-0515-RC … AST-0518-RC) in two rows of four (two per row on tablets, one on phones).
   - Needs database: re-run the coaches seed in `supabase/schema.sql` (a5–a8 were added there; existing rows are left alone).
