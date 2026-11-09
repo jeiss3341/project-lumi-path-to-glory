@@ -253,7 +253,7 @@ window.PTG = {
     { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "About 30", display_skin: "Coraline", art_fit: { x: 8.65, y: 0.87, z: 1.18 },
       sticker: "art/stickers/jalja.webp" }, // small chibi sticker on the card's empty right side
     { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "Trigger", display_skin: "Rozzi", art_fit: { x: -6.19, y: -9.67, z: 1.12 }, head_fit: { x: 1.37, y: 11.96, z: 1.33 } },
-    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "6789", display_skin: "Tsubame", art_fit: { x: 1.29, y: -5.71, z: 1.19 }, head_fit: { x: -0.99, y: 13.6, z: 1.36 } },
+    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "6789", display_skin: "Tsubame", art_fit: { x: 2.19, y: -6.42, z: 1.19 }, head_fit: { x: -0.99, y: 13.6, z: 1.36 } },
     { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "Locked In", display_skin: "Camilo", art_fit: { x: 3.58, y: 4.37, z: 1.1 }, head_fit: { x: 1.78, y: 14.32, z: 1.35 } },
     { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "6789", display_skin: "Mai", art_fit: { x: -3.19, y: -9.81, z: 1.17 }, head_fit: { x: 1.36, y: 10.45, z: 1.3 } },
     { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "No Flame", display_skin: "Sua", art_fit: { x: 9.41, y: 28.45, z: 2.94 }, head_fit: { x: -0.16, y: 9.19, z: 1.3 } },
