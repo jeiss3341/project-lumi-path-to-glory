@@ -246,6 +246,9 @@
   UI.statusChip = s => '<span class="chip-st st-' + UI.esc(s) + '">' + UI.esc({ pending: "Waiting", accepted: "Accepted", declined: "Declined", cancelled: "Cancelled", waitlist: "Waitlist", withdrawn: "Withdrawn", expired: "Expired", done: "Done" }[s] || s) + "</span>";
 
   /* ---------- top bar: Discord login ---------- */
+  // which role someone with several is using right now (kept in this browser)
+  UI.view = () => { try { return localStorage.getItem("ptg-view") || ""; } catch (e) { return ""; } };
+  UI.setView = v => { try { localStorage.setItem("ptg-view", v); } catch (e) { /* storage blocked */ } };
   UI.mountAuth = function (el, me) {
     if (!el) return;
     if (!me) {
@@ -269,15 +272,34 @@
     }
     Promise.all([API.coaches(), API.teams()]).then(([coaches, teams]) => {
       const coach = coaches.find(c => c.profile_id === me.id), staff = me.role === "staff", onTeam = teams.some(t => (t.member_ids || []).includes(me.id));
+      // someone with more than one role picks which one they're using
+      const views = [];
+      if (coach) views.push(["coach", coach.kind === "assistant" ? "Coach" : "Mentor"]);
+      if (onTeam || (!coach && !staff)) views.push(["player", "Player"]);
+      if (staff) views.push(["staff", "Staff"]);
+      let view = UI.view();
+      if (!views.some(v => v[0] === view)) view = staff ? "staff" : views[0][0];
       const items = [];
-      if (coach) items.push(["desk.html#coach", coach.kind === "assistant" ? "Coach calendar" : "Mentor calendar"]);
-      if (coach) items.push(["", "Session settings"]);
-      if (onTeam || (!coach && !staff)) items.push(["desk.html#player", "Player file"]);
-      if (staff) items.push(["desk.html#staff", "Staff"]);
+      if (view === "coach") items.push(["desk.html#coach", coach.kind === "assistant" ? "Coach calendar" : "Mentor calendar"], ["", "Session settings"]);
+      if (view === "player") items.push(["desk.html#player", "Player file"]);
+      if (view === "staff") items.push(["desk.html#staff", "Staff"]);
       if (coach || staff || onTeam) items.push(["index.html?hours", "Office hours"]);   // only for people in the event
+      if (views.length > 1) {   // beside the profile picture in the top bar
+        const sw = document.createElement("div");
+        sw.className = "me-switch";
+        sw.setAttribute("role", "group");
+        sw.setAttribute("aria-label", "View as");
+        sw.innerHTML = views.map(v => '<button type="button" data-view="' + v[0] + '" aria-pressed="' + (v[0] === view) + '">' + v[1] + "</button>").join("");
+        el.insertBefore(sw, menu);
+      }
       links.innerHTML = items.map(i => i[0] ? '<a href="' + i[0] + '">' + UI.esc(i[1]) + "</a>" : '<button type="button" class="js-settings">' + UI.esc(i[1]) + "</button>").join("");
       const settings = UI.$(".js-settings", links);
       if (settings) settings.onclick = () => { setOpen(false); UI.sessionSettings(coach); };
+      el.querySelectorAll("[data-view]").forEach(b => { b.onclick = () => {
+        UI.setView(b.dataset.view);
+        const to = "desk.html#" + b.dataset.view;
+        if (/desk\.html$/.test(location.pathname)) { location.hash = b.dataset.view; location.reload(); } else location.href = to;
+      }; });
     }).catch(() => { links.innerHTML = '<a href="desk.html">Your desk</a>'; });
   };
   UI.login = btn => UI.act(btn, () => API.signIn());

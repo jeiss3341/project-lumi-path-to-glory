@@ -30,8 +30,11 @@
     if (S.myCoach) tabs.push(["coach", S.myCoach.kind === "assistant" ? "Coach calendar" : "Mentor calendar"]);
     if (S.isPlayer) tabs.push(["player", "Player file"]);
     if (S.me.role === "staff") tabs.push(["staff", "Staff"]);
-    const want = location.hash.slice(1);
-    S.tab = tabs.some(t => t[0] === want) ? want : (tabs.some(t => t[0] === S.tab) ? S.tab : tabs[0][0]);
+    // someone with several roles sees one at a time, picked in the profile menu
+    const want = location.hash.slice(1), has = v => tabs.some(t => t[0] === v);
+    S.tab = has(want) ? want : has(UI.view()) ? UI.view() : has("staff") ? "staff" : tabs[0][0];
+    UI.setView(S.tab);
+    tabs.splice(0, tabs.length, tabs.find(t => t[0] === S.tab));
     $("#desk-tabs").innerHTML = tabs.map(t => '<button type="button" role="tab" class="dtab" data-tab="' + t[0] + '" aria-selected="' + (t[0] === S.tab) + '">' + esc(t[1]) + "</button>").join("");
     $("#desk-tabs").onclick = e => { const b = e.target.closest(".dtab"); if (b) { S.tab = b.dataset.tab; history.replaceState(null, "", "#" + S.tab); $$(".dtab").forEach(x => x.setAttribute("aria-selected", String(x === b))); render(); } };
     if (!watching) {

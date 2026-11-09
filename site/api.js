@@ -63,7 +63,13 @@
       return () => sb.removeChannel(ch);
     };
 
-    API.coaches = () => q(sb.from("coaches").select("*").order("kind", { ascending: false }).order("slot"));
+    // a mentor file comes from the database where staff have filled it in, and from content.js everywhere else
+    const withSeed = rows => rows.map(r => {
+      const seed = (window.PTG.coachSeed || []).find(c => c.id === r.id) || {}, out = Object.assign({}, seed, r);
+      for (const k in seed) if (r[k] === "" || r[k] == null || (Array.isArray(r[k]) && !r[k].length)) out[k] = seed[k];
+      return out;
+    });
+    API.coaches = () => q(sb.from("coaches").select("*").order("kind", { ascending: false }).order("slot")).then(withSeed);
     API.updateCoach = (id, patch) => q(sb.from("coaches").update(patch).eq("id", id).select().single());
 
     API.teams = () => q(sb.from("teams").select("*").order("sort").order("created_at"));
