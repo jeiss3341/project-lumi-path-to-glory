@@ -275,7 +275,7 @@
       // someone with more than one role picks which one they're using
       const views = [];
       if (coach) views.push(["coach", coach.kind === "assistant" ? "Coach" : "Mentor"]);
-      if (onTeam || (!coach && !staff)) views.push(["player", "Player"]);
+      if (onTeam || (!coach && !staff)) views.push(["player", "Student"]);
       if (staff) views.push(["staff", "Staff"]);
       let view = UI.view();
       if (!views.some(v => v[0] === view)) view = staff ? "staff" : views[0][0];
@@ -284,15 +284,8 @@
       if (view === "player") items.push(["desk.html#player", "Player file"]);
       if (view === "staff") items.push(["desk.html#staff", "Staff"]);
       if (coach || staff || onTeam) items.push(["index.html?hours", "Office hours"]);   // only for people in the event
-      if (views.length > 1) {   // beside the profile picture in the top bar
-        const sw = document.createElement("div");
-        sw.className = "me-switch";
-        sw.setAttribute("role", "group");
-        sw.setAttribute("aria-label", "View as");
-        sw.innerHTML = views.map(v => '<button type="button" data-view="' + v[0] + '" aria-pressed="' + (v[0] === view) + '">' + v[1] + "</button>").join("");
-        el.insertBefore(sw, menu);
-      }
-      links.innerHTML = items.map(i => i[0] ? '<a href="' + i[0] + '">' + UI.esc(i[1]) + "</a>" : '<button type="button" class="js-settings">' + UI.esc(i[1]) + "</button>").join("");
+      links.innerHTML = items.map(i => i[0] ? '<a href="' + i[0] + '">' + UI.esc(i[1]) + "</a>" : '<button type="button" class="js-settings">' + UI.esc(i[1]) + "</button>").join("") +
+        views.filter(v => v[0] !== view).map((v, i) => '<button type="button" class="me-swap' + (i ? "" : " first") + '" data-view="' + v[0] + '">Switch to ' + v[1] + "</button>").join("");
       const settings = UI.$(".js-settings", links);
       if (settings) settings.onclick = () => { setOpen(false); UI.sessionSettings(coach); };
       el.querySelectorAll("[data-view]").forEach(b => { b.onclick = () => {
@@ -382,9 +375,19 @@
       pop.setAttribute("aria-label", "Phone view");
       pop.innerHTML = '<button type="button" class="pv-close">Close phone view</button><iframe title="This page at phone size" src="' + UI.esc(location.href) + '"></iframe>';
       pop.onclick = e => { if (e.target === pop || e.target.closest(".pv-close")) pop.close(); };
-      pop.onclose = () => pop.remove();
+      // as large as the window allows; the page inside still lays out at true phone width
+      const frame = pop.querySelector("iframe");
+      const fit = () => {
+        const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+        const k = Math.min(1.6, (innerHeight / z - 64) / 844, (innerWidth / z - 32) / 390);
+        frame.style.transform = "scale(" + k + ")";
+        frame.style.margin = "0 " + 390 * (k - 1) / 2 + "px " + 844 * (k - 1) + "px";
+      };
+      addEventListener("resize", fit);
+      pop.onclose = () => { removeEventListener("resize", fit); pop.remove(); };
       document.body.appendChild(pop);
       pop.showModal();
+      fit();
     };
     bar.append(phone, hide);
     // Day / time: preview the site as of another moment (kept while you browse; reloads the page)

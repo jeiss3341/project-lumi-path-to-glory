@@ -269,7 +269,9 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .hist{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-family:var(--f-type);font-size:16px}
 .hist li::before{content:"› ";color:var(--red)}
 .info-foot{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-top:30px;padding-top:18px;border-top:1px dashed #b9b5ac;font:500 12px/1.4 var(--f-mono);color:var(--ink-soft);letter-spacing:.06em}
-.fac-nav{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-top:40px}
+.fac-nav{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:44px}
+.fac-meta{flex-basis:100%}
+.as-bar.fac-bar i{animation-duration:15s}
 .fac-tabs{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
 .tab{appearance:none;border:0;background:var(--kraft-shade);color:#2f2416;font:600 12px/1 var(--f-mono);padding:11px 12px 12px;border-radius:7px 7px 0 0;cursor:pointer;letter-spacing:.06em;transition:transform .15s,background .15s}
 .tab:hover{background:var(--kraft)}
@@ -440,6 +442,7 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .as-bar i{display:block;height:100%;background:var(--red);transform-origin:left;animation:asBar 4s linear forwards}
 .paused .as-bar i{animation-play-state:paused}
 @keyframes asBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.as-tabs{display:none}
 .as-card{cursor:pointer;transition:box-shadow .15s ease;-webkit-user-select:none;user-select:none}   /* quick clicks shouldn't highlight the card */
 .as-card:hover{box-shadow:var(--lift),0 0 0 2px rgba(255,255,255,.55)}
 .as-card.on{box-shadow:var(--lift),0 0 0 2.5px var(--red)}
@@ -524,38 +527,93 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .sem span.d{display:block;font:500 12px/1.6 var(--f-mono);color:var(--ink-soft)}
 
 /* ---------- responsive ---------- */
-/* hero, once there isn't room for the badge beside the folder: the badge and goals move below it at full size,
-   and the lanyard hangs out from behind the folder */
-@media (max-width:1120px){
-  .hero{grid-template-columns:minmax(0,1fr);gap:0;padding-bottom:40px}
-  .folder{z-index:1;padding-bottom:clamp(24px,4vw,40px)}
-  .hero-side{z-index:0;grid-template-columns:auto auto;justify-content:center;align-items:center;gap:clamp(36px,8vw,90px);padding-top:0}
-  .lanyard{margin-left:0;left:44px}   /* the tilt swings the card left; this re-centers it */
-  .strap{margin-top:-30px}
-  .lanyard .badge{width:320px}
-  .ticket{position:relative;left:auto;bottom:auto;width:min(600px,100%);margin-top:26px;transform:rotate(.6deg)}
-  .seal{left:auto;right:clamp(30px,8vw,96px);top:calc(336px + 12vw);width:150px;height:150px}
+/* hero on narrower screens: the same computer layout, scaled as one piece to fit (home.js sets the zoom).
+   Fixed sizes here, because the usual sizes follow the window's width and would shrink twice. */
+@media (min-width:641px) and (max-width:1120px){
+  .hero.wrap{width:1180px;max-width:none;margin:0;padding-left:44px;padding-right:44px}
+  .folder{padding-left:50px;padding-right:50px}
+  .hero-sheet{padding:56px}
+  .title{font-size:103px}
+  .pill-lg{font-size:24.6px}
+  .lede{font-size:21px}
+  .range{font-size:78px;gap:22px;margin-top:56px}
+  .t-date{font-size:51px}
+  .t-cta{font-size:20px}
+  .seal{left:-22px}
 }
-@media (max-width:760px){
-  .hero-side{grid-template-columns:minmax(0,1fr);justify-items:center;gap:44px}
+/* phones only: their own arrangement. Folder and ticket on top, then the badge and goals side by side */
+@media (max-width:640px){
+  .hero{grid-template-columns:minmax(0,1fr);gap:0;padding-top:24px;padding-bottom:0}
+  .folder{z-index:1;margin-top:22px;padding:82px 12px 14px}
+  .folder::before{top:-22px;height:23px;width:46%}
+  .folder-tape{display:none}
+  .file-id{left:14px;top:12px;font-size:10.5px;line-height:1.35}
+  .file-id .pill{padding:2px 10px;border-width:1.5px;margin-bottom:3px}
+  .hero-sheet{padding:30px 20px 24px}
+  .hero-sheet .clip{right:auto;left:60%;top:-30px;width:34px;height:86px}
+  .hero-sheet .tape-bit{left:-10px;top:10px;width:96px;height:26px}
+  .title{font-size:clamp(50px,15.5vw,76px);margin-bottom:14px}
+  .pill-lg{font-size:15px;border-width:2px;padding:4px 16px 5px}
+  .kicker{font-size:11px;margin:18px 0 6px}
+  .lede{font-size:16px;line-height:1.38;max-width:none}
+  .range{font-size:clamp(34px,10.5vw,50px);gap:10px;margin-top:20px}
+  .ticket{position:relative;left:auto;bottom:auto;width:100%;margin-top:-6px;grid-template-columns:52px minmax(0,1fr);transform:rotate(.7deg)}
+  .ticket .stub{padding:10px 6px;gap:8px}
+  .ticket .stub .barcode{height:30px}
+  .ticket .stub span{font-size:10px;letter-spacing:.2em}
+  .t-main{padding:12px 14px 14px;gap:7px}
+  .t-label{font-size:10px;letter-spacing:.14em}
+  .t-date{font-size:clamp(26px,8vw,36px)}
+  .t-cta{font-size:13px;padding:7px 10px;letter-spacing:.02em}
+  .seal{left:auto;right:10px;top:26px;width:88px;height:88px}
+  .hero-side{z-index:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start;justify-items:center;padding-top:0}
+  .lanyard{margin-left:0;zoom:.5;transform:rotate(3deg);transform-origin:top center}
+  .strap{margin-top:-30px}
+  .lanyard .badge{width:300px}
+  .goals{width:100%;margin-top:40px;padding:14px 12px 12px;transform:rotate(2deg)}
+  .goals h3{font-size:12px;letter-spacing:.1em;margin-bottom:6px;padding-bottom:8px}
+  .goals label{grid-template-columns:18px 1fr;gap:8px;font-size:12.5px;letter-spacing:.03em;line-height:1.25;padding-block:6px}
+  .goals input{width:18px;height:18px;margin-top:0}
+  .goals input:checked::after{font-size:13px}
+  .goals small{display:none}
+}
+/* phones only: the rest of the page. Tighter spacing, mentor tabs above the card, a compact assistant card */
+@media (max-width:640px){
+  .sec{padding-top:46px}
+  .sec-head{margin-bottom:18px;gap:8px 12px}
+  .sec-head h2{font-size:32px}
+  .sec-head p{font-size:15px;margin-top:0}
+  #faculty{display:flex;flex-direction:column}
+  #faculty>.sec-head{order:1}
+  #faculty>.fac-nav{order:2;flex-wrap:nowrap;margin:0 0 18px}
+  #faculty>.fac{order:3;gap:18px}
+  #faculty>.assist{order:4;margin-top:44px}
+  .fac-nav .arrows,.fac-meta{display:none}
+  .fac-tabs,.as-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;flex:1;min-width:0}
+  .as-tabs{order:-2}
+  .as-left{display:none}
+  .fac-tabs .tab,.fac-tabs .tab[aria-selected="true"],.as-tabs .tab,.as-tabs .tab[aria-selected="true"]{font-size:10px;letter-spacing:-.03em;padding:8px 2px;border-radius:5px;margin:0;transform:none;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fac-badge .badge{zoom:.8}
+  .assist-head{margin-bottom:16px}
+  .assist-head h3{font-size:24px}
+  .assist-head p{font-size:15px}
+  .as-stage{gap:18px}
+  .as-tall{grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:start}
+  .as-badge{width:300px;zoom:.5;align-self:start}
+  .as-side{gap:10px;align-self:stretch}
+  .as-facts{font-size:12px}
+  .as-facts dt{padding-top:6px;font-size:9.5px}
+  .as-facts dd{padding:2px 0 6px}
+  .as-go{font-size:10.5px;letter-spacing:.06em;padding:10px;align-self:stretch;text-align:center}
 }
 @media (max-width:980px){
   .brief,.sched,.fac,.notes,.notice{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:760px){.slots{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:640px){
-  .folder-tape{display:none}
-  .folder{padding-top:96px}
-  .hero-sheet .clip{right:auto;left:54%}
-  .hero-sheet .tape-bit{left:-12px}
   .day{min-height:66px;padding:6px 4px}
   .chip{font-size:8.5px;padding:3px 3px;letter-spacing:.02em}
   .dows span{font-size:9px;letter-spacing:.06em;padding-inline:3px}
   .cards,.links,.info-grid{grid-template-columns:minmax(0,1fr)}
-  .ticket{grid-template-columns:62px minmax(0,1fr)}
-  .t-cta{font-size:12.5px;letter-spacing:.01em;padding:9px 12px}
-  .seal{width:92px;height:92px;top:44px;right:10px}
-  .lanyard{transform:rotate(3deg);left:24px}
-  .lanyard .badge{width:min(300px,80vw)}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

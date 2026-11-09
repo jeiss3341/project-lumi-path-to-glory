@@ -16,6 +16,13 @@
   }
   renderStatic();
   boot();
+  // narrower than the computer layout: shrink the whole top section to fit, keeping its arrangement
+  function scaleHero() {
+    const w = document.documentElement.clientWidth, hero = $(".hero");
+    hero.style.zoom = innerWidth <= 1120 && innerWidth > 640 ? Math.min(1, w / 1180) : "";   // phones have their own layout
+  }
+  scaleHero();
+  addEventListener("resize", scaleHero);
   // the ticket stops just above the bottom of the window, on whatever screen this is (above the demo bar if it's showing)
   function fitHero() {
     const sheet = $(".hero-sheet"), ticket = $(".ticket");
@@ -219,6 +226,31 @@
     $("#hero-badge").innerHTML = m1 ? UI.badge(m1) : "";
   }
 
+  /* Faculty moves to the next mentor every 15 seconds, on computers and tablets only (a phone's file is long enough
+     that it would change while someone reads it). Any hover, focus or manual change starts the 15 seconds over,
+     and it holds while the file is flipped or the section isn't mostly on screen. */
+  const FAC_EVERY = 15000;
+  const FAC = { timer: 0, hover: false, keys: false, seen: false, wired: false, next: null };
+  function facSync() {
+    clearTimeout(FAC.timer);
+    const run = FAC.next && FAC.seen && !FAC.hover && !FAC.keys && !document.hidden && !AS_CALM && innerWidth > 640 && !$("#fac-info").classList.contains("flipped");
+    $(".fac-nav").classList.toggle("paused", !run);
+    $("#fac-bar").innerHTML = "<i></i>";   // the bar starts over with the timer, and waits while paused
+    if (run) FAC.timer = setTimeout(FAC.next, FAC_EVERY);
+  }
+  function wireFacultySlideshow() {
+    if (FAC.wired) return;
+    FAC.wired = true;
+    [$("#fac"), $(".fac-nav")].forEach(el => {
+      el.addEventListener("pointerenter", e => { if (e.pointerType !== "touch") { FAC.hover = true; facSync(); } });
+      el.addEventListener("pointerleave", () => { FAC.hover = false; facSync(); });
+      el.addEventListener("focusin", e => { FAC.keys = e.target.matches(":focus-visible"); facSync(); });
+      el.addEventListener("focusout", () => { FAC.keys = false; facSync(); });
+    });
+    document.addEventListener("visibilitychange", facSync);
+    new IntersectionObserver(es => { FAC.seen = es[es.length - 1].isIntersecting; facSync(); }, { threshold: .5 }).observe($("#fac"));
+  }
+
   function renderFaculty() {
     const ms = mentors();
     if (!ms.length) return;
@@ -297,10 +329,14 @@
         fitFile();
         const target = $(on ? ".face.back .js-flip" : ".face.front .js-flip", box);
         if (e.target.closest(".js-flip") && target) target.focus({ preventScroll: true });
+        facSync();
       };
       if (animOK) ["#fac-badge", "#fac-info"].forEach(s => { const el = $(s); el.classList.remove("swap"); void el.offsetWidth; el.classList.add("swap"); });
       $$("#fac-tabs .tab").forEach((t, j) => { t.setAttribute("aria-selected", String(j === fi)); t.tabIndex = j === fi ? 0 : -1; });
+      const onTab = document.getElementById("ft-" + fi);
+      onTab.parentNode.scrollLeft = onTab.offsetLeft - 16;   // phones: the tabs scroll sideways, so keep this one in view
       if (focus) document.getElementById("ft-" + fi).focus();
+      facSync();
     }
     $("#fac-tabs").onclick = e => { const t = e.target.closest(".tab"); if (t) show(+t.dataset.i); };
     $("#fac-tabs").onkeydown = e => {
@@ -309,6 +345,9 @@
     };
     $("#prev").onclick = () => show(fi - 1);
     $("#next").onclick = () => show(fi + 1);
+    FAC.next = () => show(fi + 1);
+    $("#fac-count").textContent = ms.length + " mentors";
+    wireFacultySlideshow();
     S.showMentor = id => { const i = ms.findIndex(m => m.id === id); if (i >= 0) show(i); };
     show(Math.min(fi, ms.length - 1));
     animOK = true;
@@ -363,6 +402,7 @@
     asOpen();
   }
   function asMark() {
+    $$("#assist .as-pick").forEach(t => t.setAttribute("aria-selected", String(t.dataset.a === AS.main.id)));
     $$("#assist .as-card").forEach(card => {
       const hit = $(".as-hit", card), on = hit.dataset.a === AS.main.id;
       card.classList.toggle("on", on);
@@ -415,7 +455,9 @@
     AS.main = AS.list.find(a => AS.main && a.id === AS.main.id) || AS.list[0] || null;
     if (!n) { box.innerHTML = ""; return; }
     AS.list.forEach(a => { if (C.artHead && C.artHead[a.id]) new Image().src = C.artHead[a.id]; });   // ready before a card slides in
-    box.innerHTML = '<div class="as-left"><div class="as-view"><div class="as-track">' +
+    box.innerHTML = '<div class="as-tabs" role="group" aria-label="Assistant coaches">' +   // phones: every coach, one tap away
+      AS.list.map(a => '<button type="button" class="tab as-pick" data-a="' + esc(a.id) + '" aria-selected="' + (a === AS.main) + '">' + pad(a.slot) + " " + esc(UI.bare(UI.coachName(a))) + "</button>").join("") + "</div>" +
+      '<div class="as-left"><div class="as-view"><div class="as-track">' +
       Array.from({ length: Math.min(4, n) }, (_, i) => AS.list[(AS.head + i) % n]).map(a => assistCard(a, a === AS.main)).join("") + "</div></div>" +
       (asMoves() ? '<div class="as-meta"><span>' + n + ' coaches</span><div class="as-bar"><i></i></div><div class="arrows"><button type="button" class="arrow as-prev" aria-label="Previous coaches">←</button><button type="button" class="arrow as-next" aria-label="Next coaches">→</button></div></div>' : "") +
       '</div><div class="as-main" aria-live="polite"></div>';
@@ -423,7 +465,7 @@
     if (!AS.wired) {
       AS.wired = true;
       box.addEventListener("click", e => {
-        const hit = e.target.closest(".as-hit");
+        const hit = e.target.closest(".as-hit, .as-pick");
         if (hit) { AS.main = AS.list.find(a => a.id === hit.dataset.a); asPaintMain(true); asMark(); asResetTimer(); return; }
         const arrow = e.target.closest(".as-prev, .as-next");
         if (arrow) { asStep(arrow.classList.contains("as-prev")); asResetTimer(); }

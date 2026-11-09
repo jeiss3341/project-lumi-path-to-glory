@@ -5,7 +5,7 @@
 
    The publishable key is meant to be public: the access rules in supabase/schema.sql protect the data. */
 (function () {
-  const live = location.hostname === "pathtoglory.projectlumi.space";
+  const live = ["projectlumi.space", "pathtoglory.projectlumi.space"].includes(location.hostname);
   window.PTG_CONFIG = {
     supabaseUrl: live ? "https://yegxowpdrwvbeqwxagse.supabase.co" : "",
     supabaseAnonKey: live ? "sb_publishable_otvffR5I1NaiyT95Yh9oJw_KIlxFH0x" : ""
