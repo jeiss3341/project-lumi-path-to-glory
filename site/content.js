@@ -17,16 +17,17 @@ window.PTG = {
   steps: [
     { t: "Meet your Mentor.", d: "Day 1, **Mon Nov 9**: every team meets the mentor coaching them for the two weeks." },
     { t: "Book Sessions...", d: "Mentors post their availability.\nPlayers book 30–120 minute team or individual reviews, like booking an office hour!" },
-    { t: "Play and Compete!", d: "Designated scrim days each week, **the Mock Checkpoint Series on Sunday Nov 15,** then **the Final Checkpoint Series on Sunday Nov 22.**" }
+    { t: "Play and Compete!", d: "Designated scrim days each week, **the Mock Checkpoint Series on Saturday Nov 14,** then **the Final Checkpoint Series on Sunday Nov 22.**" }
   ],
 
   schedule: [
     { date: "2026-11-09", kind: "kickoff", short: "Day 1", title: "Event begins", note: "Teams meet their mentors and session requests open." },
-    { date: "2026-11-11", kind: "scrim", short: "Scrim", title: "Scrim Day 1", note: "Weekday scrim block. Exact weekday to be confirmed.", tentative: true },
-    { date: "2026-11-14", kind: "scrim", short: "Scrim", title: "Scrim Day 2", note: "Saturday scrim block. Mentors watch live or review after.", tentative: true },
-    { date: "2026-11-15", kind: "mock", short: "Mock", title: "Mock Checkpoint Series", note: "A full practice run of the checkpoint format. Checkpoint activates after 4 games, one fewer than the Final." },
-    { date: "2026-11-18", kind: "scrim", short: "Prio", title: "Prio Scrim Day 1", note: "Priority scrim block. Exact weekday to be confirmed.", tentative: true },
-    { date: "2026-11-21", kind: "scrim", short: "Prio", title: "Prio Scrim Day 2", note: "Saturday priority scrims, the last practice before the Final Checkpoint Series.", tentative: true },
+    { date: "2026-11-11", kind: "scrim", short: "Scrim", title: "Scrim Day 1", note: "Scrim block. Mentors watch live or review after." },
+    { date: "2026-11-13", kind: "scrim", short: "Scrim", title: "Scrim Day 2", note: "Scrim block, the last practice before the Mock Checkpoint Series." },
+    { date: "2026-11-14", kind: "mock", short: "Mock", title: "Mock Checkpoint Series", note: "A full practice run of the checkpoint format. Checkpoint activates after 4 games, one fewer than the Final." },
+    { date: "2026-11-17", kind: "scrim", short: "Prio", title: "Prio Scrim Day 1", note: "Priority scrim block." },
+    { date: "2026-11-19", kind: "scrim", short: "Prio", title: "Prio Scrim Day 2", note: "Priority scrim block." },
+    { date: "2026-11-21", kind: "scrim", short: "Prio", title: "Prio Scrim Day 3", note: "Saturday priority scrims, the last practice before the Final Checkpoint Series." },
     { date: "2026-11-22", kind: "final", short: "Final", title: "Final Checkpoint Series", note: "The checkpoint that counts. Closes out the event." }
   ],
 
@@ -55,19 +56,20 @@ window.PTG = {
   seminars: {
     where: "Discord Stage",
     format: "A coach covers one topic for about an hour, then opens the floor for Q&A. Join the Stage and raise your hand to ask.",
+    // a real seminar: { title: "Drafting 101", host: "Kazcross", when: "Thu, Nov 12 · 8 PM ET" }
+    // a plain note: { label: "...", title: "...", note: "..." } (label replaces "Discord Stage" at the top)
     list: [
-      { title: "[Seminar topic]", host: "[Coach]", when: "[Date & time TBA]" },
-      { title: "[Seminar topic]", host: "[Coach]", when: "[Date & time TBA]" },
-      { title: "[Seminar topic]", host: "[Coach]", when: "[Date & time TBA]" }
+      { label: "Coming soon", title: "First seminar on the way", note: "Topics, hosts and dates go up here and in the Discord as soon as they're set." },
+      { label: "Suggestion box", title: "What should we cover?", note: "Drafting, rotations, a character, macro… Tell your mentor or post it in the Discord." }
     ]
   },
 
   // TODO: paste real Discord invite links.
   links: [
-    { name: "Project Lumi", tag: "Main Hub", d: "Announcements, schedules and team channels.", url: "#" },
-    { name: "Scrim Cord", tag: "Practice", d: "Scrim scheduling and lobbies.", url: "#" },
-    { name: "Lumia Rumble", tag: "T2", d: "Tier 2 tournament circuit.", url: "#" },
-    { name: "Eternal Return Challengers Hub", tag: "T1", d: "Tier 1 competitive hub.", url: "#" }
+    { name: "Project Lumi", tag: "Main Hub", d: "Announcements, schedules and team channels.", url: "https://discord.gg/zWs5GHFPT5" },
+    { name: "Scrim Cord", tag: "Practice", d: "Scrim scheduling and lobbies.", url: "https://discord.gg/tbzPvX3Nj3" },
+    { name: "Lumia Rumble", tag: "T2", d: "Tier 2 tournament circuit.", url: "https://discord.gg/Xk7dZS3YrV" },
+    { name: "Eternal Return Challengers Hub", tag: "T1", d: "Tier 1 competitive hub.", url: "https://discord.gg/KP3JqAHK4v" }
   ],
 
   // Coach art: drop an image in site/art/ and map the coach slot to it here.
@@ -123,6 +125,8 @@ window.PTG = {
     Jackie: "art/chars/jackie.png",
     Henry: "art/chars/henry.png",
     Camilo: "art/chars/camilo.webp",
+    Yumin: "art/chars/yumin.png",
+    Craver: "art/chars/craver.png",
     Alex: "art/chars/alex.png",
     Fiora: "art/chars/fiora.png",
     Coraline: "art/chars/coraline.png",
@@ -191,7 +195,7 @@ window.PTG = {
       playstyle: "Playstyle is a myth u either play correct or u play wrong",
       pool: ["Jan", "Hisui"],
       doodles: ["rightwrong", "housefire", "bird"],
-      history: ["Plat 3 in apex legend", "A few Final Lobbies in ERCS/ERCC (no wins yet D:)"],
+      history: ["Plat 3 in apex legend"],
       about: "Me play chud chungus bruiser tank",
       coaching: "Am most serious erb player on the server",
       motto: "mpreg squortle",
@@ -200,11 +204,11 @@ window.PTG = {
       hobbies: ["playing eternal return", "playing angry birds 2", "rage baiting squortle"],
       fav_teams: ["uberman · hresvelg"] },
     { id: "m5", kind: "mentor", slot: 5, badge_id: "INS-0475-LA", name: "Isterio", team_name: "Blast", display_skin: "Luke",
-      playstyle: "I play melees and I run at the enemy carries in a straight line.",
+      playstyle: "I play melees. Specifically I have been a Luke \"one-trick\" since Solos (EA S6) but recently I have branched out to play other melees.",
       pool: ["Luke", "Jackie"],
       doodles: ["arrow", "nocoffee", "shuttle"],
-      history: ["Season 8 Rank 1 NA (Rank 3 Global)"],
-      about: "I play melees. Specifically I have been a Luke \"one-trick\" since Solos (EA S6) but recently I have branched out to play other melees.",
+      history: ["A few Final Lobbies in ERCS/ERCC (no wins yet D:)", "Season 8 Rank 1 NA (Rank 3 Global)"],
+      about: "I play melees and I run at the enemy carries in a straight line.",
       coaching: "I am a chill guy but I WILL laugh at you if you do the funny.",
       motto: "Don't blame your teammates, always blame the game",
       games: ["Deadlock", "League"],
@@ -212,11 +216,11 @@ window.PTG = {
       hobbies: ["Reading bad Chinese light novels", "larping in ER streams", "playing badminton"],
       fav_teams: ["Pointy End · SeolDaBi"] },
     { id: "m6", kind: "mentor", slot: 6, badge_id: "INS-0476-TH", name: "Kazcross", team_name: "The Casting Desk", display_skin: "Henry",
-      playstyle: "I'm usually one of the primary commers and playmakers.",
-      pool: ["Henry", "Camilo"],
+      playstyle: "Primary/secondary IGL (in game leader), tend to play flex but my most proficient chars are often mages",
+      pool: ["Henry", "Yumin", "Craver"],
       doodles: ["mic", "btier", "wave"],
       history: ["Caster and analyst", "peaked top 10 NA", "top 1 Henry NA", "have coached various ERCS teams on draft"],
-      about: "Mages primarily",
+      about: "Official ER English caster. I commentate and watch NA, KR and APAC. Big fan of analyzing the game, I also do most Pro-fessors now so I've learned most new characters. I love teaching the game and have participated in previous coaching events! I also discuss the game with most top players to theorycraft compositions and character ideas.",
       coaching: "I'm very detail oriented and holistic with my approach to learning, I think a lot of learning is done by cultivating an environment to learn. I emphasize things you're doing out of game to help you in game",
       motto: "Your favorite player's favorite player's favorite caster",
       games: ["Deadlock", "CS", "Valorant"],
@@ -224,11 +228,11 @@ window.PTG = {
       hobbies: ["Outside of gaming I'm a social advocate"],
       fav_teams: ["INCHEON WAVE", "Cadmus is my fav player tho"] },
     { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "Magepower", team_name: "6789", display_skin: "Alex", art_fit: { x: 5.95, y: -3.02, z: 1.65 },
-      playstyle: "Killing excessive wildlife. Shotcaller, engage, frontline.",
+      playstyle: "Flex. Alex. Played since EA s1.",
       pool: ["Alex", "Fiora"],
       pool_note: "(idk markus, craver, anything op on patch)",
       history: ["ERCS winner."],
-      about: "Flex. Alex. Played since EA s1.",
+      about: "Killing excessive wildlife. Shotcaller, engage, frontline.",
       coaching: "I obsess over the small things.",
       motto: "Those held in highest esteem by most of the people are neither the great artists nor the great scientists, neither the great statesmen nor the great sports figures, but those who master a hard lot with their heads held high.",
       games: ["Maphul- suu - toriiii.", "Pretty much most things but shooters."],
@@ -248,17 +252,17 @@ window.PTG = {
       fun_fact: "I'm a foodie",
       hobbies: ["I like traveling"],
       fav_teams: ["NRG · Rioori"] },
-    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", no_team: true, display_skin: "Blair", art_fit: { x: -7.62, y: -1.93, z: 1.18 }, head_fit: { x: -2.05, y: 25.13, z: 1.55 },
+    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", no_team: true, display_skin: "Blair", focus: "Bruisers", pool: ["Blair", "Jackie", "Luke"], art_fit: { x: -7.62, y: -1.93, z: 1.18 }, head_fit: { x: -2.05, y: 25.13, z: 1.55 },
       sticker: "art/stickers/baeksu.webp", sticker_at: { top: "26%", tilt: -16 } }, // die-cut sticker that follows the drawing's outline
-    { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "About 30", display_skin: "Coraline", art_fit: { x: 8.65, y: 0.87, z: 1.18 },
+    { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "About 30", display_skin: "Coraline", focus: "Mages", pool: ["Coraline", "Eva"], art_fit: { x: 8.65, y: 0.87, z: 1.18 },
       sticker: "art/stickers/jalja.webp" }, // small chibi sticker on the card's empty right side
-    { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "Trigger", display_skin: "Rozzi", art_fit: { x: -6.19, y: -9.67, z: 1.12 }, head_fit: { x: 1.37, y: 11.96, z: 1.33 } },
-    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "6789", display_skin: "Tsubame", art_fit: { x: 2.19, y: -6.42, z: 1.19 }, head_fit: { x: -0.99, y: 13.6, z: 1.36 } },
-    { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "Locked In", display_skin: "Camilo", art_fit: { x: 3.58, y: 4.37, z: 1.1 }, head_fit: { x: 1.78, y: 14.32, z: 1.35 } },
-    { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "6789", display_skin: "Mai", art_fit: { x: -3.19, y: -9.81, z: 1.17 }, head_fit: { x: 1.36, y: 10.45, z: 1.3 } },
-    { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "No Flame", display_skin: "Sua", art_fit: { x: 9.41, y: 28.45, z: 2.94 }, head_fit: { x: -0.16, y: 9.19, z: 1.3 } },
-    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", no_team: true, display_skin: "Yumin", art_fit: { x: -6.62, y: -9.33, z: 1.15 }, head_fit: { x: -1.05, y: 9.86, z: 1.28 } },
-    { id: "a9", kind: "assistant", slot: 9, badge_id: "AST-0519-RC", name: "Chibiarc", team_name: "Uberman", display_skin: "Hyunwoo", art_fit: { x: 1.29, y: 3, z: 1.07 }, head_fit: { x: -1.39, y: 10.68, z: 1.31 },
+    { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "Trigger", display_skin: "Rozzi", focus: "ADC", pool: ["Rozzi", "Tsubame", "Rio", "Katja"], art_fit: { x: -6.19, y: -9.67, z: 1.12 }, head_fit: { x: 1.37, y: 11.96, z: 1.33 } },
+    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "6789", display_skin: "Tsubame", focus: "ADC", pool: ["Rio", "Tsubame", "Rozzi", "Katja"], art_fit: { x: 2.19, y: -6.42, z: 1.19 }, head_fit: { x: -0.99, y: 13.6, z: 1.36 } },
+    { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "Locked In", display_skin: "Camilo", focus: "Frontline / Bruisers", pool: ["Camilo", "Laura", "Hisui", "Markus"], art_fit: { x: 3.58, y: 4.37, z: 1.1 }, head_fit: { x: 1.78, y: 14.32, z: 1.35 } },
+    { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "6789", display_skin: "Mai", focus: "Flex", pool: ["Just ask and I'll give you good advice for every single one"], art_fit: { x: -3.19, y: -9.81, z: 1.17 }, head_fit: { x: 1.36, y: 10.45, z: 1.3 } },
+    { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "No Flame", display_skin: "Sua", focus: "Flex", pool: ["Sua", "Lucia"], art_fit: { x: 9.41, y: 28.45, z: 2.94 }, head_fit: { x: -0.16, y: 9.19, z: 1.3 } },
+    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", no_team: true, display_skin: "Yumin", focus: "Mages / Support", pool: ["Yumin", "Silvia"], art_fit: { x: -6.62, y: -9.33, z: 1.15 }, head_fit: { x: -1.05, y: 9.86, z: 1.28 } },
+    { id: "a9", kind: "assistant", slot: 9, badge_id: "AST-0519-RC", name: "Chibiarc", team_name: "Uberman", display_skin: "Hyunwoo", focus: "Bruisers / Frontline", art_fit: { x: 1.29, y: 3, z: 1.07 }, head_fit: { x: -1.39, y: 10.68, z: 1.31 },
       playstyle: "Melee chungus.\n\nLowkey tho as long as its not triple ranged should be chill.",
       pool: ["Hyunwoo", "Shoichi"],
       pool_note: "(lol)",

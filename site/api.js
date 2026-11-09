@@ -118,7 +118,7 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v16";   // bump when the sample data changes, so browsers drop their old copy
+    const KEY = "ptg-demo-v32";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
@@ -179,22 +179,15 @@
       const teams = [];
       const team = (id, name, coach_id, players, member_ids, info, mock, final) =>
         teams.push({ id, name, coach_id, players: players.map(([ign, discord]) => ({ ign, discord })), member_ids, sort: teams.length + 1, info, results: { mock, final } });
-      team("t-neochair", "NeoChair", "m1", [["Irem-chan", "irem-chan"], ["Jeiss", "jeiss"], ["Lumi-chan", "lumi-chan"], ["Fwitchu", "fwitchu"]], ["u-jeiss", "u-irem", "u-lumi"],
-        { "Captain": "Irem-chan", "Region": "NA", "Rank range": "Gold – Platinum", "Main roles": "Tank · Bruiser · Support · Mage" }, 2, 1);
-      team("t-hyperloop", "Hyperloop Express", "m2", [["Mochi", "mochi.er"], ["Kairo", "kairo"], ["Tofu", "tofu"], ["Rennie", "rennie"]], ["u-mochi", "u-kairo", "u-tofu"],
-        { "Captain": "Mochi", "Region": "NA", "Rank range": "Silver – Gold", "Main roles": "Fighter · Assassin · Support" }, 3, 4);
-      team("t-wickline", "Wickline Watch", "m3", [["Pixelle", "pixelle"], ["Juno", "juno"], ["Vexa", "vexa"], ["Odette", "odette"]], ["u-pixelle", "u-juno"],
-        { "Captain": "Pixelle", "Region": "NA", "Rank range": "Platinum – Diamond", "Main roles": "Melee · Ranged carry · Tank" }, 1, 2);
-      team("t-meteor", "Meteor Shower", "m4", [["Bunbun", "bunbun"], ["Saber", "saber"], ["Kiwi", "kiwi"]], ["u-bunbun", "u-saber"],
-        { "Captain": "Saber", "Region": "NA", "Rank range": "Gold", "Main roles": "Bruiser · Mage · Support" }, 7, 8);
-      team("t-lunch", "Lumia Lunch Club", "m5", [["Noodle", "noodle"], ["Matcha", "matcha"], ["Boba", "boba"], ["Dumpling", "dumpling"]], ["u-noodle", "u-matcha", "u-boba"],
-        { "Captain": "Noodle", "Region": "NA", "Rank range": "Silver – Gold", "Main roles": "Tank · Mage · Support" }, 5, 6);
-      team("t-air", "Air Supply", "m6", [["Zephyr", "zephyr"], ["Gale", "gale"], ["Nimbus", "nimbus"], ["Cirrus", "cirrus"]], ["u-zephyr", "u-gale"],
-        { "Captain": "Zephyr", "Region": "NA", "Rank range": "Gold – Platinum", "Main roles": "Ranged carry · Support · Bruiser" }, 6, 5);
-      team("t-safezone", "Last Safe Zone", "m7", [["Rook", "rook"], ["Ember", "ember"], ["Ash", "ash"], ["Flint", "flint"], ["Cinder", "cinder"]], ["u-rook", "u-ember"],
-        { "Captain": "Rook", "Region": "NA", "Rank range": "Platinum", "Main roles": "Assassin · Tank · Mage", "Sub": "Cinder" }, 4, 3);
-      team("t-kiosk", "Kiosk Campers", "m8", [["Sprout", "sprout"], ["Pebble", "pebble"], ["Moss", "moss"], ["Fern", "fern"]], [],
-        {}, 8, 7);   // no linked accounts and no profile info yet: tests the empty states
+      // the 8 real teams (Path to Glory sheet); mentors get assigned later, so coach_id is null and the roster shows "To be assigned"
+      team("t-funhavers", "Funhavers", null, [["Khaosfire", ""], ["AkaShado", ""], ["BILL123", ""], ["Yiunne", ""]], [], {});
+      team("t-200adr", "200adr", null, [["Reioli", ""], ["Rightnwise", ""], ["GeorgeGargett", ""], ["Yuituri", ""]], [], {});
+      team("t-labubu", "Labubu Manifesto", null, [["Asterlac", ""], ["Magecraft", ""], ["Lolking", ""], ["Neen", ""]], [], {});
+      team("t-ojama", "Ojama Trio", null, [["Chabs", ""], ["April", ""], ["Matthew1rox", ""], ["DestelloJoker", ""]], [], {});
+      team("t-pengu", "Pengu Industries", null, [["jeiss", ""], ["VioletSkyfire", ""], ["Marreep", ""], ["Vinnyt", ""]], ["u-jeiss"], {});
+      team("t-sleeping", "Sleeping Forest", null, [["Ravenbergier", ""], ["Tides", ""], ["Speex", ""], ["Redflake", ""]], [], {});
+      team("t-mango", "Mango Cats", null, [["Ardentq", ""], ["Keeperbeast", ""], ["Given", ""], ["Ariaza", ""]], [], {});
+      team("t-sleepdeprived", "sleepdeprived", null, [["sleepun", ""], ["Maskedsamura1", ""], ["Ignis", ""], ["Silverace13", ""]], [], {});
 
       // ---- session requests ----
       const requests = [];

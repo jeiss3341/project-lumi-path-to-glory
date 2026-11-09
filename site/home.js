@@ -104,14 +104,14 @@
     catnap: { at: "coach", svg: dzh(66, 48, '<path d="M8 42 C4 28 8 20 8 9 L18 16 C22 14 27 14 31 16 L41 9 C41 20 45 28 41 42 C32 47 17 47 8 42 Z"/><path d="M14 29 q4 3 8 0 M27 29 q4 3 8 0"/><path d="M22 36 q2.5 3 5 0"/><path d="M50 15 h8 l-8 10 h8 M58 3 h6 l-6 7 h6"/>') },
     // Hresvelg
     rightwrong: { at: "play", svg: dzh(50, 32, '<path d="M3 18 l7 9 l14 -22"/><path d="M31 8 l15 18 M46 8 l-15 18"/>') },
-    housefire: { at: "fun", svg: dzh(52, 48, '<path d="M8 46 V24 L26 10 L44 24 V46 Z"/><path d="M21 46 V34 h10 v12"/><path d="M31 14 C29 8 34 7 34 2 C40 7 43 11 41 20"/><path d="M12 21 C10 14 16 12 15 6 C21 10 24 12 22 16"/>') },
-    bird: { at: "games", svg: dzh(48, 46, '<circle cx="24" cy="29" r="15"/><path d="M22 14 L18 5 M25 14 L27 3"/><path d="M13 23 L22 27 M35 23 L26 27"/><circle class="dot" cx="18.5" cy="29" r="1.7"/><circle class="dot" cx="29.5" cy="29" r="1.7"/><path d="M20 33 L24 40 L29 33 Z"/>') },
+    housefire: { at: "fun", svg: dzh(52, 48, '<path d="M8 46 V24 L26 10 L44 24 V46 Z"/><path d="M21 46 V34 h10 v12"/><path d="M31 14 C29 8 34 7 34 2 C40 7 43 11 41 20"/><path d="M12 21 C10 14 16 12 15 6 C21 10 24 12 22 16"/>').replace('dz-h"', 'dz-h dz-up-sm"') },
+    bird: { at: "games", svg: dzh(48, 46, '<circle cx="24" cy="29" r="15"/><path d="M22 14 L18 5 M25 14 L27 3"/><path d="M13 23 L22 27 M35 23 L26 27"/><circle class="dot" cx="18.5" cy="29" r="1.7"/><circle class="dot" cx="29.5" cy="29" r="1.7"/><path d="M20 33 L24 40 L29 33 Z"/>').replace('dz-h"', 'dz-h dz-up-sm"') },
     // Isterio
     arrow: { at: "play", svg: dzh(62, 34, '<path d="M2 17 H56"/><path d="M45 6 L58 17 L45 28"/><path d="M6 8 h12 M4 26 h10"/>') },
     nocoffee: { at: "fun", svg: dzh(48, 48, '<path d="M10 16 H34 V34 C34 40 30 43 26 43 H18 C14 43 10 40 10 34 Z"/><path d="M34 20 h5 c5 0 5 12 0 12 h-5"/><path d="M17 11 q-3 -3 0 -7 M26 11 q-3 -3 0 -7"/><path d="M4 5 L45 46"/>') },
     shuttle: { at: "hobbies", svg: dzh(48, 48, '<circle cx="13" cy="36" r="7.5"/><path d="M8 30 L22 3 C32 3 42 12 45 24 L19 40"/><path d="M13.5 28.5 L32 6 M17 31 L39 13 M20 34 L43 19"/>') },
     // Kazcross
-    mic: { at: "play", svg: dzh(48, 48, '<rect x="17" y="3" width="14" height="25" rx="7"/><path d="M10 21 C10 36 38 36 38 21"/><path d="M24 33 V43 M15 45 H33"/><path d="M18 11 h12 M18 16 h12 M18 21 h12"/>') },
+    mic: { at: "about", svg: dzh(48, 48, '<rect x="17" y="3" width="14" height="25" rx="7"/><path d="M10 21 C10 36 38 36 38 21"/><path d="M24 33 V43 M15 45 H33"/><path d="M18 11 h12 M18 16 h12 M18 21 h12"/>').replace('dz-h"', 'dz-h dz-up"') },
     btier: { at: "fun", svg: dzh(46, 46, '<rect x="4" y="4" width="38" height="38" rx="3"/><path d="M16 12 V34 M16 12 h9 c8 0 8 11 0 11 h-9 M16 23 h10 c9 0 9 11 0 11 h-10"/>') },
     wave: { at: "teams", svg: dzh(60, 36, '<path d="M2 28 C7 8 24 2 31 14 C25 11 20 17 26 23 C33 29 44 24 49 18 C50 24 54 27 58 28"/><path d="M2 34 C14 30 22 36 32 33 S50 31 58 34"/>') },
     // Magepower (plus the maple leaf and mushroom)
@@ -180,7 +180,9 @@
     $("#res").innerHTML = C.resources.map(r => '<div class="index"><h3>' + esc(r.t) + "</h3><p>" + esc(r.d) + "</p></div>").join("");
     $("#expect").innerHTML = C.expectations.map(x => "<li>" + esc(x) + "</li>").join("");
     $("#sem-format").textContent = C.seminars.format;
-    $("#sem").innerHTML = C.seminars.list.map(s => '<div class="sem"><span class="w">' + esc(C.seminars.where) + "</span><b>" + UI.ph("", s.title) + '</b><span class="d">Host: ' + UI.ph("", s.host) + "<br>" + UI.ph("", s.when) + "</span></div>").join("");
+    $("#sem").innerHTML = C.seminars.list.map(s => '<div class="sem"><span class="w">' + esc(s.label || C.seminars.where) + "</span>" +
+      (s.note ? "<b>" + esc(s.title) + '</b><span class="d n">' + esc(s.note) + "</span>"   // a plain note, e.g. "coming soon"
+        : "<b>" + UI.ph("", s.title) + '</b><span class="d">Host: ' + UI.ph("", s.host) + "<br>" + UI.ph("", s.when) + "</span>") + "</div>").join("");
     $("#links").innerHTML = C.links.map(l =>
       '<a class="link" href="' + esc(l.url) + '" target="_blank" rel="noopener"><span class="tier"><span>' + esc(l.tag) + '</span></span><div class="lb"><h3>' + esc(l.name) + "</h3><p>" + esc(l.d) + '</p><span class="go">Join on Discord ↗</span></div></a>').join("");
   }
@@ -201,7 +203,8 @@
         t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
       };
-      return "--sx:" + Math.round(2 + r() * 38) + "%;--sy:" + Math.round(38 + r() * 10) + "%;--sr:" + (ymd === "2026-11-18" ? -4 : Math.round(-14 + r() * 28)) + "deg";   // Nov 18 landed perfectly straight, so it gets a slight lean by hand
+      const nudgeX = { "2026-11-19": 7 }[ymd] || 0;   // hand-placed tweaks, in % of the day's width (Nov 19 sat a little too far left)
+      return "--sx:" + (Math.round(2 + r() * 38) + nudgeX) + "%;--sy:" + Math.round(38 + r() * 10) + "%;--sr:" + (ymd === "2026-11-18" ? -4 : Math.round(-14 + r() * 28)) + "deg";   // Nov 18 landed perfectly straight, so it gets a slight lean by hand
     };
     const chip = ev => ev.kind === "scrim" ? '<img class="scrim-sticker" src="art/scrim-sticker.svg" alt="" width="240" height="240" style="' + stickerSpot(ev.date) + '">' : '<span class="chip ' + ev.kind + (ev.tentative ? " tbc" : "") + '">' + esc(ev.short) + "</span>";
     $("#weeks").innerHTML = [1, 2].map(w => '<div class="wk">' + label[w] + '</div><div class="week">' +
@@ -239,12 +242,27 @@
     }
     heroPick = m ? m.id : null;
     $("#hero-badge").innerHTML = m ? UI.badge(m) : "";
+    preloadArt();
   }
 
-  /* Faculty moves to the next mentor every 15 seconds, on computers and tablets only (a phone's file is long enough
-     that it would change while someone reads it). Any hover, focus or manual change starts the 15 seconds over,
+  // once the page has loaded, every card picture downloads in the background, so a card that switches in shows its art right away
+  const artReady = new Map();
+  function preloadArt() {
+    const go = () => S.coaches.forEach(c => [UI.artSrc(c), UI.headSrc(c)].forEach(src => {
+      if (!src || artReady.has(src)) return;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = src;
+      artReady.set(src, img);   // kept, so the browser holds on to the decoded picture
+    }));
+    if (document.readyState === "complete") setTimeout(go, 300);
+    else addEventListener("load", () => setTimeout(go, 300), { once: true });
+  }
+
+  /* Faculty moves to the next mentor every 12 seconds, on computers and tablets only (a phone's file is long enough
+     that it would change while someone reads it). Any hover, focus or manual change starts the 12 seconds over,
      and it holds while the file is flipped or the section isn't mostly on screen. */
-  const FAC_EVERY = 15000;
+  const FAC_EVERY = 12000;
   const FAC = { timer: 0, hover: false, keys: false, seen: false, wired: false, next: null };
   function facSync() {
     clearTimeout(FAC.timer);
@@ -293,7 +311,7 @@
               : '<div class="pfp">' + charPfp("") + '</div><div class="pool"><span class="ph">[Main]</span><span class="ph">[Secondary]</span><span class="ph">[Pocket pick]</span></div>') +
           "</section>" +
           '<section class="hist-sec"><h4>Competitive history' + dh("hist") + '</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul>" + (dz("burger") ? DOODLE.burger : "") + "</section>" +
-          "<section><h4>About me</h4>" + (m.about ? paras(m.about) : "<p>" + UI.ph("", "[A short about-me written by the mentor.]") + "</p>") + "</section>" +
+          "<section><h4>About me" + dh("about") + "</h4>" + (m.about ? paras(m.about) : "<p>" + UI.ph("", "[A short about-me written by the mentor.]") + "</p>") + "</section>" +
         "</div>" +
         '<div class="info-foot"><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="index.html?hours&coach=' + encodeURIComponent(m.id) + '">Request a session</a></span>' +
           (m.foot_scribble ? '<span class="scribble s-foot" aria-hidden="true">' + esc(m.foot_scribble).replace(/\n/g, "<br>") + "</span>" : "") + "</div>" +
@@ -386,9 +404,9 @@
     nicks: '<path d="M196 92 l-7 3 M197 99 l-5 1"/><path class="faint" d="M60 14 L96 6 M120 128 L160 118"/><ellipse class="scuff" cx="178" cy="18" rx="26" ry="12"/>'
   };
   const WEAR_BY_SLOT = ["", "scratches", "", "scuff", "gouge", "", "marked", "nicks"]; // a1..a8; blank = clean card
-  /* Assistant & role coaches: four small cards, two sliding every 4 seconds, and a tall card for the coach you click.
+  /* Assistant & role coaches: four small cards, sliding along every 8 seconds, and a tall card that snakes through them (or shows the coach you click).
      The slide stops while the mouse or keyboard is on the section, so nothing moves as you go to click. */
-  const AS_EVERY = 4000, AS_CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const AS_EVERY = 8000, AS_CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const AS = { list: [], main: null, head: 0, busy: false, draw: 0, timer: 0, left: AS_EVERY, t0: 0, hover: false, keys: false, seen: false, wired: false };
   const asMoves = () => AS.list.length > 4;
 
@@ -460,7 +478,22 @@
     $("#assist").classList.toggle("paused", !run);
     if (run && !AS.timer) {
       AS.t0 = Date.now();
-      AS.timer = setTimeout(() => { AS.timer = 0; AS.left = AS_EVERY; asStep(false); asRestartBar(); asSync(); }, AS.left);
+      AS.timer = setTimeout(() => {
+        AS.timer = 0; AS.left = AS_EVERY;
+        // the big card snakes through the small cards' 2-row grid: down, right, up, right, down…
+        // (small cards fill columns top then bottom; the track slides one column pair when the next card is off to the right)
+        const n = AS.list.length, p = (AS.list.indexOf(AS.main) - AS.head + n) % n;
+        if (n) {
+          let q;
+          if (p > 3) { q = 0; AS.down = true; }   // the big card isn't in view: start again at the top left
+          else if (AS.down !== false ? p % 2 === 0 : p % 2 === 1) q = p ^ 1;   // same column, other row
+          else { q = p + 2; AS.down = AS.down === false; }   // next column, same row, then turn around
+          const next = AS.list[(AS.head + q) % n];
+          if (q > 3) asStep(false);
+          if (next !== AS.main) { AS.main = next; asPaintMain(true); asMark(); }
+        }
+        asRestartBar(); asSync();
+      }, AS.left);
     } else if (!run && AS.timer) {
       clearTimeout(AS.timer); AS.timer = 0;
       AS.left = Math.max(200, AS.left - (Date.now() - AS.t0));
@@ -494,7 +527,7 @@
         const arrow = e.target.closest(".as-prev, .as-next");
         if (arrow) { asStep(arrow.classList.contains("as-prev")); asResetTimer(); }
       });
-      box.addEventListener("pointerenter", e => { if (e.pointerType !== "touch") { AS.hover = true; asResetTimer(); } });   // hovering starts the 4 seconds over
+      box.addEventListener("pointerenter", e => { if (e.pointerType !== "touch") { AS.hover = true; asResetTimer(); } });   // hovering starts the 8 seconds over
       box.addEventListener("pointerleave", () => { AS.hover = false; asSync(); });
       box.addEventListener("focusin", e => { AS.keys = e.target.matches(":focus-visible"); asSync(); });
       box.addEventListener("focusout", () => { AS.keys = false; asSync(); });

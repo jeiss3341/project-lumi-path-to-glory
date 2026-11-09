@@ -272,7 +272,7 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .info-foot{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-top:30px;padding-top:18px;border-top:1px dashed #b9b5ac;font:500 12px/1.4 var(--f-mono);color:var(--ink-soft);letter-spacing:.06em}
 .fac-nav{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:44px}
 .fac-meta{flex-basis:100%}
-.as-bar.fac-bar i{animation-duration:15s}
+.as-bar.fac-bar i{animation-duration:12s}
 .fac-tabs{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
 .tab{appearance:none;border:0;background:var(--kraft-shade);color:#2f2416;font:600 12px/1 var(--f-mono);padding:11px 12px 12px;border-radius:7px 7px 0 0;cursor:pointer;letter-spacing:.06em;transition:transform .15s,background .15s}
 .tab:hover{background:var(--kraft)}
@@ -337,6 +337,8 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 /* small doodles beside a section heading (negative margins so they never push the text down) */
 .dz-h{display:inline-block;height:34px;margin:-13px 0 -11px 9px;vertical-align:middle;stroke-width:2.6;transform:rotate(-5deg)}
 .dz-h+.dz-h{margin-left:6px}
+.dz-up{transform:translateY(-6px) rotate(-5deg)}   /* heading doodles that sit a little higher (mic) */
+.dz-up-sm{transform:translateY(-3px) rotate(-5deg)}   /* just a tiny bit higher (bird, house) */
 .doodle .dot{fill:var(--red);stroke:none}
 /* Magepower: maple leaf + little mushroom beside "Other games played" */
 .games-sec{position:relative}
@@ -441,7 +443,7 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .as-meta span{white-space:nowrap}
 .as-meta .arrows{flex:none}
 .as-bar{flex:1;height:2px;background:rgba(255,255,255,.14);overflow:hidden}
-.as-bar i{display:block;height:100%;background:var(--red);transform-origin:left;animation:asBar 4s linear forwards}
+.as-bar i{display:block;height:100%;background:var(--red);transform-origin:left;animation:asBar 8s linear forwards}
 .paused .as-bar i{animation-play-state:paused}
 @keyframes asBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .as-tabs{display:none}
@@ -526,6 +528,7 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .sem .w{font:600 10px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--red-deep)}
 .sem b{display:block;font:800 19px/1.15 var(--f-display);text-transform:uppercase;margin:8px 0 10px;overflow-wrap:anywhere}
 .sem span.d{display:block;font:500 12px/1.6 var(--f-mono);color:var(--ink-soft)}
+.sem span.d.n{font:500 14px/1.45 var(--f-display);color:var(--ink)}   /* a plain note reads like handwriting on the card, not a schedule line */
 
 /* ---------- responsive ---------- */
 /* hero on narrower screens: the same computer layout, scaled as one piece to fit (home.js sets the zoom).
