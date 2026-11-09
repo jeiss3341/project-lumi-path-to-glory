@@ -139,7 +139,7 @@
   UI.artSrc = c => (c.id in UI.artSrcLocal ? UI.artSrcLocal[c.id] : c.art_url || (C.art && C.art[c.id]) || "");
   UI.artPos = (f, a = 18) => { const n = (v, d) => (Number.isFinite(+v) ? +v : d); f = f || {}; return { left: "calc(50% + " + n(f.x, 0) + "%)", top: "calc(" + a + "% + " + n(f.y, 0) + "%)", transform: "translate(-50%,-" + a + "%) scale(" + n(f.z, 1) + ")" }; };
   // the small square icon on assistant cards has its own picture and settings, centred by default
-  UI.headFit = (id, c) => UI.artLocal["head:" + id] || (c && c.head_fit) || {};
+  UI.headFit = (id, c) => UI.artLocal["head:" + id] || (c && c.head_fit) || ((C.coachSeed || []).find(x => x.id === id) || {}).head_fit || {};
   UI.headSrc = c => ("head:" + c.id in UI.artSrcLocal ? UI.artSrcLocal["head:" + c.id] : c.head_url || (C.artHead && C.artHead[c.id]) || "");
   UI.headIcon = (c, label) => {
     const src = UI.headSrc(c), p = UI.artPos(UI.headFit(c.id, c), 50);
@@ -151,8 +151,10 @@
     const file = c && UI.artSrc(c);
     if (file) {
       const pos = UI.artPos(UI.artFit(c.id, c));
-      // uploaded art sits on the same dark grid as the Katja poster crop (.art-grid in styles.css)
-      return '<div class="ptg-art art-grid" style="position:relative;overflow:hidden;width:100%;height:100%;background-color:#141416;container-type:size">' +
+      // uploaded art sits on the same dark grid as the Katja poster crop (.art-grid in styles.css),
+      // unless the event content gives that card a solid backing (art_bg) for see-through art
+      const bg = c.art_bg || ((C.coachSeed || []).find(x => x.id === c.id) || {}).art_bg;
+      return '<div class="ptg-art art-grid" style="position:relative;overflow:hidden;width:100%;height:100%;' + (bg ? "background:" + UI.esc(bg) + " !important" : "background-color:#141416") + ';container-type:size">' +
         '<img src="' + UI.esc(file) + '" alt="' + UI.esc((c.display_skin || UI.coachName(c)) + " display art") + '" data-art="' + UI.esc(c.id) + '" onload="this.style.setProperty(&quot;--ar&quot;,this.naturalWidth/this.naturalHeight)" style="position:absolute;display:block;max-width:none;height:auto;width:max(100cqw,calc(100cqh*var(--ar,.8)));transform-origin:50% 18%;left:' + pos.left + ";top:" + pos.top + ";transform:" + pos.transform + '"></div>';
     }
     if (c && c.display_skin === "Training Director Katja") {
@@ -167,7 +169,8 @@
   };
   // a card's character: the box prints its in-game Subject ID (24M-RFT75).
   const charOf = c => { const seed = (C.coachSeed || []).find(x => x.id === c.id) || {}; return C.skins && C.skins[c.display_skin || seed.display_skin]; };   // a blank skin in saved data falls back to the event content
-  UI.subjectId = c => (C.subjects && C.subjects[charOf(c)]) || "";
+  // a coach can carry its own subject_id (two coaches sharing a character), else it comes from their character
+  UI.subjectId = c => c.subject_id || ((C.coachSeed || []).find(x => x.id === c.id) || {}).subject_id || (C.subjects && C.subjects[charOf(c)]) || "";
   UI.cardId = c => UI.subjectId(c) || c.badge_id;
   UI.badge = function (c) {
     return '<div class="badge"><div class="b-strip"><span>FACULTY · PATH TO GLORY</span></div><div class="b-body">' +

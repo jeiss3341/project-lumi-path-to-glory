@@ -81,17 +81,28 @@ window.PTG = {
     m5: "art/isterio.webp", // Luke (Isterio)
     m6: "art/kazcross.webp", // Henry (Kazcross)
     m7: "art/magepower.webp", // Alex (Magepower)
-    m8: "art/ioo.webp", // Coraline (Ioo)
+    m8: "art/ioo-card.webp", // Coraline (Ioo), full-size, chosen by staff
     a1: "art/a1.webp", // Blair (Baeksu)
     a2: "art/a2.webp", // Coraline (Jalja)
-    a4: "art/a4.webp", // Squortle
-    a9: "art/m3.webp", // Shoichi (Chibiarc)
+    a4: "art/a4-card.png", // Squortle, chosen by staff
+    a9: "art/a9-card.webp", // Chibiarc, chosen by staff
+    a3: "art/a3-card.webp", // CamperonDuty, chosen by staff
+    a5: "art/a5-card.png", // Jignut, chosen by staff
+    a6: "art/a6-card.png", // Kyroshoot, chosen by staff
+    a7: "art/a7-card.webp", // Superior, chosen by staff
+    a8: "art/a8-card.webp", // Nesious, chosen by staff
   },
   // Headshots for the small assistant cards: square chibi crops in site/art/heads/.
   artHead: {
-    a1: "art/heads/a1.webp",
+    a1: "art/heads/a1-icon.png", // Baeksu, chosen by staff
     a2: "art/heads/a2.webp",
-    a4: "art/heads/a4.webp",
+    a4: "art/heads/a4-icon.png", // Squortle, chosen by staff
+    a3: "art/heads/a3-icon.png", // CamperonDuty, chosen by staff
+    a5: "art/heads/a5-icon.png", // Jignut, chosen by staff
+    a6: "art/heads/a6-icon.png", // Kyroshoot, chosen by staff
+    a7: "art/heads/a7-icon.png", // Superior, chosen by staff
+    a8: "art/heads/a8-icon.webp", // Nesious, chosen by staff
+    a9: "art/heads/a9-icon.png", // Chibiarc, chosen by staff
   },
 
   // Character pfps for the mentor files' character pool (shown black & white). Name must match the pool exactly.
@@ -133,7 +144,7 @@ window.PTG = {
 
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).
   coachSeed: [
-    { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Actor", team_name: "team not found", display_skin: "Markus",
+    { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Actor", team_name: "team not found", display_skin: "Markus", art_fit: { x: -3.37, y: -8.09, z: 1.07 },
       playstyle: "I usually play the mage or ~~engage tank~~, either way I am running it down to make space for my teammates.",
       doodles: ["burst", "sparkles", "burger"], // red pencil doodles on the front of the file
       pool: ["Markus", "Niah", "Kenneth"],
@@ -223,8 +234,7 @@ window.PTG = {
       fun_fact: "I climb v8's.",
       hobbies: ["Bouldering."],
       fav_teams: ["Anyone who plays good ER."] },
-    { id: "m8", kind: "mentor", slot: 8, badge_id: "INS-0478-BT", name: "Ioo", team_name: "6789", display_skin: "Coraline",
-      playstyle: "artillery and control mage player",
+    { id: "m8", kind: "mentor", slot: 8, badge_id: "INS-0478-BT", name: "Ioo", team_name: "6789", display_skin: "Coraline", subject_id: "21M-RFT48", art_fit: { x: 31.04, y: -12.57, z: 3.12 }, // Celine's ID, since Jalja shows Coraline's      playstyle: "artillery and control mage player",
       pool: ["Coraline", "Celine"],
       doodles: ["rings", "eye", "bowl", "plane"],
       history: ["3 rings"],
@@ -235,17 +245,17 @@ window.PTG = {
       fun_fact: "I'm a foodie",
       hobbies: ["I like traveling"],
       fav_teams: ["NRG · Rioori"] },
-    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "Blair", art_fit: { x: -11.17, y: -2.15, z: 1.24 },
+    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "Blair", art_fit: { x: -7.92, y: -2.17, z: 1.18 }, head_fit: { x: -2.05, y: 25.13, z: 1.55 },
       sticker: "art/stickers/baeksu.webp", sticker_at: { top: "26%", tilt: -16 } }, // die-cut sticker that follows the drawing's outline
-    { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "", display_skin: "Coraline",
+    { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "", display_skin: "Coraline", art_fit: { x: 8.65, y: 0.87, z: 1.18 },
       sticker: "art/stickers/jalja.webp" }, // small chibi sticker on the card's empty right side
-    { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "", display_skin: "" },
-    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "", display_skin: "" },
-    { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "", display_skin: "" },
-    { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "", display_skin: "" },
-    { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "", display_skin: "" },
-    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", display_skin: "" },
-    { id: "a9", kind: "assistant", slot: 9, badge_id: "AST-0519-RC", name: "Chibiarc", team_name: "", display_skin: "Shoichi",
+    { id: "a3", kind: "assistant", slot: 3, badge_id: "AST-0513-RC", name: "CamperonDuty", team_name: "", display_skin: "", art_fit: { x: -2.54, y: -5.57, z: 1.06 }, head_fit: { x: 1.37, y: 11.96, z: 1.33 } },
+    { id: "a4", kind: "assistant", slot: 4, badge_id: "AST-0514-RC", name: "Squortle", team_name: "", display_skin: "", art_fit: { x: 0.82, y: -1.52, z: 1.14 }, head_fit: { x: -0.99, y: 13.6, z: 1.36 } },
+    { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "", display_skin: "", art_fit: { x: 3.58, y: 2.7, z: 1.1 }, head_fit: { x: 1.78, y: 14.32, z: 1.35 } },
+    { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "", display_skin: "", art_fit: { x: -3.49, y: -9.57, z: 1.17 }, head_fit: { x: 1.36, y: 10.45, z: 1.3 } },
+    { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "", display_skin: "", art_fit: { x: 10.35, y: 28.41, z: 2.87 }, head_fit: { x: -0.16, y: 9.19, z: 1.3 } },
+    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", display_skin: "", art_fit: { x: 0, y: 0, z: 1 }, head_fit: { x: -1.05, y: 9.86, z: 1.28 } },
+    { id: "a9", kind: "assistant", slot: 9, badge_id: "AST-0519-RC", name: "Chibiarc", team_name: "", display_skin: "Shoichi", art_fit: { x: 0.99, y: 3, z: 1.07 }, head_fit: { x: -1.39, y: 10.68, z: 1.31 },
       playstyle: "Melee chungus.\n\nLowkey tho as long as its not triple ranged should be chill.",
       pool: ["Hyunwoo", "Shoichi"],
       pool_note: "(lol)",

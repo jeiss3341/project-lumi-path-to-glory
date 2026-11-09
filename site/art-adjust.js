@@ -212,10 +212,15 @@
     });
   }
 
-  Promise.all([API.session(), API.coaches()]).then(([me, list]) => {
-    if (!me || me.role !== "staff") return;
+  // runs on load and whenever someone logs in, logs out or switches account in the demo bar
+  let staff = false;
+  const refresh = () => Promise.all([API.session(), API.coaches()]).then(([me, list]) => {
+    staff = !!me && me.role === "staff";
     coaches = list;
-    addButtons();
-    new MutationObserver(addButtons).observe(document.body, { childList: true, subtree: true });
+    document.querySelectorAll(".art-adjust-btn").forEach(b => b.remove());
+    if (staff) addButtons();
   }).catch(() => {});
+  new MutationObserver(() => { if (staff) addButtons(); }).observe(document.body, { childList: true, subtree: true });
+  API.onAuth(refresh);
+  refresh();
 })();
