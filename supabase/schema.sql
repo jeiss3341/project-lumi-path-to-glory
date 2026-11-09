@@ -59,6 +59,10 @@ create table if not exists public.coaches (
 -- What each coach takes (their Session settings). The defaults are the event's normal rules.
 alter table public.coaches add column if not exists min_minutes int not null default 30 check (min_minutes in (30, 60, 90, 120));
 alter table public.coaches add column if not exists max_minutes int not null default 120 check (max_minutes in (30, 60, 90, 120));
+alter table public.coaches add column if not exists art_fit jsonb;   -- staff's position and size for the card picture
+alter table public.coaches add column if not exists art_url text;   -- a picture staff uploaded; blank uses the starting art
+alter table public.coaches add column if not exists head_fit jsonb;   -- the same two settings for the small assistant icon
+alter table public.coaches add column if not exists head_url text;
 alter table public.coaches add column if not exists session_kinds text not null default 'both' check (session_kinds in ('both', 'team', 'individual'));
 
 -- Event teams. Signups happen on Google Forms and Discord; the organiser enters the final teams here
@@ -554,6 +558,14 @@ drop policy if exists "profiles staff update" on public.profiles;
 create policy "profiles staff update" on public.profiles
   for update to authenticated using (public.is_staff()) with check (public.is_staff());
 
+-- card pictures staff upload: anyone can view them, only staff can add them, and files are never replaced
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('card-art', 'card-art', true, 5242880, array['image/png', 'image/jpeg', 'image/webp'])
+on conflict (id) do nothing;
+drop policy if exists "card art staff upload" on storage.objects;
+create policy "card art staff upload" on storage.objects
+  for insert to authenticated with check (bucket_id = 'card-art' and public.is_staff());
+
 -- coaches
 drop policy if exists "coaches read" on public.coaches;
 create policy "coaches read" on public.coaches
@@ -706,7 +718,8 @@ insert into public.coaches (id, kind, slot, badge_id, name, team_name, display_s
   ('a5', 'assistant', 5, 'AST-0515-RC', '', '', ''),
   ('a6', 'assistant', 6, 'AST-0516-RC', '', '', ''),
   ('a7', 'assistant', 7, 'AST-0517-RC', '', '', ''),
-  ('a8', 'assistant', 8, 'AST-0518-RC', '', '', '')
+  ('a8', 'assistant', 8, 'AST-0518-RC', '', '', ''),
+  ('a9', 'assistant', 9, 'AST-0519-RC', '', '', '')
 on conflict (id) do nothing;
 
 insert into public.teams (name, coach_id, players, sort)

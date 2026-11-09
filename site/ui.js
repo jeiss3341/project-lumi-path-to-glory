@@ -130,13 +130,30 @@
     return '<svg class="barcode"' + ' viewBox="0 0 ' + x + " " + h + '" preserveAspectRatio="none" aria-hidden="true" fill="currentColor">' + r + "</svg>";
   };
 
+  // A card's picture is placed by settings only (the file is never cropped). x and y move it, in percent of the art window;
+  // z is its size, where 1 just fills the window. With no settings it matches the old centred, near-the-top crop.
+  UI.artLocal = {};   // what staff saved during this visit, so slides that redraw a card keep it
+  UI.artFit = (id, c) => UI.artLocal[id] || (c && c.art_fit) || ((C.coachSeed || []).find(x => x.id === id) || {}).art_fit || {};   // saved data, else the event content
+  UI.artSrcLocal = {};
+  // which picture a card shows: one staff chose (coaches.art_url), else the starting file from PTG.art
+  UI.artSrc = c => (c.id in UI.artSrcLocal ? UI.artSrcLocal[c.id] : c.art_url || (C.art && C.art[c.id]) || "");
+  UI.artPos = (f, a = 18) => { const n = (v, d) => (Number.isFinite(+v) ? +v : d); f = f || {}; return { left: "calc(50% + " + n(f.x, 0) + "%)", top: "calc(" + a + "% + " + n(f.y, 0) + "%)", transform: "translate(-50%,-" + a + "%) scale(" + n(f.z, 1) + ")" }; };
+  // the small square icon on assistant cards has its own picture and settings, centred by default
+  UI.headFit = (id, c) => UI.artLocal["head:" + id] || (c && c.head_fit) || {};
+  UI.headSrc = c => ("head:" + c.id in UI.artSrcLocal ? UI.artSrcLocal["head:" + c.id] : c.head_url || (C.artHead && C.artHead[c.id]) || "");
+  UI.headIcon = (c, label) => {
+    const src = UI.headSrc(c), p = UI.artPos(UI.headFit(c.id, c), 50);
+    return '<div class="mb-icon" data-head="' + UI.esc(c.id) + '">' + (src ? '<img src="' + UI.esc(src) + '" alt="' + UI.esc(label) + ' icon" onload="this.style.setProperty(&quot;--ar&quot;,this.naturalWidth/this.naturalHeight)" style="transform-origin:50% 50%;left:' + p.left + ";top:" + p.top + ";transform:" + p.transform + '">' : '<span class="mb-icon-ph" aria-hidden="true">?</span>') + "</div>";
+  };
+
   // Art for a coach's ID badge: a file from PTG.art, else the Katja crop from the poster, else a placeholder.
   UI.art = function (c, o) {
-    const file = c && C.art && C.art[c.id];
+    const file = c && UI.artSrc(c);
     if (file) {
+      const pos = UI.artPos(UI.artFit(c.id, c));
       // uploaded art sits on the same dark grid as the Katja poster crop (.art-grid in styles.css)
-      return '<div class="ptg-art art-grid" style="position:relative;overflow:hidden;width:100%;height:100%;background-color:#141416">' +
-        '<img src="' + UI.esc(file) + '" alt="' + UI.esc((c.display_skin || UI.coachName(c)) + " display art") + '" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% 18%"></div>';
+      return '<div class="ptg-art art-grid" style="position:relative;overflow:hidden;width:100%;height:100%;background-color:#141416;container-type:size">' +
+        '<img src="' + UI.esc(file) + '" alt="' + UI.esc((c.display_skin || UI.coachName(c)) + " display art") + '" data-art="' + UI.esc(c.id) + '" onload="this.style.setProperty(&quot;--ar&quot;,this.naturalWidth/this.naturalHeight)" style="position:absolute;display:block;max-width:none;height:auto;width:max(100cqw,calc(100cqh*var(--ar,.8)));transform-origin:50% 18%;left:' + pos.left + ";top:" + pos.top + ";transform:" + pos.transform + '"></div>';
     }
     if (c && c.display_skin === "Training Director Katja") {
       o = Object.assign({ w: 440, cx: 1388, cy: 688, rot: 21 }, o || {});
@@ -157,7 +174,7 @@
       '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>ID // 2026</span></div>' +
       '<div class="b-role">' + (c.kind === "assistant" ? "Assistant" : "Instructor") + "</div>" +
       '<div class="b-row"><span class="b-id">' + UI.esc(UI.cardId(c)) + "</span>" + "</div>" +
-      '<div class="b-art">' + UI.art(c) + "</div>" +
+      '<div class="b-art" data-coach="' + UI.esc(c.id) + '">' + UI.art(c) + "</div>" +
       '<div class="b-name"><small>NAME</small><div class="b-nameline"><b>[' + UI.esc(bare(UI.coachName(c))) + ']</b><span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div></div></div>";
   };
 

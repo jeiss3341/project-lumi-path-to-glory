@@ -495,12 +495,12 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .mb-sticker{position:absolute;right:8%;top:44%;width:clamp(58px,30%,76px);height:auto;transform:rotate(var(--tilt,8deg));z-index:3;pointer-events:none;
   filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
 /* assistant icon: small square on the same dark grid as the instructor art, with red corner marks */
-.mb-icon{width:58px;aspect-ratio:1;position:relative;overflow:hidden;border:1px solid #3a3a40;display:grid;place-items:center;
+.mb-icon{width:58px;aspect-ratio:1;position:relative;overflow:hidden;container-type:size;border:1px solid #3a3a40;display:grid;place-items:center;
   background-color:#1a1a1d;background-image:linear-gradient(rgba(255,255,255,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);background-size:8px 8px}
 .mb-icon::before,.mb-icon::after{content:"";position:absolute;width:9px;height:9px;border:0 solid var(--red);z-index:1}
 .mb-icon::before{top:3px;left:3px;border-top-width:2px;border-left-width:2px}
 .mb-icon::after{bottom:3px;right:3px;border-bottom-width:2px;border-right-width:2px}
-.mb-icon img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mb-icon img{position:absolute;max-width:none;height:auto;width:max(100cqw,calc(100cqh*var(--ar,1)))}
 .mb-icon-ph{font:900 26px/1 var(--f-display);color:transparent;-webkit-text-stroke:1.5px var(--red);opacity:.85}
 .mb-focus{font:500 11px/1.5 var(--f-mono);color:#b3b3b8;letter-spacing:.04em}
 .mb-focus .ph{color:#8d8d93}

@@ -79,6 +79,7 @@ window.PTG = {
     a1: "art/a1.webp", // Blair (Baeksu)
     a2: "art/a2.webp", // Coraline (Jalja)
     a4: "art/a4.webp", // Squortle
+    a9: "art/m3.webp", // Shoichi (Chibiarc)
   },
   // Headshots for the small assistant cards: square chibi crops in site/art/heads/.
   artHead: {
@@ -216,7 +217,7 @@ window.PTG = {
       fun_fact: "I'm a foodie",
       hobbies: ["I like traveling"],
       fav_teams: ["NRG · Rioori"] },
-    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "Blair",
+    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "Blair", art_fit: { x: -11.17, y: -2.15, z: 1.24 },
       sticker: "art/stickers/baeksu.webp", sticker_at: { top: "26%", tilt: -16 } }, // die-cut sticker that follows the drawing's outline
     { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "", display_skin: "Coraline",
       sticker: "art/stickers/jalja.webp" }, // small chibi sticker on the card's empty right side
@@ -225,6 +226,18 @@ window.PTG = {
     { id: "a5", kind: "assistant", slot: 5, badge_id: "AST-0515-RC", name: "Jignut", team_name: "", display_skin: "" },
     { id: "a6", kind: "assistant", slot: 6, badge_id: "AST-0516-RC", name: "Kyroshoot", team_name: "", display_skin: "" },
     { id: "a7", kind: "assistant", slot: 7, badge_id: "AST-0517-RC", name: "Superior", team_name: "", display_skin: "" },
-    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", display_skin: "" }
+    { id: "a8", kind: "assistant", slot: 8, badge_id: "AST-0518-RC", name: "Nesious", team_name: "", display_skin: "" },
+    { id: "a9", kind: "assistant", slot: 9, badge_id: "AST-0519-RC", name: "Chibiarc", team_name: "", display_skin: "Shoichi",
+      playstyle: "Melee chungus.\n\nLowkey tho as long as its not triple ranged should be chill.",
+      pool: ["Hyunwoo", "Shoichi"],
+      pool_note: "(lol)",
+      history: ["Some ercs wins[[!]]"], // [[…]] = added by hand in red pencil
+      about: "Sometimes plays rank.\nSometimes stream.\nMaster of sleeping.",
+      coaching: "Opposite of whatever fwitchu put here.\n\nI will say though I dont like sugarcoating things.",
+      games: ["JRPGs", "League", "Single Player Games", "Turn based", "etc"],
+      fun_fact: "mcdonald.",
+      hobbies: ["GA (I like ga)"],
+      fav_teams: ["N/a maybe gsxg?"],
+      ps: ["play fat chungus for uberman", "Leni + hyunwoo", "Anything with more than 200 auto range is too hard"] }
   ]
 };

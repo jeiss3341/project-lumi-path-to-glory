@@ -71,6 +71,13 @@
     });
     API.coaches = () => q(sb.from("coaches").select("*").order("kind", { ascending: false }).order("slot")).then(withSeed);
     API.updateCoach = (id, patch) => q(sb.from("coaches").update(patch).eq("id", id).select().single());
+    // a new file every time, so a card picture is never overwritten
+    API.uploadArt = async (id, file) => {
+      const ext = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[file.type], path = id + "/" + Date.now() + "." + ext;
+      const { error } = await sb.storage.from("card-art").upload(path, file, { contentType: file.type });
+      if (error) throw new Error(error.message);
+      return sb.storage.from("card-art").getPublicUrl(path).data.publicUrl;
+    };
 
     API.teams = () => q(sb.from("teams").select("*").order("sort").order("created_at"));
     // teams are read only from the site: the organiser sets them (supabase/schema.sql)
@@ -111,7 +118,7 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v6";   // bump when the sample data changes, so browsers drop their old copy
+    const KEY = "ptg-demo-v9";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
@@ -145,13 +152,14 @@
       hours("a5", EVERY, 9, 11);                                        // Jignut: mornings
       hours("a6", [3, 4, 5], 21, 27);                                   // Kyroshoot: week 1 only, 9 PM–3 AM
       hours("a7", [2, 9], 10, 12); hours("a7", [2, 9], 15, 17); hours("a7", [2, 9], 21, 23); hours("a7", [5], 11, 13);   // Superior: split days
+      hours("a9", [1, 3, 8, 10], 21, 24);                               // Chibiarc
       // a8 (Nesious) has no hours: tests "Hide coaches with no hours"
 
       // ---- accounts (one Discord login each) ----
       const P = (id, username, display_name, role) => ({ id, discord_id: String(1000 + profiles.length + 1), username, display_name, avatar_url: "", role: role || "player" });
       const profiles = [];
       [["u-staff", "lumi.staff", "Lumi Staff", "staff"],
-       ["u-neotep", "actor", "Actor"], ["u-dylan", "dylannn", "Dylan"], ["u-chibi", "fwitchu", "Fwitchu"],
+       ["u-neotep", "actor", "Actor"], ["u-dylan", "dylannn", "Dylan"], ["u-fwitchu", "fwitchu", "Fwitchu"], ["u-chibi", "chibiarc", "Chibiarc"],
        ["u-m4", "hresvelg", "Hresvelg"], ["u-m5", "isterio", "Isterio"], ["u-m6", "kazcross", "Kazcross"],
        ["u-m7", "magepower", "Magepower"], ["u-m8", "ioo", "Ioo"],
        ["u-baeksu", "baeksu", "Baeksu"], ["u-jalja", "jalja", "Jalja"], ["u-camper", "camperonduty", "CamperonDuty"], ["u-squortle", "squortle", "Squortle"],
@@ -164,8 +172,8 @@
        ["u-zephyr", "zephyr", "Zephyr"], ["u-gale", "gale", "Gale"],
        ["u-rook", "rook", "Rook"], ["u-ember", "ember", "Ember"],
        ["u-solo", "newplayer", "New Player"]].forEach(a => profiles.push(P(...a)));
-      const LINK = { m1: "u-neotep", m2: "u-dylan", m3: "u-chibi", m4: "u-m4", m5: "u-m5", m6: "u-m6", m7: "u-m7", m8: "u-m8",
-        a1: "u-baeksu", a2: "u-jalja", a3: "u-camper", a4: "u-squortle", a5: "u-jignut", a6: "u-kyro", a7: "u-superior" };   // a8 stays unlinked
+      const LINK = { m1: "u-neotep", m2: "u-dylan", m3: "u-fwitchu", m4: "u-m4", m5: "u-m5", m6: "u-m6", m7: "u-m7", m8: "u-m8",
+        a1: "u-baeksu", a2: "u-jalja", a3: "u-camper", a4: "u-squortle", a5: "u-jignut", a6: "u-kyro", a7: "u-superior", a9: "u-chibi" };   // a8 stays unlinked
 
       // ---- teams (results: placements, shown on the site once that checkpoint's day has passed) ----
       const teams = [];
@@ -330,6 +338,11 @@
       if (!isStaff()) return fail("Only staff can edit coach slots and mentor files.");   // same rule as the database
       if ("profile_id" in patch && patch.profile_id && S.coaches.some(x => x.id !== id && x.profile_id === patch.profile_id)) return fail("That account is already linked to another coach slot.");
       Object.assign(c, patch); save(); return wait(c);
+    };
+    API.uploadArt = (id, file) => {
+      if (!isStaff()) return fail("Only staff can change card art.");
+      if (file.size > 1200000) return fail("In demo mode, pictures have to be under 1.2 MB, because they are kept in this browser. The real site allows up to 5 MB.");
+      return new Promise((done, bad) => { const r = new FileReader(); r.onload = () => done(r.result); r.onerror = () => bad(new Error("Couldn't read that file.")); r.readAsDataURL(file); });
     };
 
     // sample placements show up once that checkpoint's day has passed (preview with ?today=2026-11-16 or 2026-11-23)
