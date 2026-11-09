@@ -6,7 +6,7 @@ html[data-plastic="d"]{--t:34px;--m:16px;--r:20px;--pl-fill:rgba(255,255,255,.15
 html[data-plastic] .lanyard #hero-badge{position:relative;isolation:isolate;margin-top:var(--t)}
 /* after the swing lands, drawn normally instead of on a graphics layer: sharper, like the Faculty card */
 html[data-plastic][data-plastic-settled] .lanyard #hero-badge,
-html[data-plastic][data-plastic-settled] .lanyard #hero-badge>.badge{will-change:auto}
+html[data-plastic][data-plastic-settled] .lanyard #hero-badge>.badge{will-change:auto;-webkit-mask:none;mask:none}
 html[data-plastic] .lanyard #hero-badge::before,html[data-plastic] .lanyard #hero-badge::after{
   content:"";position:absolute;pointer-events:none;
   /* an invisible 2px border keeps the visible edge away from the edge of its layer, so it stays smooth when tilted */

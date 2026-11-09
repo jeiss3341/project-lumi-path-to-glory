@@ -71,6 +71,13 @@
     });
     API.coaches = () => q(sb.from("coaches").select("*").order("kind", { ascending: false }).order("slot")).then(withSeed);
     API.updateCoach = (id, patch) => q(sb.from("coaches").update(patch).eq("id", id).select().single());
+    // a new file every time, so a card picture is never overwritten
+    API.uploadArt = async (id, file) => {
+      const ext = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[file.type], path = id + "/" + Date.now() + "." + ext;
+      const { error } = await sb.storage.from("card-art").upload(path, file, { contentType: file.type });
+      if (error) throw new Error(error.message);
+      return sb.storage.from("card-art").getPublicUrl(path).data.publicUrl;
+    };
 
     API.teams = () => q(sb.from("teams").select("*").order("sort").order("created_at"));
     // teams are read only from the site: the organiser sets them (supabase/schema.sql)
@@ -331,6 +338,11 @@
       if (!isStaff()) return fail("Only staff can edit coach slots and mentor files.");   // same rule as the database
       if ("profile_id" in patch && patch.profile_id && S.coaches.some(x => x.id !== id && x.profile_id === patch.profile_id)) return fail("That account is already linked to another coach slot.");
       Object.assign(c, patch); save(); return wait(c);
+    };
+    API.uploadArt = (id, file) => {
+      if (!isStaff()) return fail("Only staff can change card art.");
+      if (file.size > 1200000) return fail("In demo mode, pictures have to be under 1.2 MB, because they are kept in this browser. The real site allows up to 5 MB.");
+      return new Promise((done, bad) => { const r = new FileReader(); r.onload = () => done(r.result); r.onerror = () => bad(new Error("Couldn't read that file.")); r.readAsDataURL(file); });
     };
 
     // sample placements show up once that checkpoint's day has passed (preview with ?today=2026-11-16 or 2026-11-23)

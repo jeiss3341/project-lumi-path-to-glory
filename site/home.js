@@ -379,7 +379,7 @@
       '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>' + esc(UI.cardId(a)) + "</span></div>" +
       '<div class="mb-role">Assistant</div><div class="mb-nameline"><div class="mb-name">[' + esc(name) + ']</div><span class="b-team">' + esc(UI.bare(UI.coachTeam(a))) + "</span></div>" +
       // icon between the name and the role focus: a headshot from PTG.artHead (e.g. a1: "art/heads/a1.webp"), else an empty slot
-      '<div class="mb-icon">' + (C.artHead && C.artHead[a.id] ? '<img src="' + esc(C.artHead[a.id]) + '" alt="' + esc(name) + ' icon">' : '<span class="mb-icon-ph" aria-hidden="true">?</span>') + "</div>" +
+      UI.headIcon(a, name) +
       '<div class="mb-focus">' + UI.ph(a.focus, "[Role focus]") + "<br>" + UI.ph((a.pool || []).join(", "), "[Characters or topics]") + "</div>" +
       '<div class="mb-foot"><a href="index.html?hours&coach=' + encodeURIComponent(a.id) + '">Request ›</a></div></div>' +
       '<button type="button" class="as-hit" data-a="' + esc(a.id) + '" aria-pressed="' + !!on + '" aria-label="Show ' + esc(name) + ' on the big card"></button></div>';
@@ -395,7 +395,7 @@
   function asPaintMain(fade) {
     const a = AS.main, box = $("#assist .as-main");
     box.innerHTML = '<article class="as-tall"><div class="as-badge">' + UI.badge(a) + '</div><div class="as-side"><dl class="as-facts"><dt>Role focus</dt><dd>' + UI.ph(a.focus, "[Role focus]") +
-      "</dd><dt>Characters</dt><dd>" + UI.ph((a.pool || []).join(", "), "[Characters or topics]") + "</dd><dt>About</dt><dd>" + UI.ph(a.about, "[Short intro]") +
+      "</dd><dt>Characters</dt><dd>" + UI.ph((a.pool || []).join(", "), "[Characters or topics]") +
       '</dd><dt>Next open</dt><dd id="as-open"></dd></dl><a class="as-go" href="index.html?hours&coach=' + encodeURIComponent(a.id) + '">Request a session ›</a></div></article>';
     if (fade) $(".as-badge", box).classList.add("swap");   // the same little rise as the Instructor card, on the wrapper so the card keeps its tilt
     asOpen();

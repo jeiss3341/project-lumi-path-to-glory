@@ -59,6 +59,10 @@ create table if not exists public.coaches (
 -- What each coach takes (their Session settings). The defaults are the event's normal rules.
 alter table public.coaches add column if not exists min_minutes int not null default 30 check (min_minutes in (30, 60, 90, 120));
 alter table public.coaches add column if not exists max_minutes int not null default 120 check (max_minutes in (30, 60, 90, 120));
+alter table public.coaches add column if not exists art_fit jsonb;   -- staff's position and size for the card picture
+alter table public.coaches add column if not exists art_url text;   -- a picture staff uploaded; blank uses the starting art
+alter table public.coaches add column if not exists head_fit jsonb;   -- the same two settings for the small assistant icon
+alter table public.coaches add column if not exists head_url text;
 alter table public.coaches add column if not exists session_kinds text not null default 'both' check (session_kinds in ('both', 'team', 'individual'));
 
 -- Event teams. Signups happen on Google Forms and Discord; the organiser enters the final teams here
@@ -553,6 +557,14 @@ create policy "profiles read" on public.profiles
 drop policy if exists "profiles staff update" on public.profiles;
 create policy "profiles staff update" on public.profiles
   for update to authenticated using (public.is_staff()) with check (public.is_staff());
+
+-- card pictures staff upload: anyone can view them, only staff can add them, and files are never replaced
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('card-art', 'card-art', true, 5242880, array['image/png', 'image/jpeg', 'image/webp'])
+on conflict (id) do nothing;
+drop policy if exists "card art staff upload" on storage.objects;
+create policy "card art staff upload" on storage.objects
+  for insert to authenticated with check (bucket_id = 'card-art' and public.is_staff());
 
 -- coaches
 drop policy if exists "coaches read" on public.coaches;

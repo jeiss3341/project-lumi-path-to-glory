@@ -148,7 +148,7 @@ window.PTG = {
     { id: "m6", kind: "mentor", slot: 6, badge_id: "INS-0476-TH", name: "Isterio", team_name: "", display_skin: "Academy Theodore" },
     { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "Kazcross", team_name: "", display_skin: "Academy Estelle" },
     { id: "m8", kind: "mentor", slot: 8, badge_id: "INS-0478-BT", name: "Magepower", team_name: "", display_skin: "Transfer Student Bianca" },
-    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "Blair",
+    { id: "a1", kind: "assistant", slot: 1, badge_id: "AST-0511-RC", name: "Baeksu", team_name: "", display_skin: "Blair", art_fit: { x: -11.17, y: -2.15, z: 1.24 },
       sticker: "art/stickers/baeksu.webp", sticker_at: { top: "26%", tilt: -16 } }, // die-cut sticker that follows the drawing's outline
     { id: "a2", kind: "assistant", slot: 2, badge_id: "AST-0512-RC", name: "Jalja", team_name: "", display_skin: "Coraline",
       sticker: "art/stickers/jalja.webp" }, // small chibi sticker on the card's empty right side
