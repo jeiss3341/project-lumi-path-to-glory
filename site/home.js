@@ -223,9 +223,13 @@
   }
 
   /* ================================================== faculty + rosters */
+  // the swinging card is a random mentor or assistant who has a picture, picked once per page load so a redraw can't change it
+  let heroPick = null;
   function renderHeroBadge() {
-    const m1 = mentors()[0];
-    $("#hero-badge").innerHTML = m1 ? UI.badge(m1) : "";
+    const ms = S.coaches.filter(c => UI.artSrc(c));
+    const m = ms.find(x => x.id === heroPick) || ms[Math.floor(Math.random() * ms.length)];
+    heroPick = m ? m.id : null;
+    $("#hero-badge").innerHTML = m ? UI.badge(m) : "";
   }
 
   /* Faculty moves to the next mentor every 15 seconds, on computers and tablets only (a phone's file is long enough
