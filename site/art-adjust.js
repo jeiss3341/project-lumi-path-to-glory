@@ -10,8 +10,6 @@
   css.textContent =
     ".art-adjust-btn{position:absolute;right:8px;bottom:8px;z-index:5;font:600 11px/1 var(--f-display);color:#f4f4f2;background:#0b0e13;border:1px solid #5a606b;border-radius:4px;padding:6px 8px;cursor:pointer}" +
     ".art-adjust-icon{right:84px}" +
-    "html[data-art-staff] .as-card .mb-icon{z-index:5;pointer-events:none}" +
-    ".art-adjust-mini{position:absolute;left:2px;bottom:2px;z-index:3;pointer-events:auto;font:600 10px/1 var(--f-display);color:#f4f4f2;background:#0b0e13;border:1px solid #5a606b;border-radius:3px;padding:3px 4px;cursor:pointer}" +
     "#art-editor{width:min(720px,94vw);padding:0;border:1px solid #3a3f49;border-radius:10px;background:#0b0e13;color:#f4f4f2;font:500 14px/1.35 var(--f-display)}" +
     "#art-editor::backdrop{background:rgba(0,0,0,.72)}" +
     ".ae-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px}" +
@@ -194,16 +192,6 @@
 
   let coaches = [];
   function addButtons() {
-    document.querySelectorAll(".as-card .mb-icon[data-head]").forEach(icon => {
-      if (icon.querySelector(".art-adjust-mini")) return;
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "art-adjust-mini";
-      b.textContent = "Edit";
-      b.setAttribute("aria-label", "Edit icon");
-      b.addEventListener("click", () => open({ dataset: { coach: icon.dataset.head }, __coach: coaches.find(c => c.id === icon.dataset.head) }, true));
-      icon.appendChild(b);
-    });
     document.querySelectorAll(".badge .b-art[data-coach]").forEach(card => {
       if (card.querySelector(".art-adjust-btn")) return;
       card.__coach = coaches.find(c => c.id === card.dataset.coach);
@@ -227,7 +215,6 @@
   Promise.all([API.session(), API.coaches()]).then(([me, list]) => {
     if (!me || me.role !== "staff") return;
     coaches = list;
-    document.documentElement.dataset.artStaff = "";
     addButtons();
     new MutationObserver(addButtons).observe(document.body, { childList: true, subtree: true });
   }).catch(() => {});

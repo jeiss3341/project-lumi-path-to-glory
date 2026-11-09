@@ -289,7 +289,7 @@
       return seed();
     }
     function save() {
-      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage blocked */ }
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { if (e.name === "QuotaExceededError" && window.UI) UI.toast("Demo storage is full, so your latest change won't stay after a refresh. Reset data clears it.", "bad"); }
       watchers.forEach(w => setTimeout(w.cb, 0));
     }
     window.addEventListener("storage", e => { if (e.key === KEY) { S = load(); watchers.forEach(w => w.cb()); } });
@@ -339,10 +339,21 @@
       if ("profile_id" in patch && patch.profile_id && S.coaches.some(x => x.id !== id && x.profile_id === patch.profile_id)) return fail("That account is already linked to another coach slot.");
       Object.assign(c, patch); save(); return wait(c);
     };
-    API.uploadArt = (id, file) => {
+    // demo mode keeps pictures in this browser, which has little room, so it stores a smaller copy (the real site keeps the full file)
+    API.uploadArt = async (id, file) => {
       if (!isStaff()) return fail("Only staff can change card art.");
-      if (file.size > 1200000) return fail("In demo mode, pictures have to be under 1.2 MB, because they are kept in this browser. The real site allows up to 5 MB.");
-      return new Promise((done, bad) => { const r = new FileReader(); r.onload = () => done(r.result); r.onerror = () => bad(new Error("Couldn't read that file.")); r.readAsDataURL(file); });
+      let picture;
+      try { picture = await createImageBitmap(file); } catch (e) { return fail("Couldn't read that image. Try a different file."); }
+      let out = "";
+      for (const longest of [1000, 800, 600]) {
+        const k = Math.min(1, longest / Math.max(picture.width, picture.height)), c = document.createElement("canvas");
+        c.width = Math.round(picture.width * k);
+        c.height = Math.round(picture.height * k);
+        c.getContext("2d").drawImage(picture, 0, 0, c.width, c.height);
+        out = c.toDataURL("image/webp", 0.85);
+        if (out.length < 400000) break;
+      }
+      return out;
     };
 
     // sample placements show up once that checkpoint's day has passed (preview with ?today=2026-11-16 or 2026-11-23)
