@@ -90,36 +90,38 @@
       '<path d="M5 26 C9 23 12 29 16 26 C20 23 23 29 27 26 C31 23 34 29 38 26 C42 23 45 29 49 26 C53 23 56 29 60 26"/>' + // lettuce
       '<path d="M7 30 H58 C60 30 60 36 58 36 H7 C5 36 5 30 7 30 Z"/>' +       // patty
       '<path d="M9 39 H56 C56 45 50 47 45 47 H19 C13 47 9 45 9 39 Z"/>' +       // bottom bun
-      '<path d="M48 4 L55 1.5 M52 8 L60 7"/></svg>',                             // little "fresh" marks
-    // cat ears on the name + a chibi face peeking out under it
-    // traced from the sketch: uneven "^" cat ears on the name, chibi face peeking out under it
-    chibi: '<svg class="doodle d-chibi" viewBox="0 0 177 179" aria-hidden="true">' +
-      '<path d="M25 21 L35 2.5 L51 17"/><path d="M32 20.5 Q35 16 38 19.5"/>' +                      // left ear + inner hook
-      '<path d="M121 19 L141 6.5 L144 20"/><path d="M132 16 Q135 14.5 136 17 L137 21"/>' +            // right ear + inner hook
-      '<g transform="translate(0 90)">' +
-        '<path d="M11 8 C4 22 2 44 6 60 C8 70 12 76 15 81 L17 71 L27 79"/>' +                        // far-left hair, kicked-out end
-        '<path d="M30 4 L18 24 L33 19 L35 31"/>' +                                                   // left "N" bangs
-        '<path d="M71 3 C71 12 70 20 58 30"/>' +                                                     // centre strand
-        '<path d="M71 22 L75.5 44 L82 31 L86.5 46 L98 40"/>' +                                       // middle zigzag bangs
-        '<path d="M108 8 C110 20 116 27 128 32"/><path d="M141 25 L146 32 L156 32"/>' +              // right bangs + tuft
-        '<path d="M151 4 C157 8 156 30 155 50 C154 64 152 76 152 84 L162 77 L166 82"/>' +           // right hair
-        '<path d="M166 14 C171 30 173 55 171 80"/>' +                                                // far-right hair
-        '<ellipse cx="49" cy="41" rx="19" ry="11"/><ellipse cx="121" cy="45" rx="24" ry="12.5"/>' +  // eyes
-        '<ellipse class="fill" cx="48" cy="38.5" rx="5.5" ry="7.5"/><ellipse class="fill" cx="120" cy="39" rx="5.5" ry="7.5"/>' + // irises
-        '<circle class="shine" cx="46.5" cy="36" r="1.6"/><circle class="shine" cx="118.5" cy="36.5" r="1.6"/>' +
-        '<path d="M29 50 L29 62"/>' +                                                                // cheek edge
-        '<path d="M32 63 C40 80 60 88 88 88 C112 88 132 80 141 66"/>' +                              // chin
-        '<path d="M65 59 C68 64 72 64 76.5 61 C80 64 86 65 92 62.5"/>' +                             // cat mouth
-        '<path d="M45 58 L45.5 62 M50 59 L50.5 62.5 M117 62 L117.5 66 M123 63 L123.5 66.5"/>' +      // blush ticks
-      "</g></svg>",
-    // traced from the sketch: tipped-over fries carton with a zigzag on it, fries spilling out
-    fries: '<svg class="doodle d-fries" viewBox="0 0 132 104" aria-hidden="true">' +
-      '<path d="M37 37 C55 25 75 12 92 3 C102 12 115 25 129 37 C112 48 95 60 77 72"/>' +   // carton
-      '<path d="M37 37 C50 36 65 40 72 50 C75 58 76 64 77 72"/><path d="M37 37 C36 44 40 50 46 53"/>' + // opening + lip
-      '<path d="M85 17 L78 31 L88 29 L85 40 L110 30"/>' +                                 // zigzag on the carton
-      '<path d="M47 53 L33 64 L37 69 L52 58"/><path d="M50 64 L70 50 M53 68 L72 54"/>' +  // fries in the opening
-      '<path d="M69 63 L73 66 L63 90 L49 87 Z"/>' +                                       // fat fry
-      '<path d="M30 80 L35 83 L13 100 L3 97 Z"/></svg>'                                   // fry falling out
+      '<path d="M48 4 L55 1.5 M52 8 L60 7"/></svg>',
+    // MapleStory nod on the back of the file: a maple leaf and a little mushroom
+    maple: '<svg class="doodle d-leaf" viewBox="0 0 48 54" aria-hidden="true"><path d="M24 2 L28.5 12 L34.5 8.5 L32.5 20.5 L42 16 L39.5 24.5 L46.5 27.5 L36.5 34.5 L38.5 41 L27 38.5 L26.5 44 L21.5 44 L21 38.5 L9.5 41 L11.5 34.5 L1.5 27.5 L8.5 24.5 L6 16 L15.5 20.5 L13.5 8.5 L19.5 12 Z"/><path d="M24 15 L24 52"/><path d="M24 27 L33 21 M24 27 L15 21 M24 35 L31 31 M24 35 L17 31"/></svg>' +
+      '<svg class="doodle d-shroom" viewBox="0 0 44 42" aria-hidden="true"><path d="M4 22 C4 9 13 3 22 3 C31 3 40 9 40 22 C33 25.5 11 25.5 4 22 Z"/><circle cx="15" cy="12" r="3"/><circle cx="28" cy="10" r="2.2"/><circle cx="32" cy="17" r="1.8"/><path d="M14 24.5 C13 32 13 37 17 39 C21 40.5 26 40.5 29 38.5 C32 36 31 30 30 24.5"/><path d="M18.5 30 l0 3 M25.5 30 l0 3"/></svg>'                            // little "fresh" marks
+  };
+  // small red pencil doodles that sit beside a section heading; "at" says which heading. Each mentor picks theirs in `doodles` (content.js).
+  const dzh = (w, h, inner) => '<svg class="doodle dz-h" viewBox="0 0 ' + w + " " + h + '" style="width:' + Math.round(34 * w / h) + 'px" aria-hidden="true">' + inner + "</svg>";
+  const HEAD_DOODLES = {
+    // Fwitchu
+    piggy: { at: "play", svg: dzh(50, 48, '<ellipse cx="23" cy="29" rx="15" ry="11"/><path d="M37 25 h7 v8 h-7"/><path d="M14 20 L13 13 L21 18"/><path d="M13 38 v7 M20 40 v5 M28 40 v5 M34 37 v7"/><circle class="dot" cx="31" cy="25" r="1.4"/><path d="M18 19 h9"/><circle cx="23" cy="7" r="5"/><path d="M8 27 q-5 -1 -4 -5"/>') },
+    fish: { at: "fun", svg: dzh(60, 48, '<path d="M4 24 C14 8 32 8 42 24 C32 40 14 40 4 24 Z"/><path d="M42 24 L56 12 L52 24 L56 36 Z"/><circle class="dot" cx="13" cy="21" r="1.8"/><path d="M21 15 q5 9 0 18"/>') },
+    catnap: { at: "coach", svg: dzh(66, 48, '<path d="M8 42 C4 28 8 20 8 9 L18 16 C22 14 27 14 31 16 L41 9 C41 20 45 28 41 42 C32 47 17 47 8 42 Z"/><path d="M14 29 q4 3 8 0 M27 29 q4 3 8 0"/><path d="M22 36 q2.5 3 5 0"/><path d="M50 15 h8 l-8 10 h8 M58 3 h6 l-6 7 h6"/>') },
+    // Hresvelg
+    rightwrong: { at: "play", svg: dzh(50, 32, '<path d="M3 18 l7 9 l14 -22"/><path d="M31 8 l15 18 M46 8 l-15 18"/>') },
+    housefire: { at: "fun", svg: dzh(52, 48, '<path d="M8 46 V24 L26 10 L44 24 V46 Z"/><path d="M21 46 V34 h10 v12"/><path d="M31 14 C29 8 34 7 34 2 C40 7 43 11 41 20"/><path d="M12 21 C10 14 16 12 15 6 C21 10 24 12 22 16"/>') },
+    bird: { at: "games", svg: dzh(48, 46, '<circle cx="24" cy="29" r="15"/><path d="M22 14 L18 5 M25 14 L27 3"/><path d="M13 23 L22 27 M35 23 L26 27"/><circle class="dot" cx="18.5" cy="29" r="1.7"/><circle class="dot" cx="29.5" cy="29" r="1.7"/><path d="M20 33 L24 40 L29 33 Z"/>') },
+    // Isterio
+    arrow: { at: "play", svg: dzh(62, 34, '<path d="M2 17 H56"/><path d="M45 6 L58 17 L45 28"/><path d="M6 8 h12 M4 26 h10"/>') },
+    nocoffee: { at: "fun", svg: dzh(48, 48, '<path d="M10 16 H34 V34 C34 40 30 43 26 43 H18 C14 43 10 40 10 34 Z"/><path d="M34 20 h5 c5 0 5 12 0 12 h-5"/><path d="M17 11 q-3 -3 0 -7 M26 11 q-3 -3 0 -7"/><path d="M4 5 L45 46"/>') },
+    shuttle: { at: "hobbies", svg: dzh(48, 48, '<circle cx="13" cy="36" r="7.5"/><path d="M8 30 L22 3 C32 3 42 12 45 24 L19 40"/><path d="M13.5 28.5 L32 6 M17 31 L39 13 M20 34 L43 19"/>') },
+    // Kazcross
+    mic: { at: "play", svg: dzh(48, 48, '<rect x="17" y="3" width="14" height="25" rx="7"/><path d="M10 21 C10 36 38 36 38 21"/><path d="M24 33 V43 M15 45 H33"/><path d="M18 11 h12 M18 16 h12 M18 21 h12"/>') },
+    btier: { at: "fun", svg: dzh(46, 46, '<rect x="4" y="4" width="38" height="38" rx="3"/><path d="M16 12 V34 M16 12 h9 c8 0 8 11 0 11 h-9 M16 23 h10 c9 0 9 11 0 11 h-10"/>') },
+    wave: { at: "teams", svg: dzh(60, 36, '<path d="M2 28 C7 8 24 2 31 14 C25 11 20 17 26 23 C33 29 44 24 49 18 C50 24 54 27 58 28"/><path d="M2 34 C14 30 22 36 32 33 S50 31 58 34"/>') },
+    // Magepower (plus the maple leaf and mushroom)
+    paw: { at: "play", svg: dzh(48, 48, '<ellipse cx="24" cy="33" rx="10" ry="8"/><circle cx="9" cy="23" r="3.8"/><circle cx="18" cy="13" r="3.8"/><circle cx="30" cy="13" r="3.8"/><circle cx="39" cy="23" r="3.8"/><path d="M6 5 L43 45"/>') },
+    mountain: { at: "fun", svg: dzh(50, 46, '<path d="M2 44 L19 15 L27 28 L33 20 L48 44 Z"/><path d="M19 15 V3 L29 7 L19 11"/><path d="M15 22 l4 3 l4 -3"/>') },
+    // Ioo
+    rings: { at: "hist", svg: dzh(60, 34, '<circle cx="13" cy="17" r="10.5"/><circle cx="30" cy="17" r="10.5"/><circle cx="47" cy="17" r="10.5"/>') },
+    eye: { at: "coach", svg: dzh(48, 40, '<path d="M3 24 C13 9 35 9 45 24 C35 39 13 39 3 24 Z"/><circle cx="24" cy="24" r="7"/><circle class="dot" cx="24" cy="24" r="2.8"/><path d="M24 7 V1 M12 11 L9 6 M36 11 L39 6"/>') },
+    bowl: { at: "fun", svg: dzh(50, 46, '<path d="M6 24 H42 C42 36 34 44 24 44 C14 44 6 36 6 24 Z"/><path d="M28 22 L41 3 M33 22 L46 6"/><path d="M14 18 q-3 -3 0 -7 M22 18 q-3 -3 0 -7"/>') },
+    plane: { at: "hobbies", svg: dzh(50, 46, '<path d="M4 24 L46 5 L36 42 L22 31 Z"/><path d="M46 5 L22 31 L20 42 L27 35"/>') }
   };
   // competitive history line: a trailing "(...)" note drops onto its own line
   function histItem(h) {
@@ -263,20 +265,21 @@
       const chips = (list, ph) => list && list.length ? list.map(p => "<span>" + esc(p) + "</span>").join("") : ph;
       const flipBtn = label => '<button type="button" class="flip-btn js-flip" aria-pressed="false">' + label + "</button>";
       const dz = k => (m.doodles || []).includes(k); // red pencil doodles this mentor's file gets
+      const dh = slot => (m.doodles || []).filter(k => HEAD_DOODLES[k] && HEAD_DOODLES[k].at === slot).map(k => HEAD_DOODLES[k].svg).join(""); // ones that sit beside a section heading
       const front =
         '<article class="sheet info face front">' + top("") +
-        "<h3>" + UI.ph(m.name, UI.coachName(m)) + (dz("burst") ? DOODLE.burst : "") + (dz("chibi") ? DOODLE.chibi : "") + "</h3>" +
+        "<h3>" + UI.ph(m.name, UI.coachName(m)) + (dz("burst") ? DOODLE.burst : "") + "</h3>" +
         '<span class="team-tag">' + esc(UI.bare(UI.coachTeam(m))) + "</span>" +
         '<div class="info-grid">' +
-          "<section><h4>Playstyle</h4>" + (m.playstyle ? paras(m.playstyle) : "<p>" + UI.ph("", "[One or two lines on how this mentor plays and what they focus on in review.]") + "</p>") + "</section>" +
-          '<section class="pool-sec"><h4>Character pool</h4>' + (dz("sparkles") ? DOODLE.sparkles : "") + (dz("smile") ? '<span class="scribble s-smile" aria-hidden="true">^_^</span>' : "") + (dz("fries") ? DOODLE.fries : "") +
+          "<section><h4>Playstyle" + dh("play") + "</h4>" + (m.playstyle ? paras(m.playstyle) : "<p>" + UI.ph("", "[One or two lines on how this mentor plays and what they focus on in review.]") + "</p>") + "</section>" +
+          '<section class="pool-sec"><h4>Character pool</h4>' + (dz("sparkles") ? DOODLE.sparkles : "") + (dz("smile") ? '<span class="scribble s-smile" aria-hidden="true">^_^</span>' : "") +
             (m.pool && m.pool.length
               ? '<div class="pfp" aria-live="polite">' + charPfp(m.pool[0]) + '</div><div class="pool pool-pick">' +
                 m.pool.map((p, k) => '<button type="button" class="pool-chip' + (k ? "" : " on") + '" data-char="' + esc(p) + '">' + esc(p) + "</button>").join("") + "</div>" +
                 (m.pool_note ? '<p class="pool-note">' + esc(m.pool_note) + "</p>" : "")
               : '<div class="pfp">' + charPfp("") + '</div><div class="pool"><span class="ph">[Main]</span><span class="ph">[Secondary]</span><span class="ph">[Pocket pick]</span></div>') +
           "</section>" +
-          '<section class="hist-sec"><h4>Competitive history</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul>" + (dz("burger") ? DOODLE.burger : "") + "</section>" +
+          '<section class="hist-sec"><h4>Competitive history' + dh("hist") + '</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul>" + (dz("burger") ? DOODLE.burger : "") + "</section>" +
           "<section><h4>About me</h4>" + (m.about ? paras(m.about) : "<p>" + UI.ph("", "[A short about-me written by the mentor.]") + "</p>") + "</section>" +
         "</div>" +
         '<div class="info-foot"><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="index.html?hours&coach=' + encodeURIComponent(m.id) + '">Request a session</a></span>' +
@@ -286,12 +289,12 @@
         '<article class="sheet info face back" inert>' + top(" · back") +
         '<div class="back-head"><h3>' + UI.ph(m.name, UI.coachName(m)) + '</h3><span class="stamp">Off the record</span></div>' +
         '<div class="info-grid">' +
-          '<section class="wide"><h4>Coaching style</h4>' + (m.coaching ? paras(m.coaching) : "<p>" + UI.ph("", "[How this mentor likes to coach.]") + "</p>") +
+          '<section class="wide"><h4>Coaching style' + dh("coach") + "</h4>" + (m.coaching ? paras(m.coaching) : "<p>" + UI.ph("", "[How this mentor likes to coach.]") + "</p>") +
             (m.motto ? '<p class="motto">“' + esc(m.motto) + "”</p>" : "") + "</section>" +
-          '<section><h4>Other games played</h4><div class="pool">' + chips(m.games, '<span class="ph">[Game]</span><span class="ph">[Game]</span>') + "</div></section>" +
-          '<section><h4>Favorite hobbies</h4><ul class="hist">' + (m.hobbies && m.hobbies.length ? m.hobbies.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[Hobby]</span></li>') + "</ul></section>" +
-          '<section><h4>Fav teams</h4><ul class="hist">' + (m.fav_teams && m.fav_teams.length ? m.fav_teams.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[Team · player]</span></li>') + "</ul></section>" +
-          '<section><h4>Fun fact</h4><p class="fun">' + UI.ph(m.fun_fact, "[Something fun about this mentor.]") + "</p></section>" +
+          '<section class="games-sec"><h4>Other games played' + dh("games") + "</h4>" + (dz("maple") ? DOODLE.maple : "") + '<div class="pool">' + chips(m.games, '<span class="ph">[Game]</span><span class="ph">[Game]</span>') + "</div></section>" +
+          '<section><h4>Favorite hobbies' + dh("hobbies") + '</h4><ul class="hist">' + (m.hobbies && m.hobbies.length ? m.hobbies.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[Hobby]</span></li>') + "</ul></section>" +
+          '<section><h4>Fav teams' + dh("teams") + '</h4><ul class="hist">' + (m.fav_teams && m.fav_teams.length ? m.fav_teams.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[Team · player]</span></li>') + "</ul></section>" +
+          '<section><h4>Fun fact' + dh("fun") + '</h4><p class="fun">' + UI.ph(m.fun_fact, "[Something fun about this mentor.]") + "</p></section>" +
           (m.ps && m.ps.length ? '<section class="wide"><h4>P.S.</h4><ul class="hist ps">' + m.ps.map(h => "<li>" + esc(h) + "</li>").join("") + "</ul></section>" : "") +
         "</div>" +
         '<div class="info-foot"><span>Click the file to flip it back</span>' + flipBtn("Flip back ↺") + "</div>" +
@@ -300,7 +303,16 @@
       box.classList.remove("flipped");
       box.innerHTML = '<div class="flip-card">' + front + back + "</div>";
       // the file is only as tall as the side facing up (no empty space under the shorter side)
-      const fitFile = () => { const up = $(box.classList.contains("flipped") ? ".face.back" : ".face.front", box); if (up) $(".flip-card", box).style.height = up.offsetHeight + "px"; };
+      // "Off the record" stays to the right of the name: next to a long name the stamp shrinks to fit (phones still stack them)
+      const fitStamp = () => {
+        const head = $(".back-head", box), st = $(".stamp", head), h = $("h3", head);
+        st.style.fontSize = "";
+        const room = head.clientWidth - h.offsetWidth - 16 - 6, frame = 40;   // gap, a little for the tilt, padding + border
+        if (st.offsetWidth <= room) return;
+        const size = parseFloat(getComputedStyle(st).fontSize) * (room - frame) / (st.offsetWidth - frame);
+        if (size >= 13) st.style.fontSize = size + "px";
+      };
+      const fitFile = () => { fitStamp(); const up = $(box.classList.contains("flipped") ? ".face.back" : ".face.front", box); if (up) $(".flip-card", box).style.height = up.offsetHeight + "px"; };
       fitFile();
       if (document.fonts) document.fonts.ready.then(fitFile); // web fonts can change the height once they load
       if (!window.__ptgFitFile) { window.__ptgFitFile = true; addEventListener("resize", () => { if (box.__fit) box.__fit(); }); }

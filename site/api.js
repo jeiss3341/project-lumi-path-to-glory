@@ -132,7 +132,7 @@
       const hours = (coach, days, h1, h2) => days.forEach(i => availability.push({ id: rid(), coach_id: coach, starts_at: at(D[i], h1), ends_at: at(D[i], h2) }));
       hours("m1", WEEKDAYS, 20, 23); hours("m1", [5, 12], 14, 17);      // Actor: weeknights 8–11 PM, Saturday afternoons
       hours("m2", WEEKDAYS, 19, 22); hours("m2", [5], 13, 16);          // Dylan: weeknights 7–10 PM
-      hours("m3", [0, 2, 4, 7, 9, 11], 21, 25);                         // Chibiarc: Mon / Wed / Fri, 9 PM–1 AM
+      hours("m3", [0, 2, 4, 7, 9, 11], 21, 25);                         // Fwitchu: Mon / Wed / Fri, 9 PM–1 AM
       hours("m4", [1, 3, 5, 8, 10, 12], 18, 22);                        // Tue / Thu / Sat evenings
       hours("m5", NOT_SUN, 10, 12); hours("m5", NOT_SUN, 19, 21);       // two blocks a day
       hours("m6", [5, 6, 12, 13], 12, 18); hours("m6", [2, 9], 20, 22); // weekends + Wednesday nights
@@ -151,9 +151,9 @@
       const P = (id, username, display_name, role) => ({ id, discord_id: String(1000 + profiles.length + 1), username, display_name, avatar_url: "", role: role || "player" });
       const profiles = [];
       [["u-staff", "lumi.staff", "Lumi Staff", "staff"],
-       ["u-neotep", "actor", "Actor"], ["u-dylan", "dylannn", "Dylan"], ["u-chibi", "chibiarc", "Chibiarc"],
-       ["u-m4", "mentor4.test", "Test Mentor 4"], ["u-m5", "mentor5.test", "Test Mentor 5"], ["u-m6", "mentor6.test", "Test Mentor 6"],
-       ["u-m7", "mentor7.test", "Test Mentor 7"], ["u-m8", "mentor8.test", "Test Mentor 8"],
+       ["u-neotep", "actor", "Actor"], ["u-dylan", "dylannn", "Dylan"], ["u-chibi", "fwitchu", "Fwitchu"],
+       ["u-m4", "hresvelg", "Hresvelg"], ["u-m5", "isterio", "Isterio"], ["u-m6", "kazcross", "Kazcross"],
+       ["u-m7", "magepower", "Magepower"], ["u-m8", "ioo", "Ioo"],
        ["u-baeksu", "baeksu", "Baeksu"], ["u-jalja", "jalja", "Jalja"], ["u-camper", "camperonduty", "CamperonDuty"], ["u-squortle", "squortle", "Squortle"],
        ["u-jignut", "jignut", "Jignut"], ["u-kyro", "kyroshoot", "Kyroshoot"], ["u-superior", "superior", "Superior"],
        ["u-jeiss", "jeiss", "Jeiss"], ["u-irem", "irem-chan", "Irem-chan"], ["u-lumi", "lumi-chan", "Lumi-chan"],

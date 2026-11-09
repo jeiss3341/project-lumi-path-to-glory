@@ -3,6 +3,13 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-09
+- Faculty: mentor files 03–08 filled in from the Coach Infographic form, front and back: 03 Fwitchu (Uberman), 04 Hresvelg (uberman), 05 Isterio (Blast), 06 Kazcross (The Casting Desk), 07 Magepower (6789), 08 Ioo (6789). Demo mentor logins renamed to match.
+  - Chibiarc is no longer coaching: his file, Shoichi card art (`site/art/m3.webp`) and doodles (chibi face, ears, "!", fries) are removed. Mentor 03's card is back to the Researcher Barbara placeholder.
+  - Form quotes added on the backs of Dylan's ("Head Empty") and Hresvelg's files. Magepower's back has a red pencil maple leaf and mushroom by Other Games ("Maphul" = MapleStory).
+  - "Off the record" stamp stays to the right of the name: it shrinks to fit beside long names (`fitStamp` in `site/home.js`). On phones, long names still stack above it.
+  - Red pencil doodles beside section headings, based on each mentor's answers (`HEAD_DOODLES` in `site/home.js`, picked per mentor in `doodles` in `site/content.js`): Fwitchu piggy bank, salmon, napping cat; Hresvelg tick and cross, house on fire, angry bird; Isterio straight arrow, no coffee, shuttlecock; Kazcross mic, B tier, wave; Magepower crossed-out paw, mountain; Ioo three rings, eye, noodle bowl, paper plane.
+  - Still to come: instructor card art for 03–08 and character pfps for their pools (they show a letter for now).
+  - Needs database: if Chibiarc's Discord is linked to `m3` in `access_list`, point it at Fwitchu's. Check that the `coaches` rows for m3–m8 are blank or match, since anything saved there overrides `site/content.js`.
 - Faculty doodles adjusted after the mentor file footer changed: Dylan's "# NORMS terrorist" note moved to the empty left side of the footer (it was overlapping Request a session), and Actor's burger lifted above the dashed line.
 
 ## 2026-11-05

@@ -332,14 +332,15 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .hist li:has(.pencil-fix){margin-bottom:14px}
 .pencil-add{font:400 1.7em/0 "Reenie Beanie","Bradley Hand","Segoe Print",cursive;color:var(--red);-webkit-text-stroke:.6px var(--red);filter:url(#pencil);margin-left:1px;vertical-align:-.05em}
 .d-bang{display:inline-block;width:.4em;height:1.25em;vertical-align:-.1em;margin-left:0;stroke-width:3.6}
-/* Chibiarc: cat ears on the name + chibi face under it, fries by the character pool */
-.doodle .fill{fill:var(--red);stroke:none}
 .info h3{position:relative}
-.doodle .shine{fill:#f3f2ee;stroke:none}
-/* sized and placed from the sketch (62px name, 754px-wide file) */
-.info h3 .d-chibi{position:absolute;left:2.03em;top:-.34em;width:2.86em;height:2.89em;stroke-width:2.2}
-.pool-sec .d-fries{position:absolute;right:-2px;top:67px;width:132px;height:104px;stroke-width:2}
-@media (max-width:640px){.pool-sec .d-fries{right:-4px;top:auto;bottom:-34px;width:84px;height:66px}}
+/* small doodles beside a section heading (negative margins so they never push the text down) */
+.dz-h{display:inline-block;height:34px;margin:-13px 0 -11px 9px;vertical-align:middle;stroke-width:2.6;transform:rotate(-5deg)}
+.dz-h+.dz-h{margin-left:6px}
+.doodle .dot{fill:var(--red);stroke:none}
+/* Magepower: maple leaf + little mushroom beside "Other games played" */
+.games-sec{position:relative}
+.games-sec .d-leaf{position:absolute;left:158px;top:-20px;width:38px;height:43px;transform:rotate(14deg);stroke-width:2.2}
+.games-sec .d-shroom{position:absolute;left:204px;top:-14px;width:34px;height:32px;transform:rotate(-8deg);stroke-width:2.2}
 .pencil-ul{position:relative;white-space:nowrap}
 .pencil-ul::after{content:"";position:absolute;left:-2px;right:-3px;bottom:-8px;height:7px;pointer-events:none;filter:url(#pencil);
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 8' preserveAspectRatio='none'%3E%3Cpath d='M2 5.5 C30 2.5 60 3 90 4 S140 5 158 2.5' fill='none' stroke='%23d6403a' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/100% 100%}
