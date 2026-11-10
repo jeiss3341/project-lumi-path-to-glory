@@ -128,7 +128,7 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v33";   // bump when the sample data changes, so browsers drop their old copy
+    const KEY = "ptg-demo-v35";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
@@ -189,15 +189,15 @@
       const teams = [];
       const team = (id, name, coach_id, players, member_ids, info, mock, final) =>
         teams.push({ id, name, coach_id, players: players.map(([ign, discord]) => ({ ign, discord })), member_ids, sort: teams.length + 1, info, results: { mock, final } });
-      // the 8 real teams (Path to Glory sheet); mentors get assigned later, so coach_id is null and the roster shows "To be assigned"
-      team("t-funhavers", "Funhavers", null, [["Khaosfire", ""], ["AkaShado", ""], ["BILL123", ""], ["Yiunne", ""]], [], {});
-      team("t-200adr", "200adr", null, [["Reioli", ""], ["Rightnwise", ""], ["GeorgeGargett", ""], ["Yuituri", ""]], [], {});
-      team("t-labubu", "Labubu Manifesto", null, [["Asterlac", ""], ["Magecraft", ""], ["Lolking", ""], ["Neen", ""]], [], {});
-      team("t-ojama", "Ojama Trio", null, [["Chabs", ""], ["April", ""], ["Matthew1rox", ""], ["DestelloJoker", ""]], [], {});
-      team("t-pengu", "Pengu Industries", null, [["jeiss", ""], ["VioletSkyfire", ""], ["Marreep", ""], ["Vinnyt", ""]], ["u-jeiss"], {});
-      team("t-sleeping", "Sleeping Forest", null, [["Ravenbergier", ""], ["Tides", ""], ["Speex", ""], ["Redflake", ""]], [], {});
-      team("t-mango", "Mango Cats", null, [["Ardentq", ""], ["Keeperbeast", ""], ["Given", ""], ["Ariaza", ""]], [], {});
-      team("t-sleepdeprived", "sleepdeprived", null, [["sleepun", ""], ["Maskedsamura1", ""], ["Ignis", ""], ["Silverace13", ""]], [], {});
+      // the 8 real teams (Path to Glory sheet); with their mentors
+      team("t-funhavers", "Funhavers", "m2", [["Khaosfire", ""], ["AkaShado", ""], ["BILL123", ""], ["Yiunne", ""]], [], {});
+      team("t-200adr", "200adr", "m4", [["Reioli", ""], ["Rightnwise", ""], ["夢を見る夢", ""], ["Yuituri", ""]], [], {});
+      team("t-labubu", "Labubu Manifesto", "m1", [["Asterlac", ""], ["Magecraft", ""], ["Lolking", ""], ["Neen", ""]], [], {});
+      team("t-ojama", "Ojama Trio", "m8", [["Chabs", ""], ["April", ""], ["Matthew1rox", ""], ["DestelloJoker", ""]], [], {});
+      team("t-pengu", "Pengu Industries", "m3", [["jeiss", ""], ["VioletSkyfire", ""], ["Mareep", ""], ["Vinnyt", ""]], ["u-jeiss"], {});
+      team("t-sleeping", "Sleeping Forest", "m6", [["Ravenbergier", ""], ["Tides", ""], ["Speex", ""], ["Redflake", ""]], [], {});
+      team("t-mango", "Mango Cats", "m7", [["Xinon", ""], ["Keeperbeast", ""], ["Given", ""], ["Ariaza", ""]], [], {});
+      team("t-sleepdeprived", "sleepdeprived", "m5", [["sleepun", ""], ["Maskedsamura1", ""], ["Ignis", ""], ["Silverace13", ""]], [], {});
 
       // ---- session requests ----
       const requests = [];
