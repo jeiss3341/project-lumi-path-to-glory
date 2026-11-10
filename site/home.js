@@ -323,8 +323,8 @@
         const who = UI.bare(UI.coachName(m));
         const said = STAT_LABELS.map((l, k) => l.join(" ").toLowerCase() + " " + m.stats[k] + " of 5").join(", ");
         badgeBox.innerHTML = '<div class="badge-flip" role="button" tabindex="0" aria-pressed="false" aria-label="' + esc(who + "'s ID badge. Flip it to see their stats: " + said) + '">' +
-          '<div class="badge-card"><div class="badge-face">' + UI.badge(m) + '</div><div class="badge-face back">' + badgeBack(m, hint) + "</div></div></div>";
-        $(".badge-face .b-art", badgeBox).insertAdjacentHTML("afterbegin", hint);
+          '<div class="badge-card"><div class="badge-face">' + UI.badge(m) + '</div><div class="badge-face back">' + badgeBack(m, "") + "</div></div></div>";   // no Flip label on the Stats side
+        $(".badge-face .b-row", badgeBox).insertAdjacentHTML("beforeend", hint.replace('class="b-flip-hint"', 'class="b-flip-hint in-row"'));   // front: level with the Subject ID
         const flipper = $(".badge-flip", badgeBox);
         const turn = () => { flipper.setAttribute("aria-pressed", String(flipper.classList.toggle("flipped"))); facSync(); };   // the slideshow waits while the badge is turned over
         flipper.onclick = e => { if (!e.target.closest("button, a")) turn(); };   // staff "Adjust art" keeps working
@@ -649,11 +649,21 @@
       bookingWired = true;
       const pop = $("#bk-pop");
       $("#bk-cards").addEventListener("click", e => { const b = e.target.closest("[data-coach]"); if (b) openCoach(b.dataset.coach); });
-      // a mentor's name in the rosters opens their file in Faculty (scroll.js does the scrolling, from the link's #faculty)
+      // a mentor's name in the rosters opens their file in Faculty right away, then scrolls there.
+      // Files differ in height and sit above the rosters, so the page is shifted by the same amount
+      // in the same frame: the roster stays still instead of jumping.
       document.addEventListener("click", e => {
         const name = e.target.closest(".rost-coach");
-        if (name && S.showMentor) S.showMentor(name.dataset.id);
-      });
+        if (!name || !S.showMentor || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        const fac = document.getElementById("faculty");
+        if (!fac || !window.PTGScroll) { S.showMentor(name.dataset.id); return; }
+        e.preventDefault();
+        const before = name.getBoundingClientRect().top;
+        S.showMentor(name.dataset.id);
+        scrollBy(0, name.getBoundingClientRect().top - before);
+        if (location.hash !== "#faculty") history.pushState(null, "", "#faculty");
+        PTGScroll.to(fac);
+      }, true);
       pop.addEventListener("click", onPopClick);
       pop.addEventListener("input", e => { if (e.target.id === "bk-note") BK.note = e.target.value; });
       pop.addEventListener("close", () => { BK.wk = weeks()[0]; BK.coach = null; });   // the next coach starts back on the first week
