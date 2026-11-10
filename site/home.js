@@ -230,16 +230,17 @@
       const nudgeX = { "2026-11-19": 7 }[ymd] || 0;   // hand-placed tweaks, in % of the day's width (Nov 19 sat a little too far left)
       return "--sx:" + (Math.round(2 + r() * 38) + nudgeX) + "%;--sy:" + Math.round(38 + r() * 10) + "%;--sr:" + (ymd === "2026-11-18" ? -4 : Math.round(-14 + r() * 28)) + "deg";   // Nov 18 landed perfectly straight, so it gets a slight lean by hand
     };
-    const chip = ev => ev.kind === "scrim" ? '<img class="scrim-sticker" src="art/scrim-sticker.svg" alt="" width="240" height="240" style="' + stickerSpot(ev.date) + '">' : '<span class="chip ' + ev.kind + (ev.tentative ? " tbc" : "") + '">' + esc(ev.short) + "</span>";
+    const chip = ev => ev.kind === "scrim" && !ev.fcfs ? '<img class="scrim-sticker" src="art/scrim-sticker.svg" alt="" width="240" height="240" style="' + stickerSpot(ev.date) + '">' : '<span class="chip ' + (ev.fcfs ? "fcfs" : ev.kind) + (ev.tentative ? " tbc" : "") + '">' + esc(ev.short) + "</span>";
     $("#weeks").innerHTML = [1, 2].map(w => '<div class="wk">' + label[w] + '</div><div class="week">' +
       days.filter(d => d.week === w).map(d => '<button class="day" data-iso="' + d.ymd + '" aria-pressed="false" aria-label="' +
         esc(UI.date(d.d, { weekday: "long", month: "long", day: "numeric" }) + (d.events.length ? ", " + d.events.map(e => e.title).join(", ") : ", open day")) + '"><span class="num">' + d.n + "</span>" +
         (d.ymd === todayY ? '<span class="today" title="Today"></span>' : "") + d.events.map(chip).join("") + "</button>").join("") + "</div>").join("");
+    const scrimCord = C.links.find(l => /scrim/i.test(l.name));   // scrim days link to the Scrim Cord too
     function detail() {
       const d = days.find(x => x.ymd === sel);
       $$(".day").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.iso === sel)));
       const body = d.events.length ? d.events.map(ev => "<h3>" + esc(ev.title) + "</h3>" + (ev.tentative ? '<span class="tbc-note">Tentative day</span>' : "") +
-        "<p>" + esc(ev.note) + '</p><a class="btn" href="' + esc(UI.gcal(ev)) + '" target="_blank" rel="noopener">Add to Google Calendar ↗</a>').join("")
+        "<p>" + esc(ev.note) + '</p><div class="dd-acts"><a class="btn" href="' + esc(UI.gcal(ev)) + '" target="_blank" rel="noopener">Add to Google Calendar ↗</a>' + (ev.kind === "scrim" && scrimCord ? '<a class="btn ghost" href="' + esc(scrimCord.url) + '" target="_blank" rel="noopener">Scrim Hub ↗</a>' : "") + "</div>").join("")
         : "<h3>Open day</h3><p>No group event. A good day to request a session with your mentor or an assistant coach.</p>";
       $("#day-detail").innerHTML = '<p class="dd-date">' + esc(UI.date(d.d, { weekday: "long", month: "long", day: "numeric" })) + "</p>" + body +
         '<ul class="agenda">' + C.schedule.map(ev => '<li><button data-iso="' + ev.date + '"' + (ev.date === sel ? ' aria-current="true"' : "") + '><span class="d">' +

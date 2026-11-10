@@ -23,6 +23,7 @@ window.PTG = {
   schedule: [
     { date: "2026-11-09", kind: "kickoff", short: "Day 1", title: "Event begins", note: "Teams meet their mentors and session requests open." },
     { date: "2026-11-11", kind: "scrim", short: "Scrim", title: "Scrim Day 1", note: "Scrim block. Mentors watch live or review after." },
+    { date: "2026-11-12", kind: "scrim", fcfs: true, short: "FCFS", title: "FCFS Scrims", note: "Open scrims, first come first served. Grab a lobby in the Scrim Cord." },
     { date: "2026-11-13", kind: "scrim", short: "Scrim", title: "Scrim Day 2", note: "Scrim block, the last practice before the Mock Checkpoint Series." },
     { date: "2026-11-14", kind: "mock", short: "Mock", title: "Mock Checkpoint Series", note: "A full practice run of the checkpoint format. Checkpoint activates after 4 games, one fewer than the Final." },
     { date: "2026-11-22", kind: "final", short: "Final", title: "Final Checkpoint Series", note: "The checkpoint that counts. Closes out the event." }
