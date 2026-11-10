@@ -133,6 +133,12 @@
     };
     API.sponsorStats = () => q(sb.rpc("sponsor_stats"));   // staff only (schema.sql)
     API.playerStats = () => q(sb.rpc("staff_player_stats"));   // staff only (supabase/player-stats.sql)
+    // [PTG] stream VODs (supabase/vods.sql), each with its [PTG] marks; Lumi-chan fills them in
+    API.vods = () => q(sb.from("ptg_vods").select("*, marks:ptg_marks(*)").order("started_at", { ascending: false }));
+    API.updateVod = (id, patch) => q(sb.from("ptg_vods").update(patch).eq("id", id).select().single());     // the coach's own, or staff
+    API.updateMark = (id, patch) => q(sb.from("ptg_marks").update(patch).eq("id", id).select().single());
+    API.addMark = row => q(sb.from("ptg_marks").insert(Object.assign({ manual: true }, row)).select().single());   // a timestamp the coach adds by hand
+    API.deleteMark = id => q(sb.from("ptg_marks").delete().eq("id", id));
     return API;
   }
 
@@ -545,6 +551,71 @@
         requested: S.requests.filter(r => !r.by_coach).length, booked: S.requests.filter(r => r.status === "accepted").length, coach_hours: Math.round(hrs * 10) / 10 };
       return wait(Object.assign(window.PTGStats.compute(window.PTGStats.sample().concat(own)), { participation: part, sample: true }));
     };
+    // [PTG] VODs: sample streams kept in this browser (separate from the demo data, so no KEY bump), same rules as supabase/vods.sql
+    const VODS = "ptg-demo-vods-v2";   // v2: 40 sample streams instead of 5
+    const sampleVods = () => {
+      const et = (d, h, m) => new Date(Date.UTC(2026, 10, d, h + 5, m)).toISOString();   // Nov <d>, h:m Eastern (EST is UTC-5)
+      const add = (id, coach_id, d, h, m, len, file, marks, extra) => {
+        const s = et(d, h, m), e = new Date(new Date(s).getTime() + len * 1000).toISOString();
+        const c = S.coaches.find(x => x.id === coach_id) || {};
+        return Object.assign({ id, coach_id, twitch_login: (c.twitch || (c.name || coach_id)).toLowerCase(), stream_id: "s-" + id, title: "[PTG] coaching", started_at: s, ended_at: e,
+          vod_id: "demo", thumbnail_url: null, expires_at: new Date(new Date(s).getTime() + 7 * 864e5).toISOString(), saved: false,
+          kind: null, team_id: null, profile_id: null, request_id: null, note: "", for_name: "",
+          marks: marks.map(([a, b, label], k) => ({ id: id + "-m" + k, vod_id: id, started_at: new Date(new Date(s).getTime() + a * 1000).toISOString(), ended_at: new Date(new Date(s).getTime() + b * 1000).toISOString(), label })) }, file, extra || {});
+      };
+      const team = id => S.teams.find(t => t.id === id) || {};
+      return [
+        add("dv-5", "m3", 12, 19, 2, 5725, { kind: "team", team_id: team("t-pengu").id || null, for_name: team("t-pengu").name || "Pengu Industries" }, [[760, 3735, "Draft review"], [4230, 5640, "Scrim game 3"]]),
+        add("dv-4", "m1", 12, 20, 0, 7450, { kind: "team", team_id: team("t-labubu").id || null, for_name: team("t-labubu").name || "Labubu Manifesto" }, [[312, 2900, "Comp planning"], [5500, 7300, "Mock checkpoint prep"]], { saved: true, expires_at: null }),
+        add("dv-3", "a5", 11, 21, 15, 3522, { kind: "individual", profile_id: "u-jeiss", for_name: "Jeiss" }, [[180, 3400, "Laning review"]]),
+        add("dv-2", "m4", 11, 19, 0, 4925, { kind: "general", note: "Scrim day 1, casted", for_name: "" }, [[30, 2450, "Game 1"], [2470, 4900, "Game 2"]]),
+        add("dv-1", "m3", 10, 20, 30, 3900, {}, [[0, 3880, ""]])
+      ].concat(moreVods(add));
+    };
+    // 35 more sample streams, so the practice site shows how 40 reports look (several from the same coach, many coaches)
+    const moreVods = add => {
+      const coaches = ["m3", "m1", "m4", "m6", "a5", "a2", "m2", "m7"], players = ["Reioli", "Asterlac", "Chabs", "Tides", "Given", "Ignis", "Khaosfire", "Speex"];
+      const parts = ["Draft review", "Laning", "Rotations", "Teamfight review", "Scrim game 1", "Scrim game 2", "Item builds", "Macro"];
+      const out = [];
+      for (let i = 0; i < 35; i++) {
+        const coach = i < 10 ? "m3" : i < 17 ? "m1" : coaches[i % coaches.length], t = S.teams[i % S.teams.length] || {};
+        const kind = i % 5 === 0 ? "general" : i % 3 === 0 ? "individual" : "team", len = 2400 + (i * 733) % 5000;
+        const file = kind === "team" ? { kind, team_id: t.id || null, for_name: t.name || "" } : kind === "individual" ? { kind, for_name: players[i % players.length] } : { kind, for_name: "" };
+        out.push(add("dg-" + i, coach, 9 + Math.floor(i / 3) % 14, 15 + (i % 4) * 2, (i * 7) % 60, len, file,
+          [[300, Math.floor(len / 2), parts[i % parts.length]], [Math.floor(len / 2) + 60, len - 30, parts[(i + 3) % parts.length]]], i % 4 === 0 ? { saved: true, expires_at: null } : {}));
+      }
+      return out;
+    };
+    const loadVods = () => { try { const v = JSON.parse(localStorage.getItem(VODS) || "null"); if (Array.isArray(v)) return v; } catch (e) { /* none */ } const v = sampleVods(); saveVods(v); return v; };
+    const saveVods = v => { try { localStorage.setItem(VODS, JSON.stringify(v)); } catch (e) { /* storage blocked */ } };
+    const ownsVod = v => isStaff() || isCoach(v.coach_id);
+    API.vods = () => wait(loadVods().sort((a, b) => (a.started_at < b.started_at ? 1 : -1)));
+    API.updateVod = (id, patch) => {
+      const all = loadVods(), v = all.find(x => x.id === id);
+      if (!v) return fail("That VOD doesn't exist.");
+      if (!ownsVod(v)) return fail("You don't have permission to do that.");
+      Object.assign(v, patch); saveVods(all); return wait(v);
+    };
+    API.updateMark = (id, patch) => {
+      const all = loadVods(), v = all.find(x => (x.marks || []).some(m => m.id === id));
+      if (!v) return fail("That part doesn't exist.");
+      if (!ownsVod(v)) return fail("You don't have permission to do that.");
+      const m = v.marks.find(x => x.id === id); Object.assign(m, patch); saveVods(all); return wait(m);
+    };
+    API.addMark = row => {
+      const all = loadVods(), v = all.find(x => x.id === row.vod_id);
+      if (!v) return fail("That VOD doesn't exist.");
+      if (!ownsVod(v)) return fail("You don't have permission to do that.");
+      const m = Object.assign({ id: "dm-" + Date.now().toString(36), ended_at: null, label: "", manual: true, kind: null, team_id: null, profile_id: null, for_name: "" }, row);
+      v.marks.push(m); saveVods(all); return wait(m);
+    };
+    API.deleteMark = id => {
+      const all = loadVods(), v = all.find(x => (x.marks || []).some(m => m.id === id));
+      if (!v) return fail("That part doesn't exist.");
+      if (!ownsVod(v)) return fail("You don't have permission to do that.");
+      v.marks = v.marks.filter(m => m.id !== id); saveVods(all); return wait(null);
+    };
+
     // Team stats tab: this browser's own logged-in visits, plus sample ones for every account on a team
     API.playerStats = () => {
       if (!isStaff()) return fail("Only staff can see player stats.");

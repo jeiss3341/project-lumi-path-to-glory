@@ -36,6 +36,12 @@ create table if not exists public.ptg_vods (
   note           text not null default '' check (char_length(note) <= 300),
   created_at     timestamptz not null default now()
 );
+-- the name it's filed under, saved with it so the public page can show it
+-- (player profiles are only readable when logged in)
+alter table public.ptg_vods add column if not exists for_name text not null default '' check (char_length(for_name) <= 60);
+-- the coach's own title and description for the report (blank title = who it's for)
+alter table public.ptg_vods add column if not exists custom_title text not null default '' check (char_length(custom_title) <= 80);
+alter table public.ptg_vods add column if not exists description  text not null default '' check (char_length(description) <= 1000);
 create index if not exists ptg_vods_coach on public.ptg_vods (coach_id, started_at desc);
 create index if not exists ptg_vods_team on public.ptg_vods (team_id) where team_id is not null;
 create index if not exists ptg_vods_profile on public.ptg_vods (profile_id) where profile_id is not null;
@@ -51,6 +57,13 @@ create table if not exists public.ptg_marks (
   created_at timestamptz not null default now()
 );
 create index if not exists ptg_marks_vod on public.ptg_marks (vod_id, started_at);
+-- Back-to-back sessions in one stream: the coach can add, move and remove timestamps by hand,
+-- and file each one for a different team or player (blank = whoever the report is filed for).
+alter table public.ptg_marks add column if not exists manual     boolean not null default false;   -- added by the coach, not Lumi-chan
+alter table public.ptg_marks add column if not exists kind       text check (kind in ('team', 'individual', 'general'));
+alter table public.ptg_marks add column if not exists team_id    uuid references public.teams(id) on delete set null;
+alter table public.ptg_marks add column if not exists profile_id uuid references public.profiles(id) on delete set null;
+alter table public.ptg_marks add column if not exists for_name   text not null default '' check (char_length(for_name) <= 60);
 
 -- Everyone can see VODs (they're public streams). Lumi-chan writes with the database's own
 -- connection, which skips these rules. On the site: staff can change anything, and a coach
@@ -83,16 +96,28 @@ create policy "marks read" on public.ptg_marks for select to anon, authenticated
 drop policy if exists "marks update" on public.ptg_marks;
 create policy "marks update" on public.ptg_marks for update to authenticated
   using (public.owns_vod(vod_id)) with check (public.owns_vod(vod_id));
+-- a coach adds and removes timestamps on their own VODs (staff on any)
 drop policy if exists "marks staff insert" on public.ptg_marks;
-create policy "marks staff insert" on public.ptg_marks for insert to authenticated with check (public.is_staff());
+drop policy if exists "marks insert" on public.ptg_marks;
+create policy "marks insert" on public.ptg_marks for insert to authenticated with check (public.owns_vod(vod_id));
 drop policy if exists "marks staff delete" on public.ptg_marks;
-create policy "marks staff delete" on public.ptg_marks for delete to authenticated using (public.is_staff());
+drop policy if exists "marks delete" on public.ptg_marks;
+create policy "marks delete" on public.ptg_marks for delete to authenticated using (public.owns_vod(vod_id));
 
 notify pgrst, 'reload schema';
 
--- check: expect three rows (coaches.twitch, ptg_vods, ptg_marks)
+-- check: expect six rows (coaches.twitch, ptg_vods.for_name, ptg_vods.description, ptg_marks.manual, ptg_vods, ptg_marks)
 select 'coaches.twitch' as part from information_schema.columns
   where table_schema = 'public' and table_name = 'coaches' and column_name = 'twitch'
+union all
+select 'ptg_vods.for_name' from information_schema.columns
+  where table_schema = 'public' and table_name = 'ptg_vods' and column_name = 'for_name'
+union all
+select 'ptg_vods.description' from information_schema.columns
+  where table_schema = 'public' and table_name = 'ptg_vods' and column_name = 'description'
+union all
+select 'ptg_marks.manual' from information_schema.columns
+  where table_schema = 'public' and table_name = 'ptg_marks' and column_name = 'manual'
 union all
 select table_name from information_schema.tables
   where table_schema = 'public' and table_name in ('ptg_vods', 'ptg_marks');

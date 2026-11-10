@@ -18,6 +18,8 @@ html:not(.hours-page) #book{display:none}
 /* ---------- top bar + login ---------- */
 .topbar .code{color:#fff;text-decoration:none}
 .auth{display:flex;align-items:center;gap:8px;flex:none}
+.top-vods{text-decoration:none;margin-right:12px;white-space:nowrap}
+.top-vods:hover,.top-vods[aria-current=page]{text-decoration:underline;text-underline-offset:4px}
 button.cta{border:0;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}
 .topbar .cta.discord{background:#5865f2}
 .topbar .cta.discord:hover{background:var(--ink)}

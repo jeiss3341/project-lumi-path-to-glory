@@ -318,7 +318,9 @@
       return;
     }
     // the profile menu: opens on hover or click, and lists the same desk pages as the desk's tabs
-    el.innerHTML = '<div class="me-menu"><button type="button" class="me-chip" aria-haspopup="true" aria-expanded="false">' + UI.avatar(me, 26) + "<span>" + UI.esc(UI.who(me)) + '</span><i class="me-caret" aria-hidden="true"></i></button>' +
+    // VODs (session reports) sit left of the profile, for anyone logged in, spectators included
+    el.innerHTML = '<a class="top-vods" href="vods.html"' + (/vods\.html$/.test(location.pathname) ? ' aria-current="page"' : "") + '>VODs</a>' +
+      '<div class="me-menu"><button type="button" class="me-chip" aria-haspopup="true" aria-expanded="false">' + UI.avatar(me, 26) + "<span>" + UI.esc(UI.who(me)) + '</span><i class="me-caret" aria-hidden="true"></i></button>' +
       '<div class="me-pop"><div class="me-links"></div><button type="button" id="logout-btn">Log out</button></div></div>';
     UI.$("#logout-btn", el).onclick = e => UI.act(e.currentTarget, () => API.signOut());
     const menu = UI.$(".me-menu", el), chip = UI.$(".me-chip", el), links = UI.$(".me-links", el);

@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   const { $, $$, esc, pad } = UI;
-  const S = { me: null, coaches: [], myCoach: null, tab: null, staffTab: "teams", teamOpen: null, coachEdit: null, pday: null };
+  const S = { page: "main", me: null, coaches: [], myCoach: null, tab: null, staffTab: "teams", teamOpen: null, coachEdit: null, pday: null };
   let watching = false;
 
   boot();
@@ -35,8 +35,19 @@
     S.tab = has(want) ? want : has(UI.view()) ? UI.view() : has("staff") ? "staff" : tabs[0][0];
     UI.setView(S.tab);
     tabs.splice(0, tabs.length, tabs.find(t => t[0] === S.tab));
-    $("#desk-tabs").innerHTML = tabs.map(t => '<button type="button" role="tab" class="dtab" data-tab="' + t[0] + '" aria-selected="' + (t[0] === S.tab) + '">' + esc(t[1]) + "</button>").join("");
-    $("#desk-tabs").onclick = e => { const b = e.target.closest(".dtab"); if (b) { S.tab = b.dataset.tab; history.replaceState(null, "", "#" + S.tab); $$(".dtab").forEach(x => x.setAttribute("aria-selected", String(x === b))); render(); } };
+    // a second tab beside the role's own: a coach's VODs, a player's notes (their session reports, reports.js)
+    const extra = S.tab === "coach" ? ["vods", "Your VODs"] : S.tab === "player" ? ["notes", "Notes"] : null;
+    if (!extra || S.page !== extra[0]) S.page = "main";
+    $("#desk-tabs").innerHTML = tabs.map(t => '<button type="button" role="tab" class="dtab" data-tab="' + t[0] + '" aria-selected="' + (S.page === "main") + '">' + esc(t[1]) + "</button>").join("") +
+      (extra ? '<button type="button" role="tab" class="dtab" data-page="' + extra[0] + '" aria-selected="' + (S.page === extra[0]) + '">' + esc(extra[1]) + "</button>" : "");
+    $("#desk-tabs").onclick = e => {
+      const b = e.target.closest(".dtab");
+      if (!b) return;
+      if (b.dataset.page) S.page = b.dataset.page;
+      else { S.tab = b.dataset.tab; S.page = "main"; history.replaceState(null, "", "#" + S.tab); }
+      $$(".dtab").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+      render();
+    };
     if (!watching) {
       addEventListener("hashchange", () => { const b = $('.dtab[data-tab="' + location.hash.slice(1) + '"]'); if (b) b.click(); });   // the profile menu's links, while already on the desk
       watching = true;
@@ -146,12 +157,35 @@
     renderHead();   // its numbers follow the tab and the latest data
     const body = $("#desk-body");
     try {
-      if (S.tab === "coach") await renderCoach(body);
+      if (S.page === "vods" || S.page === "notes") await renderReports(body);
+      else if (S.tab === "coach") await renderCoach(body);
       else if (S.tab === "staff") await renderStaff(body);
       else await renderPlayer(body);
     } catch (e) {
       body.innerHTML = '<p class="loading">Couldn\'t load this part of your desk: ' + esc(e.message) + "</p>";
     }
+  }
+
+  /* ================================================== session reports on the desk (reports.js)
+     A coach's Your VODs: every [PTG] stream of theirs, to file and edit. A player's Notes: the
+     reports filed for them or their team, including single parts of a back-to-back stream. */
+  async function renderReports(body) {
+    const [all, teams, profiles, requests] = await Promise.all([API.vods(), API.teams(), API.profiles().catch(() => []),
+      S.page === "vods" ? API.coachRequests(S.myCoach.id).catch(() => []) : Promise.resolve([])]);
+    const ctx = { all, coaches: S.coaches, teams, profiles, requests };
+    let list, intro, empty;
+    if (S.page === "vods") {
+      list = all.filter(v => v.coach_id === S.myCoach.id);
+      intro = "Every stream you did with [PTG] in the title. File each one for a team, a player or General, name the parts, and add timestamps by hand for back-to-back sessions. A red dot means it still needs filing.";
+      empty = "No [PTG] streams yet. Put [PTG] in your Twitch title when you stream a session, and it shows up here.";
+    } else {
+      const team = teams.find(t => (t.member_ids || []).includes(S.me.id)), mine = x => (x.kind === "team" && team && x.team_id === team.id) || (x.kind === "individual" && x.profile_id === S.me.id);
+      list = all.filter(v => (PTGReports.filed(v) && mine(v)) || (v.marks || []).some(mine));
+      intro = "Session reports your coaches filed for you" + (team ? " or " + team.name : "") + ". Click a time in the session log to jump to that part.";
+      empty = "No session reports for you yet. When a coach streams a session with you and files it, it shows up here.";
+    }
+    body.innerHTML = '<section class="sheet dpanel wide-panel"><h2>' + (S.page === "vods" ? "Your [PTG] streams" : "Your session reports") + '</h2><p class="muted">' + esc(intro) + '</p><div id="rp-desk"></div></section>';
+    PTGReports.mount($("#rp-desk"), list, ctx, { edit: S.page === "vods", empty });
   }
 
   /* ================================================== player */
