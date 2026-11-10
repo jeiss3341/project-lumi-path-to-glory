@@ -57,10 +57,12 @@
   const teamOf = r => r.by_coach && r.kind === "team" ? D.teams.find(x => x.coach_id === r.coach_id) : D.teams.find(x => (x.member_ids || []).includes(r.requester_id));
   // for the planner, worked out once per mount (it asks on every cell): your hours as half-hour cells, and each
   // waiting or booked request's day, minutes and cells
-  let CUR = new Set(), LIVE = [], RD = new Map(), AT = new Map();
+  // CUR is the planner's working copy (changes pile up there); SAVED is what's in the database. Save changes sends the difference.
+  let CUR = new Set(), SAVED = new Set(), LIVE = [], RD = new Map(), AT = new Map();
   function index() {
-    CUR = new Set();
-    D.blocks.forEach(b => { const y = blockDay(b), [a, e] = bm(b); for (let m = a; m < e; m += 30) CUR.add(key(y, m)); });
+    SAVED = new Set();
+    D.blocks.forEach(b => { const y = blockDay(b), [a, e] = bm(b); for (let m = a; m < e; m += 30) SAVED.add(key(y, m)); });
+    CUR = new Set(SAVED);
     LIVE = D.reqs.filter(r => r.status === "pending" || r.status === "accepted").sort((p, q) => T(p.starts_at) - T(q.starts_at));
     RD = new Map(); AT = new Map();
     LIVE.forEach(r => {
@@ -348,7 +350,8 @@
   function wMove(e) {
     if (!wdrag || wdrag.touch) return;
     if (!(e.buttons & 1)) return wEnd({ type: "pointerup" });   // the button was let go without us hearing: it still counts as the click it was
-    const n = document.elementFromPoint(e.clientX, e.clientY), td = n && n.closest && n.closest(".hp-pl td[data-y]");
+    // the cell the pointer is on (e.target: right even when the page is zoomed, where clientX/Y and elementFromPoint disagree)
+    const n = e.target, td = n && n.closest && n.closest(".hp-pl td[data-y]");
     if (td && panel.contains(td) && td.dataset.y === wdrag.y && +td.dataset.m !== wdrag.m1) {
       wdrag.m1 = +td.dataset.m; wdrag.moved = true;
       [W.a, W.b] = wSpan(wdrag.y, wdrag.m0, wdrag.m1); W.y = wdrag.y;
@@ -430,7 +433,9 @@
     const k = key(y, m), rq = reqsAt(y, m), acc = rq.some(r => r.status === "accepted"), v = HP.view;
     const inRm = v.t === "rm" && v.a != null && v.days.includes(y) && m >= v.a && m < v.b;
     return [pastCell(y, m) ? "past" : "", CUR.has(k) ? "h" : "", acc ? "s" : "", rq.some(r => r.status === "pending") ? "w" : "",
-      f.sel && f.sel(y, m) ? "sel" : "", f.dc && f.dc.has(k) ? v.t : "", inRm && !pastCell(y, m) && held(y, m) ? "skip" : ""].filter(Boolean).join(" ");
+      f.sel && f.sel(y, m) ? "sel" : "", 
+      // dragging back over hours you just took out shows them as your hours again (that's what letting go does)
+      f.dc && f.dc.has(k) ? (v.t === "add" && SAVED.has(k) ? "h" : v.t) : CUR.has(k) && !SAVED.has(k) ? "add" : !CUR.has(k) && SAVED.has(k) ? "rm" : "", inRm && !pastCell(y, m) && held(y, m) ? "skip" : ""].filter(Boolean).join(" ");
   }
   const tip = (y, m) => { const rq = reqsAt(y, m); return dayName(y) + " · " + tm(m) + " ET · " + (rq.length ? rq.map(r => (r.status === "accepted" ? "Booked: " : "Waiting: ") + who(r)).join(", ") : CUR.has(key(y, m)) ? "Your hours" : "Free"); };
   function table() {
@@ -442,12 +447,23 @@
   }
   const weekSw = () => weeks().length === 1 ? '<span class="bk-wk-only">Week 2</span>' : '<div class="bk-seg">' + weeks().map(w => '<button type="button" data-wk="' + w + '" aria-pressed="' + (HP.wk === w) + '">Week ' + w + "</button>").join("") + "</div>";
   const toolSw = () => '<div class="hp-tool" role="group" aria-label="What dragging does"><button type="button" data-tool="add" aria-pressed="' + (HP.tool === "add") + '">+ Add hours</button><button type="button" data-tool="rm" aria-pressed="' + (HP.tool === "rm") + '">− Remove hours</button></div>';
-  const hint = () => HP.tool === "add" ? "<b>Adding:</b> drag on the planner, or type the times in the panel. Click your hours or a session to see it."
-                                       : "<b>Removing:</b> drag over your hours, click a block, or type the times in the panel. Hours with a session or waiting request in them stay until you decline or cancel it.";
+  // one tool: click or drag on empty time to add hours; click or drag on your hours to take them away
+  const hint = () => "<b>Click or drag on empty time</b> to add hours. <b>Click or drag on your hours</b> to remove them. Click a session to see it. Hours with a session or waiting request in them stay until you decline or cancel it.";
   const KEY = '<div class="hp-key"><h6 class="hp-sub">Key</h6><span><i class="h"></i>Your hours</span><span><i class="s"></i>Booked session</span><span><i class="w"></i>Request waiting</span>' +
     '<span><i class="add"></i>Adding</span><span><i class="rm"></i>Removing</span><span><i class="evdot kickoff"></i>Kickoff</span><span><i class="evdot scrim"></i>Scrim day</span><span><i class="evdot mock"></i>Checkpoint</span></div>';
-  const plannerHTML = () => '<div class="hp-bar"><button type="button" class="linkbtn" data-ov>‹ Overview</button><div class="hp-tools">' + toolSw() + weekSw() + '</div></div><p class="hp-hint"></p>' +
-    '<div class="hp-body"><div class="hp-scroll">' + table() + '</div><div class="hp-right"' + (HP.rightH ? ' style="min-height:' + HP.rightH + 'px"' : "") + '><aside class="hp-side"></aside>' + KEY + "</div></div>";
+  const plannerHTML = () => '<div class="hp-bar"><button type="button" class="linkbtn" data-ov>‹ Overview</button><div class="hp-tools">' + weekSw() + '</div></div><p class="hp-hint"></p>' +
+    '<div class="hp-body"><div class="hp-scroll">' + table() + '</div><div class="hp-right"' + (HP.rightH ? ' style="min-height:' + HP.rightH + 'px"' : "") + '><div class="hp-save" hidden></div><aside class="hp-side"></aside>' + KEY + "</div></div>";
+  // changes not saved yet: what they add up to, and one button that saves them all
+  function unsaved() {
+    const plus = [...CUR].filter(k => !SAVED.has(k)).length * 30, minus = [...SAVED].filter(k => !CUR.has(k)).length * 30;
+    const days = D.days.map(d => d.ymd).filter(y => ROWS.some(m => CUR.has(key(y, m)) !== SAVED.has(key(y, m))));
+    return { plus, minus, days };
+  }
+  function saveBar() {
+    const u = unsaved(); if (!u.days.length) return "";
+    return '<b>Changes not saved yet</b><span>' + [u.plus ? "+ " + hrs(u.plus) : "", u.minus ? "− " + hrs(u.minus) : ""].filter(Boolean).join(" · ") + " · " + esc(daysLabel(u.days)) + "</span>" +
+      '<div class="hp-acts"><button type="button" class="btn" data-saveall>Save changes</button><button type="button" class="linkbtn end" data-undoall>Undo all</button></div>';
+  }
   // redraw the planner's marks, the side panel and the hint (without rebuilding the planner)
   function refresh() {
     const s = panel.querySelector(".hp-side"); if (!s) return;
@@ -455,9 +471,10 @@
     panel.querySelectorAll(".hp-pl td[data-y]").forEach(td => { const c = cls(td.dataset.y, +td.dataset.m, f); if (td.className !== c) td.className = c; });
     panel.querySelectorAll(".hp-pl thead [data-day]").forEach(b => b.parentNode.classList.toggle("on", v.t === "day" && v.y === b.dataset.day));
     s.className = "hp-side" + (v.t === "add" ? " is-add" : v.t === "rm" ? " is-rm" : "");
-    s.innerHTML = side();
-    const R = panel.querySelector(".hp-right"), k = R.querySelector(".hp-key");
-    HP.rightH = Math.max(HP.rightH, s.offsetHeight + 14 + k.offsetHeight);
+    s.innerHTML = side(); s.hidden = !s.innerHTML;
+    const R = panel.querySelector(".hp-right"), k = R.querySelector(".hp-key"), sv = R.querySelector(".hp-save");
+    sv.innerHTML = saveBar(); sv.hidden = !sv.innerHTML;
+    HP.rightH = Math.max(HP.rightH, s.offsetHeight + 14 + k.offsetHeight + (sv.hidden ? 0 : sv.offsetHeight + 14));
     R.style.minHeight = HP.rightH + "px";
     const h = panel.querySelector(".hp-hint"); h.className = "hp-hint" + (rmTool() ? " rm" : ""); h.innerHTML = hint();
   }
@@ -475,20 +492,11 @@
       '<button type="button" class="all" data-dall aria-pressed="' + (open.length > 0 && open.every(y => v.days.includes(y))) + '">All week</button></div>';
   }
   function sideWeek() {
-    const ds = wkDays(), inWk = LIVE.filter(r => ds.some(d => d.ymd === rDay(r))), h = weekTotal(CUR) / 60;
-    return '<span class="hp-k">Week ' + HP.wk + " · " + esc(dayName(ds[0].ymd)) + " – " + esc(dayName(ds[ds.length - 1].ymd)) + "</span>" +
-      '<div class="hp-stats"><div><b>' + (h % 1 ? h.toFixed(1) : h) + "</b><span>Hours</span></div><div><b>" + inWk.filter(r => r.status === "accepted").length + "</b><span>Booked</span></div><div><b>" + inWk.filter(r => r.status === "pending").length + "</b><span>Waiting</span></div></div>" +
-      '<h6 class="hp-sub">Your hours</h6><ul class="hp-dlist">' + ds.map(d => {
-        const rs = runs(CUR, d.ymd), n = total(CUR, d.ymd);
-        return '<li><button type="button" data-day="' + d.ymd + '"' + (dayOver(d.ymd) ? ' class="over"' : "") + '><span class="d">' + d.dow + " " + d.n + '</span><span class="t' + (rs.length ? "" : " none") + '">' + (rs.length ? rs.map(r => short(...r)).join("<br>") : "No hours") + '</span><span class="n">' + (n ? hrs(n) : "") + "</span></button></li>";
-      }).join("") + "</ul>" +
-      (HP.view.note ? '<p class="hp-warn">' + esc(HP.view.note) + "</p>" : "") +
-      '<h6 class="hp-sub">' + (rmTool() ? "Remove hours by time" : "Add hours by time") + "</h6>" + form({ days: [], a: null, b: null }) +
-      '<p class="hp-mut">Pick the times and the days. You can also drag on the planner.</p>';
+    return "";   // nothing picked: no panel (the owner didn't want the week summary here)
   }
   function sideRange(v) {
     const add = v.t === "add", c = changes(v), ready = v.a != null && v.b != null && v.days.length, dragging = !!(drag && drag.moved), y0 = v.days[0];
-    let out = back() + '<span><em class="hp-badge ' + v.t + '">' + (add ? "+ Adding hours" : "− Removing hours") + "</em></span>";
+    let out = back() + '<span><em class="hp-badge ' + v.t + '">' + (add ? "+ Adding hours" : "− Removing hours") + '</em> <button type="button" class="linkbtn" data-flip>' + (add ? "Remove these times instead" : "Add these times instead") + "</button></span>";
     if (ready) out += '<p class="hp-big">' + span(v.a, v.b) + ' ET</p><p class="hp-mut">' + esc(daysLabel(v.days)) + " · " + hrs(v.b - v.a) + (v.days.length > 1 ? " a day" : "") + (yours(y0, v.a, v.b) ? "<br>" + esc(yours(y0, v.a, v.b)) : "") + "</p>";
     out += form(v);
     if (!ready) return out + '<p class="hp-mut">' + (v.a == null || v.b == null ? "Pick an hour in and an hour out" + (v.days.length ? "." : ", and the days.") : "Pick the days.") + '</p><div class="hp-acts"><button type="button" class="linkbtn" data-back>Cancel</button></div>';
@@ -503,7 +511,7 @@
     if (!c.sum) out += '<p class="hp-mut">' + (add ? "These times are already your hours." : "None of your hours are in these times.") + "</p>";
     if (joins) out += '<p class="hp-mut">Hours that touch or overlap join into one block.</p>';
     out += dragging ? '<p class="hp-mut">Let go to check it over.</p>'
-      : '<div class="hp-acts"><button type="button" class="btn' + (add ? "" : " cc-danger") + '" data-go' + (c.sum ? "" : " disabled") + ">" + (add ? "Add hours" : "Remove hours") + '</button><button type="button" class="linkbtn end" data-back>Cancel</button></div>';
+      : '<div class="hp-acts"><button type="button" class="btn' + (add ? "" : " cc-danger") + '" data-go' + (c.sum ? "" : " disabled") + ">" + (add ? "Add to planner" : "Remove from planner") + '</button><button type="button" class="linkbtn end" data-back>Cancel</button></div>';
     return out;
   }
   function sideBlock(v) {
@@ -549,45 +557,42 @@
   async function apply(next, days) {
     const diff = (A, B, y) => { const s = new Set(); ROWS.forEach(m => { const k = key(y, m); if (A.has(k) && !B.has(k)) s.add(k); }); return runs(s, y); };
     for (const y of days) {
-      for (const [a, b] of diff(next, CUR, y)) await API.saveHours(ctx.coach.id, null, at(y, a).toISOString(), at(y, b).toISOString());
-      for (const [a, b] of diff(CUR, next, y)) await API.removeHours(ctx.coach.id, at(y, a).toISOString(), at(y, b).toISOString());
+      for (const [a, b] of diff(next, SAVED, y)) await API.saveHours(ctx.coach.id, null, at(y, a).toISOString(), at(y, b).toISOString());
+      for (const [a, b] of diff(SAVED, next, y)) await API.removeHours(ctx.coach.id, at(y, a).toISOString(), at(y, b).toISOString());
     }
   }
   const commit = (next, days, view, msg) => UI.act(null, async () => {
     try { await apply(next, days); HP.view = view; }
     finally { await ctx.rerender(); }   // shows what's saved, even if something failed halfway
   }, msg);
-  async function confirmRange() {
-    const v = HP.view, add = v.t === "add", c = changes(v);
-    if (!c.sum || c.held.length) return;
+  // a draft goes onto the planner straight away; nothing is saved until Save changes
+  function stage() {
+    // times with a session or waiting request are skipped (they stay), so a click or drag never gets stuck
+    const v = HP.view, next = new Set(CUR);
+    if (v.a != null && v.b != null) v.days.forEach(y => { for (let m = v.a; m < v.b; m += 30) { if (pastCell(y, m)) continue; if (v.t === "add") next.add(key(y, m)); else if (!held(y, m)) next.delete(key(y, m)); } });
+    CUR = next; HP.view = { t: "week" }; refresh();
+  }
+  async function saveAll() {
+    const u = unsaved(); if (!u.days.length) return;
     const ok = await UI.ask({
-      kicker: add ? "Add hours" : "Remove hours", title: add ? "Add these hours?" : "Remove these hours?", danger: !add,
-      lead: "<b>" + span(v.a, v.b) + " ET</b> · " + hrs(v.b - v.a) + (v.days.length > 1 ? " a day" : "") + "<br>" + esc(daysLabel(c.per.map(p => p.y))) + " · " + (add ? "adds " : "removes ") + hrs(c.sum) + (c.per.length > 1 ? " in all" : ""),
-      points: [add ? "Players can request sessions in these times as soon as you add them." : "Players can't request these times anymore."]
-        .concat(c.per.map(p => "<b>" + esc(dayName(p.y)) + "</b> " + (total(c.next, p.y) ? "becomes " + runText(c.next, p.y) + " (" + hrs(total(c.next, p.y)) + ")" : "has no hours left") + "."))
-        .concat([add ? "You can change or remove them later." : "There's no undo, but you can add them again."]),
-      yes: add ? "Yes, add hours" : "Yes, remove hours"
+      kicker: "Save hours", title: "Save these changes?",
+      lead: [u.plus ? "Adds " + hrs(u.plus) : "", u.minus ? "removes " + hrs(u.minus) : ""].filter(Boolean).join(", ") + "<br>" + esc(daysLabel(u.days)),
+      points: u.days.map(y => "<b>" + esc(dayName(y)) + "</b> " + (total(CUR, y) ? "becomes " + runText(CUR, y) + " (" + hrs(total(CUR, y)) + ")" : "has no hours left") + ".")
+        .concat(["Players see the new hours right away."]),
+      yes: "Yes, save"
     });
     if (!ok) return;
-    const days = c.per.map(p => p.y);
-    await commit(c.next, days, days.length === 1 ? { t: "day", y: days[0] } : { t: "week" },
-      (add ? "Added " : "Removed ") + hrs(c.sum) + (days.length > 1 ? " over " + days.length + " days." : " on " + dayName(days[0]) + "."));
+    await commit(CUR, u.days, { t: "week" }, "Saved your hours.");
   }
-  async function saveEdit() {
+  const confirmRange = () => stage();
+  function saveEdit() {
     const v = HP.view, E = v.edit, days = [v.y].concat(E.all ? sameAs(v.y, v.a, v.b) : []);
     // booked sessions and waiting requests have to stay inside the new hours, or be declined or cancelled first
     E.lost = LIVE.filter(r => holds(r) && days.includes(rDay(r)) && rSpan(r)[0] >= v.a && rSpan(r)[1] <= v.b && (rSpan(r)[0] < E.a || rSpan(r)[1] > E.b));
     if (E.lost.length) return refresh();
     const next = new Set(CUR);
     days.forEach(y => { for (let m = v.a; m < v.b; m += 30) if (!pastCell(y, m)) next.delete(key(y, m)); for (let m = E.a; m < E.b; m += 30) if (!pastCell(y, m)) next.add(key(y, m)); });
-    const ok = await UI.ask({
-      kicker: "Change hours", title: "Change these hours?",
-      lead: "<b>" + span(v.a, v.b) + "</b> → <b>" + span(E.a, E.b) + " ET</b><br>" + esc(daysLabel(days)),
-      points: ["Players see the new times right away."].concat(days.map(y => "<b>" + esc(dayName(y)) + "</b> becomes " + runText(next, y) + " (" + hrs(total(next, y)) + ").")),
-      yes: "Yes, change hours"
-    });
-    if (!ok) return;
-    await commit(next, days, { t: "day", y: v.y }, "Changed " + span(v.a, v.b) + " to " + span(E.a, E.b) + " ET on " + daysLabel(days) + ".");
+    CUR = next; HP.view = { t: "day", y: v.y }; return refresh();   // saved with the rest by Save changes
   }
 
   /* ---------- Hours: clicking and dragging ---------- */
@@ -599,10 +604,10 @@
   // a click (or a tap on a phone): a session or request opens; your hours open (or, removing, get marked); an empty time starts an hour of new hours
   function clickAt(y, m) {
     const rq = reqsAt(y, m), run = runs(CUR, y).find(r => m >= r[0] && m < r[1]);
-    if (rq.length) HP.view = { t: "req", id: rq[0].id };
-    else if (run) HP.view = rmTool() ? { t: "rm", days: [y], a: run[0], b: run[1] } : { t: "block", y, a: run[0], b: run[1], edit: null };
-    else if (rmTool()) HP.view = { t: "week", note: "Nothing to remove there. Click or drag over your hours." };
+    if (rq.length) return openReq(rq[0].id, y + "|all");   // the full pop-up: that day's requests on the left, so overlaps show
+    else if (run) HP.view = { t: "rm", days: [y], a: m, b: Math.min(m + 60, run[1]) };   // clicking your hours takes that hour away
     else HP.view = { t: "add", days: [y], a: m, b: Math.min(m + 60, M1) };
+    HP.tool = HP.view.t === "rm" ? "rm" : "add";
     refresh();
   }
   // the label by the cursor while dragging: "+ 6:00 PM–9:30 PM · 3.5 h"
@@ -614,19 +619,23 @@
     t.textContent = (v.t === "add" ? "+ " : "− ") + span(v.a, v.b) + (v.days.length > 1 ? " · " + v.days.length + " days" : "") + " · " + hrs(c.sum) + (c.held.length ? " · " + c.held.length + " to answer first" : "");
   }
   // the page may be zoomed (styles.css), and a fixed element's left and top are in zoomed pixels
-  const tagAt = (x, y) => { const t = tag(), z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1; t.style.left = Math.max(8, Math.min(x + 16, innerWidth - t.offsetWidth * z - 8)) / z + "px"; t.style.top = (y + 20) / z + "px"; };
+  const tagAt = (x, y) => { const t = tag(), z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1; t.style.left = Math.max(8, Math.min(x + 16, innerWidth - t.offsetWidth * z - 8)) / z + "px"; const d = drag || wdrag, up = d && d.m1 < d.m0;   // dragging up: the label goes above the cursor, so it never covers what you just marked
+    t.style.top = (up ? y - 20 - t.offsetHeight * z : y + 20) / z + "px"; };
   // redraw at most once a frame, however fast the pointer moves
   const refreshSoon = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; refresh(); tagText(); }); };
   function down(e) {
     const td = e.target.closest(".hp-pl td[data-y]");
     if (!td || e.button !== 0 || td.classList.contains("past")) return;
+    // starting on your hours removes, starting on empty time adds
+    HP.tool = CUR.has(key(td.dataset.y, +td.dataset.m)) ? "rm" : "add";
     drag = { y0: td.dataset.y, m0: +td.dataset.m, y1: td.dataset.y, m1: +td.dataset.m, kind: HP.tool, touch: e.pointerType === "touch", moved: false };
     if (!drag.touch) e.preventDefault();   // touch keeps scrolling; a tap acts like a click
   }
   function move(e) {
     if (!drag || drag.touch) return;
     if (!(e.buttons & 1)) return end({ type: "pointerup" });   // the button was let go without us hearing: it still counts as the click it was
-    const n = document.elementFromPoint(e.clientX, e.clientY), td = n && n.closest && n.closest(".hp-pl td[data-y]");
+    // the cell the pointer is on (e.target: right even when the page is zoomed, where clientX/Y and elementFromPoint disagree)
+    const n = e.target, td = n && n.closest && n.closest(".hp-pl td[data-y]");
     if (td && panel.contains(td) && (td.dataset.y !== drag.y1 || +td.dataset.m !== drag.m1)) {
       drag.y1 = td.dataset.y; drag.m1 = +td.dataset.m; drag.moved = true;
       HP.view = rangeOf(drag); refreshSoon();
@@ -638,8 +647,8 @@
     const d = drag; drag = null;
     if (TAG) TAG.hidden = true;
     if (raf) { cancelAnimationFrame(raf); raf = 0; }
-    if (d.moved) return refresh();   // the draft stays, with its details in the panel
-    if (e.type === "pointerup") clickAt(d.y0, d.m0);
+    if (d.moved) return stage();   // goes on the planner; Save changes saves it all
+    if (e.type === "pointerup") { clickAt(d.y0, d.m0); if (isDraft()) stage(); }
   }
   // typed times and day buttons edit the draft (starting one from the week view)
   function draftEdit(fn) {
@@ -659,12 +668,15 @@
     if ((x = on("[data-day]"))) { HP.view = { t: "day", y: x.dataset.day }; return refresh(); }
     if (on("[data-back]")) { HP.view = { t: "week" }; return refresh(); }
     if ((x = on("[data-block]"))) { const [y, a, b] = x.dataset.block.split("|"); HP.view = { t: "block", y, a: +a, b: +b, edit: null }; return refresh(); }
-    if ((x = on("[data-req]"))) { HP.view = { t: "req", id: x.dataset.req }; return refresh(); }
+    if ((x = on("[data-req]"))) { const r = LIVE.find(q => q.id === x.dataset.req); return openReq(x.dataset.req, r ? rDay(r) + "|all" : ""); }
     if (on("[data-addday]")) { HP.view = { t: "add", days: [HP.view.y], a: 1080, b: 1200 }; return refresh(); }
     if (on("[data-edit]")) { const v = HP.view; v.edit = { a: v.a, b: v.b, all: false, lost: null }; return refresh(); }
     if (on("[data-ecancel]")) { HP.view.edit = null; return refresh(); }
     if (on("[data-esave]")) return saveEdit();
     if (on("[data-rmblock]")) { const v = HP.view; HP.view = { t: "rm", days: [v.y], a: v.a, b: v.b }; return refresh(); }
+    if (on("[data-saveall]")) return saveAll();
+    if (on("[data-undoall]")) { CUR = new Set(SAVED); HP.view = { t: "week" }; return refresh(); }
+    if (on("[data-flip]")) { const v = HP.view; v.t = HP.tool = v.t === "add" ? "rm" : "add"; return refresh(); }
     if (on("[data-go]")) return confirmRange();
     if ((x = on("[data-ans]"))) {
       // Accept / Decline / Cancel session: say what will happen first (UI.askRequest), then act
@@ -683,23 +695,12 @@
 
   /* ---------- paint + events ---------- */
   function paint() {
-    if (ST.mode === "write" && !myTeam()) ST.mode = "sessions";
-    const hrsMode = ST.mode === "hours";
-    const head = '<div class="dp-head"><h2>Your calendar</h2><div class="cc-mode" role="group" aria-label="Calendar view">' +
-      '<button type="button" data-mode="sessions" aria-pressed="' + !hrsMode + '">Sessions</button><button type="button" data-mode="hours" aria-pressed="' + hrsMode + '">Hours</button></div></div>';
-    if (ST.mode === "write") {
-      if (!weeks().includes(W.wk)) { W.wk = weeks()[0]; wClear(); }
-      wCheck(); panel.innerHTML = head + wHTML(); wRefresh();
-      return;
-    }
-    if (!hrsMode) {
-      panel.innerHTML = head + '<div class="cc-hintrow"><p class="muted small cc-hint">Click a day to see its booked sessions and waiting requests. Click it again to close.</p>' +
-        (myTeam() ? '<button type="button" class="btn ghost" data-write>+ Write a session</button>' : "") + "</div>" + grid() + legend() + sessionsView();
-      return;
-    }
-    if (HP.page === "overview") { panel.innerHTML = head + overview(); return; }
-    panel.innerHTML = head + plannerHTML();
-    refresh();
+    // one page: the sessions calendar on top, your hours under it
+    const head = '<div class="dp-head"><h2>Your calendar</h2></div>';
+    const sessions = '<div class="cc-hintrow"><p class="muted small cc-hint">Click a day to see its booked sessions and waiting requests. Click it again to close.</p></div>' + grid() + legend() + sessionsView();
+    const hours = '<div class="cc-hours"><h3 class="cc-hours-h">Your hours</h3>' + (HP.page === "overview" ? overview() : plannerHTML()) + "</div>";
+    panel.innerHTML = head + sessions + hours;
+    if (HP.page !== "overview") refresh();
   }
   function mount(el, deskCtx) {
     panel = el; ctx = deskCtx;
@@ -709,30 +710,20 @@
     paint();
     panel.onclick = e => {
       const on = s => e.target.closest(s); let x;
-      if ((x = on("[data-mode]"))) {
-        if (x.dataset.mode === "hours" && ST.mode !== "hours") { HP.page = "overview"; HP.view = { t: "week" }; }   // Hours opens on the overview
-        ST.mode = x.dataset.mode; return paint();
-      }
-      if (ST.mode === "hours") return hoursClick(e);
-      if (ST.mode === "write") return writeClick(e);
-      if (on("[data-write]")) return openWrite();
+      const inHours = !!on(".cc-hours");
+      if (inHours) return hoursClick(e);
       if ((x = on("[data-req]"))) return openReq(x.dataset.req, x.dataset.set || "");
       if ((x = on(".hit"))) { const y = x.dataset.day; ST.open = ST.open === y ? null : y; return paint(); }
       if (on("[data-closeday]")) { ST.open = null; return paint(); }
     };
-    panel.onchange = e => { if (ST.mode === "hours") hoursChange(e); else if (ST.mode === "write") writeChange(e); };
-    panel.oninput = e => { if (ST.mode === "write" && e.target.hasAttribute("data-wnote")) W.note = e.target.value; };
-    panel.onpointerdown = e => { if (ST.mode === "hours") down(e); else if (ST.mode === "write") wDown(e); };
-    panel.onpointermove = e => { if (ST.mode === "hours") move(e); else if (ST.mode === "write") wMove(e); };
+    panel.onchange = e => { if (e.target.closest(".cc-hours")) hoursChange(e); };
+    panel.onpointerdown = e => down(e);
+    panel.onpointermove = e => move(e);
     if (!wired) { wired = true; ["pointerup", "pointercancel"].forEach(t => { document.addEventListener(t, end); document.addEventListener(t, wEnd); }); }
   }
 
-  // the desk header's "Hours posted" opens the Hours view (on its overview)
-  function mode(m) {
-    if (m === "hours" && ST.mode !== "hours") { HP.page = "overview"; HP.view = { t: "week" }; }
-    ST.mode = m;
-    if (panel && D) paint();
-  }
+  // the desk header's "Hours posted" brings your hours into view (they're always on the page now)
+  function mode() { if (panel && D) paint(); }
 
   window.PTGCoachCal = { mount, openReq, mode };   // openReq: the desk's Requests waiting cards open the same pop-up
 })();

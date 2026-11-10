@@ -76,6 +76,18 @@
       { v: whenShort(nextIn(mine)), k: "Next session", go: "player:reqs" },
       { v: w, k: plural(w, "Request waiting", "Requests waiting"), hot: w > 0, go: "player:reqs" }];
   }
+  // player tab: your team (name, mentor, players, request button) sits along the bottom of the header
+  async function headTeam() {
+    if (S.tab === "coach" || S.tab === "staff") return "";
+    const teams = await API.teams();
+    const team = teams.find(t => (t.member_ids || []).includes(S.me.id));
+    if (!team) return '<p>You\'re not on a team for this event.</p>';
+    const coach = S.coaches.find(c => c.id === team.coach_id);
+    return '<div><span class="mono-label">Your team</span><p class="dh-tname">' + esc(team.name) + "</p>" +
+      "<p>Mentor: <b>" + esc(coach ? UI.coachName(coach) : "To be assigned") + "</b></p></div>" +
+      '<ul class="dh-tplayers">' + (team.players || []).map(p => "<li>" + esc(p.ign) + "</li>").join("") + "</ul>" +
+      (coach ? '<a class="btn" href="index.html?hours&coach=' + encodeURIComponent(coach.id) + '">Request a session with ' + esc(UI.bare(UI.coachName(coach))) + "</a>" : "");
+  }
   let headTok = 0;
   async function renderHead() {
     const c = S.myCoach, roles = [], tok = ++headTok;
@@ -83,12 +95,13 @@
     if (S.isPlayer) roles.push("Player");
     if (S.me.role === "staff") roles.push("Staff");
     const head = $("#desk-head");
-    if (!head.querySelector(".dhead")) head.innerHTML = '<header class="sheet dhead"><div class="dh-who">' + UI.avatar(S.me, 52) + '<div><span class="mono-label"></span><h1></h1><p class="dh-sub"></p></div></div><div class="dh-stats"></div></header>';
+    if (!head.querySelector(".dhead")) head.innerHTML = '<header class="sheet dhead"><div class="dh-who">' + UI.avatar(S.me, 52) + '<div><span class="mono-label"></span><h1></h1><p class="dh-sub"></p></div></div><div class="dh-stats"></div><div class="dh-team" hidden></div></header>';
     head.querySelector(".mono-label").textContent = "Your desk · " + roles.join(" · ");
     head.querySelector("h1").textContent = UI.who(S.me);
     head.querySelector(".dh-sub").textContent = "@" + (S.me.username || "");
-    const stats = await headStats().catch(() => []);
+    const [stats, teamHtml] = await Promise.all([headStats().catch(() => []), headTeam().catch(() => "")]);
     if (tok !== headTok) return;   // a newer one is on its way
+    const dt = head.querySelector(".dh-team"); dt.innerHTML = teamHtml; dt.hidden = !teamHtml;
     head.querySelector(".dh-stats").innerHTML = stats.map(s => '<button type="button" class="dh-stat' + (s.hot ? " hot" : "") + '" data-go="' + s.go + '" title="' + esc(s.v + " · " + s.k) + '"><b>' + esc(s.v) + "</b><span>" + esc(s.k) + "</span></button>").join("");
     head.onclick = e => { const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go); };
   }
@@ -100,7 +113,11 @@
     $$(".dtab").forEach(x => x.setAttribute("aria-selected", String(x.dataset.tab === tab)));
     await render();
     if (tab === "coach" && where === "hours") PTGCoachCal.mode("hours");
-    const t = $({ waiting: "#d-waiting", coming: "#d-coming", hours: "#cc-panel", team: "#d-team", reqs: "#d-reqs" }[where] || "#desk-tabs") || $("#desk-tabs");
+    if (tab === "coach" && where === "waiting") {   // no cards anymore: the number opens the pop-up with every request waiting
+      const w = (await API.coachRequests(S.myCoach.id)).filter(r => r.status === "pending" && new Date(r.starts_at) > new Date(UI.now())).sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+      if (w.length) return PTGCoachCal.openReq(w[0].id, "*|pending");
+    }
+    const t = $({ coming: "#d-coming", hours: ".cc-hours", team: "#desk-head", reqs: "#d-reqs" }[where] || "#desk-tabs") || $("#desk-tabs");
     t.scrollIntoView({ block: "start" });   // straight there (a smooth scroll can be cut short while the desk redraws)
   }
 
@@ -143,20 +160,14 @@
       : '<div class="cc-dhead"><h3>' + esc(longDate(S.pday)) + '</h3><button type="button" class="linkbtn js-pclose">Close</button></div>' +
         (pl.length ? reqTable(pl, "player") : '<p class="empty-note">' + (over(S.pday) ? "Nothing happened on this day." : "No sessions or requests on this day.") + "</p>");
     body.innerHTML =
-      '<section class="sheet dpanel wide-panel" id="d-team"><h2>Your team</h2>' +
-        (team ? '<p class="big-name">' + esc(team.name) + '</p><p>Mentor: <b>' + esc(coach ? UI.coachName(coach) : "To be assigned") + "</b></p>" +
-          '<ul class="plain">' + (team.players || []).map(p => "<li>" + esc(p.ign) + (p.discord ? ' <span class="muted">@' + esc(p.discord) + "</span>" : "") + "</li>").join("") + "</ul>" +
-          (coach ? '<a class="btn" href="index.html?hours&coach=' + encodeURIComponent(coach.id) + '">Request a session with ' + esc(UI.bare(UI.coachName(coach))) + "</a>" : "")
-          : "<p>You're not on a team for this event.</p>") +
-      "</section>" +
-      '<section class="sheet dpanel wide-panel" id="d-reqs"><div class="dp-head"><h2>Your session requests</h2><a class="btn" href="index.html?hours">Request a session</a></div>' +
-        '<p class="muted">Times are in your time zone (' + esc(UI.tz) + ").</p>" +
-        (upcoming.length ? reqTable(upcoming, "player") : '<p class="empty-note">No upcoming requests.</p>') +
-      "</section>" +
       '<section class="sheet dpanel wide-panel" id="d-cal"><h2>Your sessions</h2>' +
         '<div class="cal2 cc-cal">' + [1, 2].map(w => '<span class="wkl">Week ' + w + "</span>" + days.filter(d => d.week === w).map(pcell).join("")).join("") + "</div>" +
         '<div class="cc-legend"><span><i class="lg acc"></i>Booked session</span><span><i class="lg pen"></i>Request waiting</span><span><i class="lg dn"></i>Done</span><span><i class="lg ex"></i>Expired</span><span><i class="evdot kickoff"></i>Kickoff</span><span><i class="evdot scrim"></i>Scrim day</span><span><i class="evdot mock"></i>Checkpoint</span></div>' +
-        dayList + "</section>";
+        dayList + "</section>" +
+      '<section class="sheet dpanel wide-panel" id="d-reqs"><div class="dp-head"><h2>Your session requests</h2><a class="btn" href="index.html?hours">Request a session</a></div>' +
+        '<p class="muted">Times are in your time zone (' + esc(UI.tz) + ").</p>" +
+        (upcoming.length ? reqTable(upcoming, "player") : '<p class="empty-note">No upcoming requests.</p>') +
+      "</section>";
     body.onclick = e => {
       const c = e.target.closest(".js-cancel");
       if (c) return UI.act(c, async () => { await API.setRequestStatus(c.dataset.id, "cancelled"); await render(); }, "Request cancelled.");
@@ -193,20 +204,8 @@
     const T = iso => new Date(iso).getTime();
     const overlaps = r => pending.some(x => x.id !== r.id && T(x.starts_at) < T(r.ends_at) && T(r.starts_at) < T(x.ends_at));
 
-    const slip = r => '<article class="slip">' +
-      '<div class="slip-top">' + UI.avatar(r.requester, 30) + "<div><b>" + esc(UI.who(r.requester)) + '</b><span class="muted">@' + esc((r.requester && r.requester.username) || "") + "</span></div>" +
-        (onTeam(r) ? '<span class="rchip green">Your team</span>' : '<span class="rchip">Other team</span>') + "</div>" +
-      '<p class="slip-when">' + esc(UI.date(r.starts_at, { weekday: "long", month: "short", day: "numeric" })) + "<br><b>" + esc(UI.time(r.starts_at)) + " → " + esc(UI.time(r.ends_at)) + "</b> · " + esc(UI.dur(r.starts_at, r.ends_at)) + "</p>" +
-      '<p class="slip-kind">' + (r.kind === "team" ? "Team review" : "Individual session") + "</p>" +
-      // its own line, so it never wraps halfway
-      (overlaps(r) ? '<em class="cc-otag slip-flag">Overlaps · sent ' + UI.sentRank(r, pending).split(" ")[0] + "</em>" : "") +
-      (r.note ? '<p class="slip-note">“' + esc(r.note) + "”</p>" : "") +
-      // accepting or declining happens in the Details pop-up
-      '<div class="slip-act"><button type="button" class="linkbtn js-open" data-id="' + esc(r.id) + '">Details ›</button></div></article>';
 
     body.innerHTML =
-      '<section class="dpanel-flat" id="d-waiting"><div class="dp-head"><h2>Requests waiting <span class="count">' + pending.length + "</span></h2><span class=\"muted\">Times in your time zone (" + esc(UI.tz) + ")</span></div>" +
-        (pending.length ? '<div class="slips">' + pending.map(slip).join("") + "</div>" : '<p class="empty-note on-dark">Nothing waiting. New requests show up here as players send them.</p>') + "</section>" +
       // the calendar (Hours | Sessions) lives in coachcal.js
       '<section class="sheet dpanel wide-panel" id="cc-panel"></section>' +
       '<section class="sheet dpanel wide-panel" id="d-coming"><h2>Coming up</h2>' + (upcoming.length ? reqTable(upcoming, "coach", myTeam && myTeam.name) : '<p class="empty-note">No accepted sessions coming up.</p>') +
