@@ -152,8 +152,8 @@
       "- Regions: " + s.regions.map(r => r.name + " " + Math.round(100 * r.n / Math.max(1, s.visitors)) + "%").join(", "),
       "",
       "Engagement",
-      "- Average time on site: " + dur(s.avg_seconds) + " · " + num(s.total_hours) + " hours watched in total",
-      "- Most-viewed sections: " + top(s.sections),
+      "- Average time on site: " + dur(s.avg_seconds) + " · " + num(s.total_hours) + " hours watched in total (time tracking began Nov 10)",
+      "- Most-viewed sections (since Nov 10): " + top(s.sections),
       "- Most-clicked coaches: " + top(s.coaches),
       "- Discord invite clicks: " + num(s.discord.reduce((a, b) => a + b.n, 0)) + " · calendar adds: " + num(s.gcal.reduce((a, b) => a + b.n, 0)),
       "",
@@ -175,14 +175,14 @@
       '<p class="muted">Counted anonymously on every visit: no names or Discord accounts are stored. Times are Eastern.</p>' +
       '<div class="ss-tiles">' +
         [["Visits", num(s.visits)], ["Unique visitors", num(s.visitors)], ["Came back", num(s.returning) + " · " + pct(s.returning, s.visitors)],
-         ["Avg time on site", dur(s.avg_seconds)], ["Total time watched", num(s.total_hours) + " h"], ["Left within 10 s", s.bounce + "%"],
+         ["Avg time on site · since Nov 10", dur(s.avg_seconds)], ["Total time watched · since Nov 10", num(s.total_hours) + " h"], ["Left within 10 s · since Nov 10", s.bounce + "%"],
          ["Logged-in visitors", num(s.logged_in_visitors)], ["Discord invite clicks", num(sum(s.discord))], ["Calendar adds", num(sum(s.gcal))],
          ["Session requests", num(P.requested)], ["Sessions booked", num(P.booked)], ["Coach hours offered", num(P.coach_hours)]]
           .map(([l, v]) => '<div class="ss-tile"><b>' + esc(v) + "</b><span>" + esc(l) + "</span></div>").join("") + "</div>" +
       '<div class="ss-grid">' +
         '<div class="ss-box" style="grid-column:1/-1"><h3>Visits per day</h3><p class="ss-note">Black bars are event days (scrims and checkpoints).</p><div class="ss-days">' +
           (s.days.map(d => '<div class="' + (evDays.has(d.day) ? "ev" : "") + '" style="height:' + (100 * d.visits / maxDay).toFixed(1) + '%" title="' + esc(shortDay(d.day) + ": " + d.visits + " visits, " + d.visitors + " visitors") + '"><span>' + esc(shortDay(d.day).replace(/^\w+ /, "")) + "</span></div>").join("") || "") + "</div></div>" +
-        box("Where people spend time", "Total time on each part of the page", bars(s.sections, x => x.seconds, x => dur(x.seconds))) +
+        box("Where people spend time", "Total time on each part of the page, counted since Nov 10", bars(s.sections, x => x.seconds, x => dur(x.seconds))) +
         box("Busiest hours (Eastern)", "", '<div class="ss-hours">' + s.hours.map(h => '<i style="height:' + (100 * h.visits / maxH).toFixed(1) + '%" title="' + h.h + ":00 · " + h.visits + ' visits"></i>').join("") + '</div><div class="ss-hl"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span></div>') +
         box("Most-clicked coaches", "Mentor tabs and assistant cards", bars(s.coaches.slice(0, 17), x => x.n, x => num(x.n))) +
         box("Characters clicked", "In mentors' character pools", bars(s.chars.slice(0, 12), x => x.n, x => num(x.n))) +
