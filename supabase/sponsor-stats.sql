@@ -59,6 +59,7 @@ begin
     'logged_in_visitors', (select count(distinct visitor) from v where logged_in),
     'avg_seconds',        (select coalesce(round(avg(ms) / 1000.0), 0) from sess),
     'total_hours',        (select coalesce(round(sum(ms) / 3600000.0, 1), 0) from sess),
+    'total_seconds',      (select coalesce(round(sum(ms) / 1000.0), 0) from sess),
     'bounce',             (select case when count(*) = 0 then 0 else round(100.0 * count(*) filter (where ms < 10000) / count(*)) end from sess),
     'days',      (select coalesce(jsonb_agg(jsonb_build_object('day', d, 'visits', n, 'visitors', u) order by d), '[]'::jsonb)
                   from (select et::date d, count(*) n, count(distinct visitor) u from v group by 1) x),

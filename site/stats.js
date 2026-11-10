@@ -41,6 +41,7 @@
       logged_in_visitors: uniq(visits.filter(r => r.logged_in).map(r => r.visitor)),
       avg_seconds: tvals.length ? Math.round(tvals.reduce((a, b) => a + b, 0) / tvals.length / 1000) : 0,
       total_hours: Math.round(tvals.reduce((a, b) => a + b, 0) / 36e4) / 10,
+      total_seconds: Math.round(tvals.reduce((a, b) => a + b, 0) / 1000),
       bounce: tvals.length ? Math.round(100 * tvals.filter(x => x < 10000).length / tvals.length) : 0,
       days: Object.values(days).map(g => ({ day: g.day, visits: g.visits, visitors: g.v.size })).sort((a, b) => a.day < b.day ? -1 : 1),
       new_by_day: group(Object.entries(firstVisit).map(([v, t]) => ({ visitor: v, created_at: t })), r => etParts(r.created_at).day).map(g => ({ day: g.name, n: g.n })),
@@ -130,6 +131,8 @@
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const num = n => Number(n || 0).toLocaleString("en-US");
   const dur = s => s >= 3600 ? (s / 3600).toFixed(1) + " h" : s >= 60 ? Math.floor(s / 60) + "m " + (s % 60) + "s" : s + "s";
+  // total time watched: minutes while it's small (hours rounded to one decimal showed "0 h"); older databases only send hours
+  const totalTime = s => s.total_seconds != null ? dur(s.total_seconds) : num(s.total_hours) + " h";
   const shortDay = ymd => new Date(ymd + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const bars = (list, valueOf, label, note) => {
     const max = Math.max(1, ...list.map(valueOf));
@@ -152,7 +155,7 @@
       "- Regions: " + s.regions.map(r => r.name + " " + Math.round(100 * r.n / Math.max(1, s.visitors)) + "%").join(", "),
       "",
       "Engagement",
-      "- Average time on site: " + dur(s.avg_seconds) + " · " + num(s.total_hours) + " hours watched in total (time tracking began Nov 10)",
+      "- Average time on site: " + dur(s.avg_seconds) + " · " + totalTime(s) + " watched in total (time tracking began Nov 10)",
       "- Most-viewed sections (since Nov 10): " + top(s.sections),
       "- Most-clicked coaches: " + top(s.coaches),
       "- Discord invite clicks: " + num(s.discord.reduce((a, b) => a + b.n, 0)) + " · calendar adds: " + num(s.gcal.reduce((a, b) => a + b.n, 0)),
@@ -175,7 +178,7 @@
       '<p class="muted">Counted anonymously on every visit: no names or Discord accounts are stored. Times are Eastern.</p>' +
       '<div class="ss-tiles">' +
         [["Visits", num(s.visits)], ["Unique visitors", num(s.visitors)], ["Came back", num(s.returning) + " · " + pct(s.returning, s.visitors)],
-         ["Avg time on site · since Nov 10", dur(s.avg_seconds)], ["Total time watched · since Nov 10", num(s.total_hours) + " h"], ["Left within 10 s · since Nov 10", s.bounce + "%"],
+         ["Avg time on site · since Nov 10", dur(s.avg_seconds)], ["Total time watched · since Nov 10", totalTime(s)], ["Left within 10 s · since Nov 10", s.bounce + "%"],
          ["Logged-in visitors", num(s.logged_in_visitors)], ["Discord invite clicks", num(sum(s.discord))], ["Calendar adds", num(sum(s.gcal))],
          ["Session requests", num(P.requested)], ["Sessions booked", num(P.booked)], ["Coach hours offered", num(P.coach_hours)]]
           .map(([l, v]) => '<div class="ss-tile"><b>' + esc(v) + "</b><span>" + esc(l) + "</span></div>").join("") + "</div>" +
