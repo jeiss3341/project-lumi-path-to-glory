@@ -108,6 +108,7 @@
     API.requestSession = r => q(sb.from("requests").insert(r).select().single());
     API.saveSessionSettings = (c, mn, mx, k) => q(sb.rpc("save_session_settings", { c, mn, mx, k }));
     API.setRequestStatus = (id, status) => q(sb.from("requests").update({ status }).eq("id", id).select().single());
+    API.moveRequest = (id, s, e) => q(sb.rpc("move_request", { r: id, s, e }));   // coach or staff moves a waiting or booked session (schema.sql)
     // a mentor writes down a session set up with their own team: booked straight away (see schema.sql)
     API.writeSession = r => q(sb.rpc("write_session", { c: r.coach_id, p: r.kind === "team" ? null : r.requester_id, k: r.kind, s: r.starts_at, e: r.ends_at, n: r.note || "" }));
 
@@ -481,6 +482,20 @@
       const row = { id: rid(), coach_id: c.id, requester_id: r.kind === "team" ? c.profile_id : r.requester_id, kind: r.kind, starts_at: r.starts_at, ends_at: r.ends_at, note: (r.note || "").slice(0, 500),
         status: "accepted", by_coach: true, created_at: when, decided_at: when };
       S.requests.push(row); save(); return wait(row);
+    };
+    API.moveRequest = (id, s, e) => {
+      const r = S.requests.find(x => x.id === id);
+      if (!r) return fail("That request doesn't exist.");
+      if (!(isStaff() || isCoach(r.coach_id))) return fail("Only the coach can move this session.");
+      if (!["pending", "accepted"].includes(r.status)) return fail("Only waiting requests and booked sessions can be moved.");
+      const len = (new Date(e) - new Date(s)) / 6e4;
+      if (len < 30 || len > 240) return fail("Sessions run from 30 minutes to 4 hours.");
+      if (new Date(s) < now()) return fail("That time has already passed.");
+      if (!S.availability.some(b => b.coach_id === r.coach_id && new Date(b.starts_at) <= new Date(s) && new Date(b.ends_at) >= new Date(e))) return fail("Pick a time inside your posted hours.");
+      if (S.requests.some(x => x.id !== id && x.coach_id === r.coach_id && x.status === "accepted" && overlap(x.starts_at, x.ends_at, s, e))) return fail("That time is already booked.");
+      r.starts_at = new Date(s).toISOString(); r.ends_at = new Date(e).toISOString(); r.moved_at = now().toISOString();
+      if (r.status === "accepted") S.requests.forEach(x => { if (x.id !== id && x.coach_id === r.coach_id && x.status === "pending" && overlap(x.starts_at, x.ends_at, s, e)) { x.status = "declined"; x.decided_at = r.moved_at; } });
+      save(); return wait(r);
     };
     API.setRequestStatus = (id, status) => {
       const r = S.requests.find(x => x.id === id);

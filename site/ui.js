@@ -341,7 +341,7 @@
       let view = UI.view();
       if (!views.some(v => v[0] === view)) view = staff ? "staff" : views[0][0];
       const items = [];
-      if (view === "coach") items.push(["desk.html#coach", coach.kind === "assistant" ? "Coach calendar" : "Mentor calendar"], ["", "Session settings"]);
+      if (view === "coach") items.push(["desk.html#coach", coach.kind === "assistant" ? "Coach calendar" : "Mentor calendar"]);   // Session settings lives in the desk header now
       if (view === "player") items.push(["desk.html#player", "Player file"]);
       if (view === "staff") items.push(["desk.html#staff", "Staff"]);
       if (coach || staff || onTeam) items.push(["index.html?hours", "Office hours"]);   // only for people in the event
@@ -359,7 +359,7 @@
   UI.login = btn => UI.act(btn, () => API.signIn());
 
   // a coach's questions about the sessions they take; the defaults are the event's normal rules
-  UI.sessionSettings = function (c) {
+  UI.sessionSettings = function (c, done) {
     const LENGTHS = [[30, "30 min"], [60, "1 h"], [90, "1.5 h"], [120, "2 h"]], KINDS = [["both", "Both"], ["team", "Team only"], ["individual", "Individual only"]];
     const v = { min: c.min_minutes || 30, max: c.max_minutes || 120, kinds: c.session_kinds || "both" };
     const d = document.createElement("dialog");
@@ -381,6 +381,7 @@
       else if ("save" in b.dataset) UI.act(b, async () => {
         await API.saveSessionSettings(c.id, v.min, v.max, v.kinds);
         Object.assign(c, { min_minutes: v.min, max_minutes: v.max, session_kinds: v.kinds });
+        if (done) done();   // e.g. the desk header shows the new lengths
         d.close();
       }, "Session settings saved.");
     };

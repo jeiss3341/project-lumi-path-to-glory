@@ -135,10 +135,28 @@
     let d = document.getElementById("cc-dlg");
     if (!d) {
       d = document.createElement("dialog"); d.id = "cc-dlg"; d.setAttribute("aria-labelledby", "cc-dlg-title"); document.body.appendChild(d);
-      d.addEventListener("close", () => d.classList.remove("wide"));
+      d.addEventListener("close", () => d.classList.remove("wide", "moving"));
       d.addEventListener("click", e => {
         if (e.target === d) return d.close();
         const go = e.target.closest("[data-req]"); if (go) return openReq(go.dataset.req);
+        // Move: pick a new day and time; it changes straight away and the player sees "Moved" (and gets a Discord ping)
+        const mv = e.target.closest("[data-move]");
+        if (mv) { const box = d.querySelector(".cc-move"); box.hidden = !box.hidden; d.classList.toggle("moving", !box.hidden); if (!box.hidden) { mvReset(D.reqs.find(x => x.id === PG.cur)); mvPaint(d); box.scrollIntoView({ block: "nearest" }); } return; }
+        const wk = e.target.closest("[data-mvwk]"); if (wk) { MV.wk = +wk.dataset.mvwk; return mvPaint(d); }
+        const ms = e.target.closest("[data-mvsave]");
+        if (ms) {
+          const r = D.reqs.find(x => x.id === ms.dataset.mvsave), y = MV.y, a = MV.a, bb = MV.b;
+          if (!mvOk()) return;
+          const them = r.by_coach && r.kind === "team" ? "your team" : UI.who(r.requester), y0 = UI.dayOf(r.starts_at);
+          // check first: the time changes straight away, so the player should already know
+          return UI.ask({
+            kicker: "Change time", title: "Did you ask " + esc(them) + " first?",
+            lead: "<b>" + esc(dayShort(y0)) + ", " + span(mins(r.starts_at, y0), mins(r.ends_at, y0)) + "</b> → <b>" + esc(dayShort(y)) + ", " + span(a, bb) + " " + TZ + "</b>",
+            points: ["The time changes right away.", esc(them) + " sees it marked <b>Moved</b> and gets a Discord ping.", "Only change it if they've agreed to the new time."],
+            yes: "Yes, they agreed"
+          }).then(ok => ok && UI.act(ms, async () => { await API.moveRequest(r.id, at(y, a).toISOString(), at(y, bb).toISOString()); d.close(); await ctx.rerender(); },
+            "Changed to " + dayShort(y) + ", " + span(a, bb) + ". " + them + " sees the new time."));
+        }
         const b = e.target.closest("[data-do]"); if (!b) return;
         if (b.dataset.do === "close") return d.close();
         // Accept / Decline / Cancel session: say what will happen first (UI.askRequest), then act
@@ -146,6 +164,35 @@
         UI.askRequest({ r, status: s, team: t && t.name, reqs: D.reqs }).then(ok => ok &&
           UI.act(b, async () => { await API.setRequestStatus(r.id, s); d.close(); await ctx.rerender(); },
             { accepted: "Accepted. It's on your calendar.", declined: "Declined.", cancelled: "Session cancelled." }[s]));
+      });
+      // Change time grid: press on a day, drag to set the length (capped), or just click to move it at the same length
+      const cell = e => { const t = e.target.closest && e.target.closest(".cc-mvpl td[data-my]"); return t && !t.classList.contains("past") ? t : null; };
+      d.addEventListener("pointerdown", e => {
+        const t = cell(e); if (!t || e.button !== 0) return;
+        e.preventDefault();
+        const y = t.dataset.my, m = +t.dataset.mm;
+        // on the blue session: grab it and drag it anywhere (same length); elsewhere: drag out a new length
+        MV.drag = { y, m0: m, len: MV.b - MV.a, moved: false, grab: y === MV.y && m >= MV.a && m < MV.b, off: m - MV.a };
+      });
+      d.addEventListener("pointermove", e => {
+        const g = MV.drag; if (!g) return;
+        // the pointer's own cell (e.target is right even on a zoomed page)
+        const t = cell(e); if (!t) return;
+        const y = t.dataset.my, m = +t.dataset.mm;
+        if (g.grab) {
+          const a = Math.max(M0, Math.min(m - g.off, M1 - g.len));
+          if (y === MV.y && a === MV.a) return;
+          g.moved = true; Object.assign(MV, { y, a, b: a + g.len }); return mvPaint(d);
+        }
+        if (y !== g.y || (m === g.m0 && !g.moved)) return;
+        const a = Math.min(g.m0, m), b = Math.min(Math.max(g.m0, m) + 30, a + MV.cap);
+        g.moved = true; Object.assign(MV, { y: g.y, a, b }); mvPaint(d);
+      });
+      d.addEventListener("pointerup", () => {
+        const g = MV.drag; if (!g) return; MV.drag = null;
+        if (!g.moved && !g.grab) Object.assign(MV, { y: g.y, a: g.m0, b: Math.min(g.m0 + g.len, M1) });   // a click: same length, starting here
+        if (!mvOk()) Object.assign(MV, { y: MV.y0, a: MV.a0, b: MV.b0 });   // let go somewhere it can't go: back where it was
+        mvPaint(d);
       });
       // ↑ ↓ move through the list on the left
       d.addEventListener("keydown", e => {
@@ -171,6 +218,39 @@
     if (y === "*") return D.reqs.filter(x => x.status === s && new Date(x.starts_at) > new Date(UI.now())).sort((p, q) => T(p.starts_at) - T(q.starts_at)).map(x => x.id);
     return reqsOn(y).filter(x => s === "all" || x.status === s).map(x => x.id);
   }
+  // a waiting request or booked session that hasn't started can be moved to another time in your hours
+  const canMove = r => (r.status === "pending" || r.status === "accepted") && new Date(r.starts_at) > new Date(UI.now());
+  // Change time: a week grid of your saved hours. Click a tan spot to move the session there (same length), or drag
+  // to pick a length (up to your Longest setting). Only the session moves; your hours stay as they are.
+  const MV = { id: null, wk: 1, y: null, a: 0, b: 0, cap: 120, drag: null };
+  const mvTaken = (y, m) => LIVE.some(q => q.id !== MV.id && q.status === "accepted" && rDay(q) === y && rSpan(q)[0] <= m && m < rSpan(q)[1]);
+  const mvFree = (y, m) => SAVED.has(key(y, m)) && !pastCell(y, m) && !mvTaken(y, m);
+  const mvOk = () => { for (let m = MV.a; m < MV.b; m += 30) if (!mvFree(MV.y, m)) return false; return MV.b > MV.a; };
+  function mvReset(r) {
+    const y = UI.dayOf(r.starts_at);
+    Object.assign(MV, { id: r.id, y, y0: y, a: mins(r.starts_at, y), b: mins(r.ends_at, y), drag: null });
+    MV.a0 = MV.a; MV.b0 = MV.b;
+    MV.cap = Math.max(MV.b - MV.a, ctx.coach.max_minutes || 120);   // never longer than your Longest setting (or the session already is)
+    MV.wk = (D.days.find(d => d.ymd === y) || {}).week || 1;
+  }
+  function mvGrid() {
+    const ds = D.days.filter(d => d.week === MV.wk);
+    return '<div class="hp-scroll"><table class="hp-pl cc-mvpl"><thead><tr><th class="tm"></th>' + ds.map(d => "<th>" + d.dow + "<b>" + d.n + "</b></th>").join("") + "</tr></thead><tbody>" +
+      ROWS.map(m => '<tr class="' + (m % 60 ? "hf" : "hr") + '"><th class="tm">' + (m % 60 ? "" : tm(m).replace(":00", "")) + "</th>" + ds.map(d => {
+        const y = d.ymd, pick = y === MV.y && m >= MV.a && m < MV.b;
+        return '<td class="' + [pastCell(y, m) ? "past" : "", SAVED.has(key(y, m)) ? "h" : "", mvTaken(y, m) ? "s" : "", pick ? (mvFree(y, m) ? "add" : "skip") : ""].filter(Boolean).join(" ") + '" data-my="' + y + '" data-mm="' + m + '"></td>';
+      }).join("") + "</tr>").join("") + "</tbody></table></div>";
+  }
+  function mvBody() {
+    const r = D.reqs.find(x => x.id === MV.id), ok = mvOk(), same = MV.y === MV.y0 && MV.a === MV.a0 && MV.b === MV.b0;
+    const wks = [...new Set(D.days.filter(d => !dayOver(d.ymd)).map(d => d.week))];
+    return '<div class="cc-mvtop"><h6 class="hp-sub">Pick the new time</h6>' + (wks.length > 1 ? '<div class="bk-seg">' + wks.map(w => '<button type="button" data-mvwk="' + w + '" aria-pressed="' + (MV.wk === w) + '">Week ' + w + "</button>").join("") + "</div>" : "") + "</div>" +
+      '<p class="hp-hint cc-mvhint"><i class="cc-blue"></i><b>Drag the blue session</b> to a new time or day. Or click a tan spot to move it there, or drag on your hours to pick a new length (up to ' + hrs(MV.cap) + "). Green is already booked.</p>" + mvGrid() +
+      '<p class="cc-mvnow"><b>' + esc(dayShort(MV.y)) + ", " + span(MV.a, MV.b) + " " + TZ + "</b> · " + hrs(MV.b - MV.a) + (ok ? "" : ' <span class="hp-warn-in">Not all inside your free hours</span>') + "</p>" +
+      '<div class="sc-dact"><button type="button" class="btn" data-mvsave="' + esc(r.id) + '"' + (ok && !same ? "" : " disabled") + '>Change time</button><button type="button" class="linkbtn" data-move>Cancel</button></div>';
+  }
+  const mvPaint = d => { const box = d.querySelector(".cc-move"); if (box) box.innerHTML = mvBody(); };
+  const moveForm = () => '<div class="cc-move" hidden></div>';
   function openReq(id, set) {
     const r = D.reqs.find(x => x.id === id); if (!r) return;
     const ymd = UI.dayOf(r.starts_at);
@@ -190,7 +270,7 @@
           "<b>" + span(mins(q.starts_at, qy), mins(q.ends_at, qy)) + "</b><span>" + esc(who(q)) + " · " + (q.kind === "team" ? "Team review" : "Individual") + "</span>" +
           (q.status === "pending" && clashes(q).length ? '<em class="cc-otag">Overlaps · sent ' + UI.sentRank(q, D.reqs).split(" ")[0] + "</em>" : "") + "</button></li>";
       }).join("") + "</ul></aside>";
-    d.classList.add("wide");
+    d.classList.add("wide"); d.classList.remove("moving");   // the Change time grid starts closed
     d.innerHTML = '<div class="cc-split">' + side + "<div>" + '<div class="sc-dtop"><div><span class="k">' + ({ pending: "Request waiting for you", expired: "Expired: nobody answered in time", accepted: "Booked session", done: "Session done" }[UI.shown(r)] || "Request") + '</span><h3 id="cc-dlg-title">' + (r.kind === "team" ? "Team review" : "Individual session") + "</h3></div>" + UI.statusChip(UI.shown(r)) + "</div>" +
       '<dl class="sc-kv">' +
         kv("When", esc(longDay(ymd)) + "<br><b>" + span(mins(r.starts_at, ymd), mins(r.ends_at, ymd)) + " " + TZ + "</b> · " + esc(UI.dur(r.starts_at, r.ends_at)) + (true ? "" : '<br><span class="muted">Your time: ' + esc(UI.time(r.starts_at) + "–" + UI.time(r.ends_at)) + "</span>")) +
@@ -205,8 +285,9 @@
       "</dl>" +
       '<div class="sc-dact">' +
         (pending && new Date(r.starts_at) > new Date(UI.now()) ? '<button type="button" class="btn" data-do="accepted" data-id="' + esc(r.id) + '">Accept</button><button type="button" class="btn ghost" data-do="declined" data-id="' + esc(r.id) + '">Decline</button>' : "") +
+        (canMove(r) ? '<button type="button" class="btn ghost" data-move>Change time</button>' : "") +
         (r.status === "accepted" && new Date(r.ends_at) > new Date(UI.now()) ? '<button type="button" class="btn ghost" data-do="cancelled" data-id="' + esc(r.id) + '">Cancel session</button>' : "") +
-        '<button type="button" class="linkbtn" data-do="close">Close</button></div>' + "</div></div>";
+        '<button type="button" class="linkbtn" data-do="close">Close</button></div>' + (canMove(r) ? moveForm(r) : "") + "</div></div>";
     if (!d.open) d.showModal();
     const cur = d.querySelector('.cc-srow[aria-current="true"]');   // keep focus on the picked row, so ↑ ↓ keep working
     if (cur) cur.focus();

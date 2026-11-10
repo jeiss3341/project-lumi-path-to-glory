@@ -497,6 +497,9 @@ end $$;
 create or replace function public.requests_before_update() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
+  if current_setting('ptg.moving_request', true) = 'on' then
+    return new;   -- move_request checked everything itself
+  end if;
   if new.coach_id <> old.coach_id or new.requester_id <> old.requester_id
      or new.starts_at <> old.starts_at or new.ends_at <> old.ends_at
      or new.kind <> old.kind or new.note <> old.note or new.by_coach <> old.by_coach then
@@ -523,6 +526,53 @@ end $$;
 drop trigger if exists requests_before_update on public.requests;
 create trigger requests_before_update before update on public.requests
   for each row execute function public.requests_before_update();
+
+-- A coach (or staff) moves a waiting request or booked session to a new time. moved_at lets the player's desk
+-- show "Moved", and notify_discord pings the player.
+alter table public.requests add column if not exists moved_at timestamptz;
+
+create or replace function public.move_request(r uuid, s timestamptz, e timestamptz) returns public.requests
+language plpgsql security definer set search_path = public as $$
+declare
+  q public.requests;
+begin
+  select * into q from public.requests where id = r for update;
+  if q.id is null then
+    raise exception 'That request doesn''t exist.';
+  end if;
+  if not (public.is_coach(q.coach_id) or public.is_staff()) then
+    raise exception 'Only the coach can move this session.';
+  end if;
+  if q.status not in ('pending', 'accepted') then
+    raise exception 'Only waiting requests and booked sessions can be moved.';
+  end if;
+  if e - s < interval '30 minutes' or e - s > interval '4 hours' then
+    raise exception 'Sessions run from 30 minutes to 4 hours.';
+  end if;
+  if s < now() then
+    raise exception 'That time has already passed.';
+  end if;
+  if not exists (select 1 from public.availability a
+                 where a.coach_id = q.coach_id and a.starts_at <= s and a.ends_at >= e) then
+    raise exception 'Pick a time inside your posted hours.';
+  end if;
+  if exists (select 1 from public.requests x
+             where x.coach_id = q.coach_id and x.id <> q.id and x.status = 'accepted'
+               and tstzrange(x.starts_at, x.ends_at) && tstzrange(s, e)) then
+    raise exception 'That time is already booked.';
+  end if;
+  perform set_config('ptg.moving_request', 'on', true);
+  update public.requests set starts_at = s, ends_at = e, moved_at = now() where id = r returning * into q;
+  perform set_config('ptg.moving_request', 'off', true);
+  -- a booked session that moves onto waiting requests declines them, like accepting does
+  if q.status = 'accepted' then
+    update public.requests set status = 'declined'
+    where coach_id = q.coach_id and status = 'pending' and id <> q.id
+      and tstzrange(starts_at, ends_at) && tstzrange(s, e);
+  end if;
+  return q;
+end $$;
+grant execute on function public.move_request(uuid, timestamptz, timestamptz) to authenticated;
 
 -- Accepting one request declines the others that overlap it.
 create or replace function public.requests_after_accept() returns trigger
@@ -677,6 +727,9 @@ begin
   elsif new.status <> old.status and new.status = 'cancelled' then
     msg := format('The %s session with %s on <t:%s:F> was cancelled.', new.kind, cname, t1);
     ping := case when new.by_coach and new.kind = 'team' then null when public.is_coach(new.coach_id) then pping else cping end;
+  elsif new.starts_at <> old.starts_at or new.ends_at <> old.ends_at then
+    msg := format('%s moved your %s session to <t:%s:F> to <t:%s:t>. The new time is on your desk.', cname, new.kind, t1, t2);
+    ping := case when new.by_coach and new.kind = 'team' then null else pping end;
   else
     return null;
   end if;

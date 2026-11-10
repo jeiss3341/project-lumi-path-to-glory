@@ -77,8 +77,27 @@
       { v: w, k: plural(w, "Request waiting", "Requests waiting"), hot: w > 0, go: "player:reqs" }];
   }
   // player tab: your team (name, mentor, players, request button) sits along the bottom of the header
+  // coach tab: Session settings right in the header; a click saves straight away
+  const SS_LEN = [[30, "30 min"], [60, "1 h"], [90, "1.5 h"], [120, "2 h"]], SS_KINDS = [["both", "Both"], ["team", "Team only"], ["individual", "Individual only"]];
+  function headSettings() {
+    const c = S.myCoach, v = { min: c.min_minutes || 30, max: c.max_minutes || 120, kinds: c.session_kinds || "both" };
+    const seg = (key, label, opts) => '<div class="ss-q"><span>' + label + '</span><div class="bk-seg" role="group" aria-label="' + label + '">' +
+      opts.map(([val, text]) => '<button type="button" data-ssk="' + key + '" data-ssv="' + val + '" aria-pressed="' + (v[key] === val) + '"' + ((key === "min" && val > v.max) || (key === "max" && val < v.min) ? " disabled" : "") + ">" + text + "</button>").join("") + "</div></div>";
+    return '<div class="dh-ss"><span class="mono-label">Session settings · players only see what you allow</span><div class="dh-ss-row">' +
+      seg("min", "Shortest", SS_LEN) + seg("max", "Longest", SS_LEN) + seg("kinds", "Sessions you take", SS_KINDS) + "</div></div>";
+  }
+  async function saveSetting(b) {
+    const c = S.myCoach, v = { min: c.min_minutes || 30, max: c.max_minutes || 120, kinds: c.session_kinds || "both" };
+    v[b.dataset.ssk] = b.dataset.ssk === "kinds" ? b.dataset.ssv : +b.dataset.ssv;
+    await UI.act(b, async () => {
+      await API.saveSessionSettings(c.id, v.min, v.max, v.kinds);
+      Object.assign(c, { min_minutes: v.min, max_minutes: v.max, session_kinds: v.kinds });
+    }, "Session settings saved.");
+    renderHead();
+  }
   async function headTeam() {
-    if (S.tab === "coach" || S.tab === "staff") return "";
+    if (S.tab === "coach") return S.myCoach ? headSettings() : "";
+    if (S.tab === "staff") return "";
     const teams = await API.teams();
     const team = teams.find(t => (t.member_ids || []).includes(S.me.id));
     if (!team) return '<p>You\'re not on a team for this event.</p>';
@@ -91,7 +110,7 @@
   let headTok = 0;
   async function renderHead() {
     const c = S.myCoach, roles = [], tok = ++headTok;
-    if (c) roles.push((c.kind === "assistant" ? "Assistant " : "Mentor ") + pad(c.slot));
+    if (c) roles.push(c.kind === "assistant" ? "Assistant coach" : "Mentor");
     if (S.isPlayer) roles.push("Player");
     if (S.me.role === "staff") roles.push("Staff");
     const head = $("#desk-head");
@@ -103,7 +122,8 @@
     if (tok !== headTok) return;   // a newer one is on its way
     const dt = head.querySelector(".dh-team"); dt.innerHTML = teamHtml; dt.hidden = !teamHtml;
     head.querySelector(".dh-stats").innerHTML = stats.map(s => '<button type="button" class="dh-stat' + (s.hot ? " hot" : "") + '" data-go="' + s.go + '" title="' + esc(s.v + " · " + s.k) + '"><b>' + esc(s.v) + "</b><span>" + esc(s.k) + "</span></button>").join("");
-    head.onclick = e => { const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go); };
+    head.querySelector(".dh-stats").style.setProperty("--n", stats.length);   // mentors get a fourth box (Session settings)
+    head.onclick = e => { const s = e.target.closest("[data-ssk]"); if (s && !s.disabled) return saveSetting(s); const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go); };
   }
   // a header number: switch to its tab, then bring its part of the desk into view
   async function go(g) {
@@ -186,7 +206,7 @@
         (from ? esc(UI.party(r, teamName)) : esc(UI.bare(UI.coachName(S.coaches.find(c => c.id === r.coach_id) || r.coach)))   /* the coach cards (blank database names fall back to content.js) */ ) + "</td><td>" + (r.kind === "team" ? "Team review" : "Individual") +
         // a session the mentor wrote down (set up with the team on Discord, say)
         (r.by_coach ? '<div class="muted small">' + (from ? "Written by you" : "Booked by your mentor") + "</div>" : "") +
-        (r.note ? '<div class="muted small">' + esc(r.note) + "</div>" : "") + "</td><td>" + UI.statusChip(s) + "</td><td>" +
+        (r.note ? '<div class="muted small">' + esc(r.note) + "</div>" : "") + "</td><td>" + UI.statusChip(s) + (r.moved_at && (s === "pending" || s === "accepted") ? ' <span class="chip-moved" title="Your coach changed the time">Moved</span>' : "") + "</td><td>" +
         ((mode === "player" && r.requester_id === S.me.id && (s === "pending" || s === "accepted")) || (mode === "coach" && s === "accepted") ? '<button type="button" class="linkbtn js-cancel" data-id="' + esc(r.id) + '">Cancel</button>' : "") +
         "</td></tr>"; }).join("") + "</tbody></table></div>";
   }
