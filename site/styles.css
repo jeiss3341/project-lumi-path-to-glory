@@ -471,8 +471,9 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .paused .as-bar i{animation-play-state:paused}
 @keyframes asBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .as-tabs{display:none}
-.as-card{cursor:pointer;transition:box-shadow .15s ease;-webkit-user-select:none;user-select:none}   /* quick clicks shouldn't highlight the card */
-.as-card:hover{box-shadow:var(--lift),0 0 0 2px rgba(255,255,255,.55)}
+.as-card{cursor:pointer;transition:box-shadow .15s ease,transform .2s ease;-webkit-user-select:none;user-select:none}   /* quick clicks shouldn't highlight the card */
+.as-card:hover{box-shadow:var(--lift),0 0 0 2px rgba(255,255,255,.55);transform:translateY(-4px)}   /* lifts like the mentor badge (.badge-flip:hover) */
+@media (prefers-reduced-motion:reduce){.as-card{transition:box-shadow .15s ease}.as-card:hover{transform:none}}
 .as-card.on{box-shadow:var(--lift),0 0 0 2.5px var(--red)}
 .as-hit{position:absolute;inset:0;z-index:4;background:none;border:0;padding:0;cursor:pointer;border-radius:12px}
 .as-hit:focus-visible{outline:2px solid #fff;outline-offset:-3px}
