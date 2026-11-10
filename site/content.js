@@ -25,9 +25,6 @@ window.PTG = {
     { date: "2026-11-11", kind: "scrim", short: "Scrim", title: "Scrim Day 1", note: "Scrim block. Mentors watch live or review after." },
     { date: "2026-11-13", kind: "scrim", short: "Scrim", title: "Scrim Day 2", note: "Scrim block, the last practice before the Mock Checkpoint Series." },
     { date: "2026-11-14", kind: "mock", short: "Mock", title: "Mock Checkpoint Series", note: "A full practice run of the checkpoint format. Checkpoint activates after 4 games, one fewer than the Final." },
-    { date: "2026-11-17", kind: "scrim", short: "Prio", title: "Prio Scrim Day 1", note: "Priority scrim block." },
-    { date: "2026-11-19", kind: "scrim", short: "Prio", title: "Prio Scrim Day 2", note: "Priority scrim block." },
-    { date: "2026-11-21", kind: "scrim", short: "Prio", title: "Prio Scrim Day 3", note: "Saturday priority scrims, the last practice before the Final Checkpoint Series." },
     { date: "2026-11-22", kind: "final", short: "Final", title: "Final Checkpoint Series", note: "The checkpoint that counts. Closes out the event." }
   ],
 
