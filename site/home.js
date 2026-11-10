@@ -694,7 +694,7 @@
     const card = c => {
       const next = nextHours(c);
       return '<button type="button" class="bk-card" data-coach="' + esc(c.id) + '"' + (next ? "" : " disabled") + "><b>" + esc(UI.bare(UI.coachName(c))) + "</b>" +
-        "<span>" + (c.kind === "assistant" ? "Assistant coach" + (UI.coachTeam(c) ? " · " + esc(UI.bare(UI.coachTeam(c))) : "") : "Mentor · " + esc(UI.bare(UI.coachTeam(c)))) + "</span>" +
+        "<span>" + esc(UI.bare(UI.coachTeam(c) || "")) + "</span>" +   // just the team: the section headings already say Mentors / Assistant coaches
         "<em>" + (next ? "Next: " + esc(hoursLabel(next)) : "No hours posted yet") + "</em></button>";
     };
     $("#bk-cards").innerHTML = '<div class="bk-top"><h3>Book office hours</h3><span>Pick a coach to see their week.</span></div>' +
