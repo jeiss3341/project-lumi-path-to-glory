@@ -311,10 +311,11 @@
     if (S.staffTab === "coaches") {
       const editing = S.coachEdit && coaches.find(c => c.id === S.coachEdit);
       const slotOf = c => (c.kind === "assistant" ? "A" : "M") + pad(c.slot);
-      inner = '<p class="muted">Link each slot to the coach\'s Discord account once they\'ve logged in here; linked coaches get the calendar on their desk. Mentor files are edited here only.</p><div class="tbl"><table><thead><tr><th>Slot</th><th>Coach</th><th>Discord account</th><th></th></tr></thead><tbody>' +
+      inner = '<p class="muted">Link each slot to the coach\'s Discord account once they\'ve logged in here; linked coaches get the calendar on their desk. Add their Twitch name so Lumi-chan can find their [PTG] streams. Mentor files are edited here only.</p><div class="tbl"><table><thead><tr><th>Slot</th><th>Coach</th><th>Discord account</th><th>Twitch</th><th></th></tr></thead><tbody>' +
         coaches.map(c => '<tr data-id="' + esc(c.id) + '"' + (editing && editing.id === c.id ? ' class="on"' : "") + '><td><b>' + slotOf(c) + '</b><div class="small muted">' + esc(UI.cardId(c)) + "</div></td>" +
           "<td><b>" + esc(UI.bare(UI.coachName(c))) + '</b><div class="small muted">' + esc((c.kind === "mentor" ? c.team_name : c.focus) || "") + "</div></td>" +
           '<td><select class="cell-in" name="profile_id" aria-label="Discord account for ' + esc(slotOf(c)) + '"><option value="">Not linked</option>' + profiles.map(p => '<option value="' + esc(p.id) + '"' + (p.id === c.profile_id ? " selected" : "") + ">" + esc(UI.who(p)) + " @" + esc(p.username || "") + "</option>").join("") + "</select></td>" +
+          '<td><input class="cell-in" name="twitch" value="' + esc(c.twitch || "") + '" placeholder="twitch name" maxlength="40" autocomplete="off" spellcheck="false" aria-label="Twitch name for ' + esc(slotOf(c)) + '"></td>' +
           '<td class="row-btns"><button type="button" class="btn ghost js-save-coach">Save link</button><button type="button" class="btn js-edit-file">Edit file</button></td></tr>').join("") + "</tbody></table></div>";
       body.innerHTML = head + '<section class="sheet dpanel wide-panel"><h2>Coaches</h2>' + inner + "</section>" +
         (editing ? '<section class="sheet dpanel wide-panel" id="file-panel"><h2>' + (editing.kind === "assistant" ? "Coach" : "Mentor") + " file · " + esc(UI.bare(UI.coachName(editing))) + " (" + slotOf(editing) + ')</h2><p class="muted">This is what players see on the faculty page.</p>' + coachForm(editing) + "</section>" : "");
@@ -330,7 +331,10 @@
         }
         if (!save) return;
         const tr = save.closest("tr");
-        const patch = { profile_id: tr.querySelector('[name="profile_id"]').value || null };
+        // Twitch: just the name, whatever was pasted ("https://twitch.tv/Name/", "@Name" → "name"); Lumi-chan looks streams up by it
+        const tw = tr.querySelector('[name="twitch"]').value.trim().replace(/\/+$/, "");
+        const m = /twitch\.tv\/([^/?#\s]+)/i.exec(tw);
+        const patch = { profile_id: tr.querySelector('[name="profile_id"]').value || null, twitch: (m ? m[1] : tw.replace(/^@/, "")).toLowerCase() };
         UI.act(save, async () => { await API.updateCoach(tr.dataset.id, patch); await boot(); }, "Coach saved.");
       };
       return;
