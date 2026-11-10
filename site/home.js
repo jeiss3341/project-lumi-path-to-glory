@@ -756,7 +756,7 @@
     if (!used.size) return '<div class="bk-empty">' + esc(UI.bare(UI.coachName(c))) + " has no hours in Week " + BK.wk + (weeks().length > 1 ? ". Try the other week." : " yet.") + "</div>";
     const sel = BK.start ? T(BK.start) : 0, selEnd = sel + BK.len * HALF, ask = canRequest();
     const lab = m => { const l = UI.lmin(m), h = Math.floor(l / 60), mm = l % 60; return (h % 12 || 12) + (mm ? ":" + pad(mm) : "") + " " + (h < 12 ? "AM" : "PM"); };
-    const words = { mine: "Your request (waiting)", "mine-ok": "Your session", booked: "Booked", requested: "Someone's waiting", open: "Open" };
+    const words = { mine: "Your request (waiting)", "mine-ok": "Your session", booked: "Booked", requested: "Contested", open: "Open" };
     let prev = null, rows = "";
     [...used].sort((a, b) => a - b).forEach(m => {
       if (prev != null && m - prev > 30) rows += '<tr class="gap"><th></th><td colspan="7"></td></tr>';   // hours nobody's free: squeezed out
@@ -771,7 +771,7 @@
       prev = m;
     });
     return '<div class="bk-scroll"><table class="bk-wk"><thead><tr><th class="tm"></th>' + days.map(d => '<th class="' + (UI.todayYmd() > d.ymd ? "past" : "") + '">' + d.dow + "<b>" + d.n + "</b></th>").join("") + "</tr></thead><tbody>" + rows + "</tbody></table></div>" +
-      '<div class="bk-key"><span><i class="open"></i>Open</span><span><i class="wait"></i>' + (ask ? "Someone's waiting (you can still ask)" : "Request waiting") + '</span><span><i class="is-booked"></i>Booked</span>' +
+      '<div class="bk-key"><span><i class="open"></i>Open</span><span><i class="wait"></i>' + (ask ? "Contested" : "Request waiting") + '</span><span><i class="is-booked"></i>Booked</span>' +
         (S.me && ask ? '<span><i class="is-mine"></i>Your request</span><span><i class="is-mine-ok"></i>Your session</span><span><i class="on"></i>Your pick</span>' : !S.me ? '<span><i class="on"></i>Your pick</span>' : "") + "</div>";
   }
 
