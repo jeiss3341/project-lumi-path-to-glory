@@ -28,7 +28,9 @@
     return h.slice(0, 60);
   })();
   let loggedIn = false;
-  const base = () => ({ visitor, session, device, tz: tz.slice(0, 60), logged_in: loggedIn });
+  // every row carries every field: the database turns down a batch whose rows have different fields
+  // (that silently lost all the time-on-site rows, which go out together with the per-section ones)
+  const base = () => ({ visitor, session, device, tz: tz.slice(0, 60), logged_in: loggedIn, target: "", ms: 0, source: "" });
   const send = rows => { if (rows.length) API.track(rows.map(r => Object.assign(base(), r))); };
   const page = new URLSearchParams(location.search).has("hours") ? "Office hours" : "Home";
 
