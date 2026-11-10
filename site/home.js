@@ -171,7 +171,6 @@
     $("#lede").textContent = C.event.pitch;
     $("#goal-line").textContent = C.event.goal;
     $("#pitch").textContent = C.event.pitch;
-    $("#tz").textContent = UI.tz;
     $("#ticket-stub").insertAdjacentHTML("afterbegin", UI.barcode("PTG-1014", 60, 40, "1014"));
     const st = UI.status();
     $("#ticket-status").textContent = st.phase === "before" ? "Class starts in " + st.days + (st.days === 1 ? " day" : " days")
@@ -697,7 +696,7 @@
         "<span>" + esc(UI.bare(UI.coachTeam(c) || "")) + "</span>" +   // just the team: the section headings already say Mentors / Assistant coaches
         "<em>" + (next ? "Next: " + esc(hoursLabel(next)) : "No hours posted yet") + "</em></button>";
     };
-    $("#bk-cards").innerHTML = '<div class="bk-top"><h3>Book office hours</h3><span>Pick a coach to see their week.</span></div>' +
+    $("#bk-cards").innerHTML = '<div class="bk-top"><h3>Book office hours</h3><span>Times in ' + esc(UI.TZ) + (UI.tz ? " (" + esc(UI.tz) + ")" : "") + "</span></div>" +
       '<p class="bk-grp">Mentors</p><div class="bk-grid">' + mentors().map(card).join("") + "</div>" +
       '<p class="bk-grp">Assistant coaches</p><div class="bk-grid">' + assistants().map(card).join("") + "</div>";
   }
