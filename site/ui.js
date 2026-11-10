@@ -401,6 +401,7 @@
   }
   UI.mountDemoBar = function () {
     if (API.live || UI.$("#demo-bar") || window.top !== window.self) return;   // not inside the phone preview either
+    if ((window.PTG_CONFIG || {}).supabaseUrl) return;   // never on the real address, even if the login service couldn't be reached
     const bar = document.createElement("div");
     bar.id = "demo-bar";
     const people = API.demo.people();

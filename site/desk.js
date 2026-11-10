@@ -254,7 +254,7 @@
 
   /* ================================================== staff */
   async function renderStaff(body) {
-    const sub = [["teams", "Teams"], ["coaches", "Coaches"], ["hours", "Hours"], ["requests", "Requests"], ["people", "People"]];
+    const sub = [["teams", "Teams"], ["coaches", "Coaches"], ["hours", "Hours"], ["requests", "Requests"], ["people", "People"], ["stats", "Sponsor stats"]];
     const head = '<div class="subtabs">' + sub.map(s => '<button type="button" class="stab" data-sub="' + s[0] + '" aria-pressed="' + (S.staffTab === s[0]) + '">' + s[1] + "</button>").join("") + "</div>";
     let inner = "";
     const [profiles, coaches] = await Promise.all([API.profiles(), API.coaches()]);
@@ -324,6 +324,26 @@
       body.innerHTML = head + '<section class="sheet dpanel wide-panel"><h2>People</h2>' + inner + "</section>";
       body.onclick = e => { stabClick(e); };
       body.onchange = e => { const s = e.target.closest(".js-role"); if (s) UI.act(s, async () => { await API.setRole(s.dataset.id, s.value); }, "Role updated."); };
+      return;
+    }
+
+    if (S.staffTab === "stats") {
+      // visit numbers from track.js, added up by the database (sponsor_stats in schema.sql)
+      let s;
+      try { s = await API.sponsorStats(); }
+      catch (e) { body.innerHTML = head + '<section class="sheet dpanel wide-panel"><h2>Sponsor stats</h2><p class="empty-note">Could not load the numbers: ' + esc(e.message || String(e)) + "</p></section>"; body.onclick = e2 => { stabClick(e2); }; return; }
+      PTGStats.render(body, head, s);
+      body.onclick = e => {
+        if (stabClick(e)) return;
+        if (e.target.closest(".js-ss-refresh")) return render();
+        const copy = e.target.closest(".js-ss-copy");
+        if (copy) {
+          const text = PTGStats.summary(s), out = body.querySelector(".ss-copy");
+          out.hidden = false; out.textContent = text;
+          if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => UI.toast("Summary copied. Paste it into a message or doc."), () => UI.toast("Select the summary below and copy it."));
+          else UI.toast("Select the summary below and copy it.");
+        }
+      };
       return;
     }
 
