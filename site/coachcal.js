@@ -23,7 +23,10 @@
   const ZC = new Map(), z = ymd => { let v = ZC.get(ymd); if (v == null) ZC.set(ymd, v = UI.etAt(ymd, 0).getTime()); return v; };   // midnight Eastern, worked out once per day
   const at = (ymd, m) => new Date(z(ymd) + m * 6e4);
   const mins = (iso, ymd) => Math.round((new Date(iso) - z(ymd)) / 6e4);
-  const tm = m => { const h = Math.floor(m / 60) % 24, mm = m % 60; return (h % 12 || 12) + ":" + String(mm).padStart(2, "0") + " " + (h < 12 ? "AM" : "PM"); };
+  // times show in the viewer's own time zone (TZ, e.g. PST); the grid underneath stays on Eastern days, so OFF shifts the labels
+  const TZ = (new Intl.DateTimeFormat("en-US", { timeZoneName: "short" }).formatToParts(new Date()).find(p => p.type === "timeZoneName") || {}).value || "local time";
+  const OFF = (() => { const d = UI.etAt(UI.todayYmd(), 720); return d.getHours() * 60 + d.getMinutes() - 720; })();
+  const tm = m => { const l = ((m + OFF) % 1440 + 1440) % 1440, h = Math.floor(l / 60), mm = l % 60; return (h % 12 || 12) + ":" + String(mm).padStart(2, "0") + " " + (h < 12 ? "AM" : "PM"); };
   const span = (a, b) => tm(a) + "–" + tm(b);
   const short = (a, b) => { const f = m => tm(m).replace(":00", ""); const x = f(a), y = f(b); return x.slice(-2) === y.slice(-2) ? x.slice(0, -3) + "–" + y : x + "–" + y; };
   const hrs = n => n < 60 ? (n ? n + " min" : "0 h") : (n % 60 ? (n / 60).toFixed(1) : n / 60) + " h";
@@ -34,7 +37,7 @@
   const dayName = ymd => { const d = D.days.find(x => x.ymd === ymd); return d ? d.dow + " " + d.n : ymd; };
   const longDay = ymd => UI.date(at(ymd, 720), { weekday: "long", month: "long", day: "numeric" });
   const dayShort = ymd => UI.date(at(ymd, 720), { weekday: "short", month: "short", day: "numeric" });
-  const yours = (ymd, a, b) => UI.onEastern(at(ymd, a)) ? "" : "Your time: " + UI.time(at(ymd, a)) + "–" + UI.time(at(ymd, b));
+  const yours = () => "";   // times are already in your own time zone
   const key = (ymd, m) => ymd + "|" + m;
   // several days: "Thu, Nov 12" · "Mon 16 – Fri 20 · 5 days" · "Mon 16, Wed 18"
   function daysLabel(ys) {
@@ -190,7 +193,7 @@
     d.classList.add("wide");
     d.innerHTML = '<div class="cc-split">' + side + "<div>" + '<div class="sc-dtop"><div><span class="k">' + ({ pending: "Request waiting for you", expired: "Expired: nobody answered in time", accepted: "Booked session", done: "Session done" }[UI.shown(r)] || "Request") + '</span><h3 id="cc-dlg-title">' + (r.kind === "team" ? "Team review" : "Individual session") + "</h3></div>" + UI.statusChip(UI.shown(r)) + "</div>" +
       '<dl class="sc-kv">' +
-        kv("When", esc(longDay(ymd)) + "<br><b>" + span(mins(r.starts_at, ymd), mins(r.ends_at, ymd)) + " ET</b> · " + esc(UI.dur(r.starts_at, r.ends_at)) + (UI.onEastern(new Date(r.starts_at)) ? "" : '<br><span class="muted">Your time: ' + esc(UI.time(r.starts_at) + "–" + UI.time(r.ends_at)) + "</span>")) +
+        kv("When", esc(longDay(ymd)) + "<br><b>" + span(mins(r.starts_at, ymd), mins(r.ends_at, ymd)) + " " + TZ + "</b> · " + esc(UI.dur(r.starts_at, r.ends_at)) + (true ? "" : '<br><span class="muted">Your time: ' + esc(UI.time(r.starts_at) + "–" + UI.time(r.ends_at)) + "</span>")) +
         kv(r.by_coach ? "With" : "From", r.by_coach && r.kind === "team" ? esc(who(r)) + ' <span class="sc-tag">Your team</span>' : esc(who(r)) + ' <span class="muted">@' + esc((r.requester && r.requester.username) || "") + "</span>" + (t ? "<br>" + esc(t.name) + (mine ? ' <span class="sc-tag">Your team</span>' : ' <span class="sc-tag other">Other team</span>') : '<br><span class="muted">Not on a team</span>')) +
         kv(r.by_coach ? "Note" : "Wants to work on", r.note ? "“" + esc(r.note) + "”" : '<span class="muted">No note added.</span>') +
         // when it was sent (or written by you), and its place among overlapping requests ("2nd of 2")
@@ -248,7 +251,7 @@
     lo = Math.floor(lo / 60) * 60; hi = Math.ceil(hi / 60) * 60;
     return ROWS.filter(m => m >= lo && m < hi);
   }
-  const wTip = (y, m) => { const rq = reqsAt(y, m); return dayName(y) + " · " + tm(m) + " ET · " + (rq.length ? rq.map(r => (r.status === "accepted" ? "Booked: " : "Waiting: ") + who(r)).join(", ") : free(y, m) ? "Free to book" : CUR.has(key(y, m)) ? "Already started" : "Not in your hours"); };
+  const wTip = (y, m) => { const rq = reqsAt(y, m); return dayName(y) + " · " + tm(m) + " " + TZ + " · " + (rq.length ? rq.map(r => (r.status === "accepted" ? "Booked: " : "Waiting: ") + who(r)).join(", ") : free(y, m) ? "Free to book" : CUR.has(key(y, m)) ? "Already started" : "Not in your hours"); };
   function wTable() {
     const ds = D.days.filter(d => d.week === W.wk);
     return '<table class="hp-pl wp"><thead><tr><th class="tm"></th>' + ds.map(d => '<th class="' + [d.ymd === UI.todayYmd() ? "today" : "", dayOver(d.ymd) ? "over" : ""].join(" ") + '"><span class="wd" title="' + esc(longDay(d.ymd) + (d.events[0] ? " · " + d.events[0].title : "")) + '">' + d.dow + "<b>" + d.n + "</b>" + (d.events[0] ? '<i class="evdot ' + d.events[0].kind + '"></i>' : "") + "</span></th>").join("") + "</tr></thead><tbody>" +
@@ -273,10 +276,10 @@
           : "<p>Drag on your hours (the tan times). A session runs from 30 minutes to 4 hours.</p>");
     }
     const a = W.a, b = W.b, clash = wClash(), opt = (v, label, on) => '<option value="' + esc(v) + '"' + (on ? " selected" : "") + ">" + esc(label) + "</option>";
-    return head + '<p class="hp-big">' + span(a, b) + ' ET</p><p class="hp-mut">' + esc(dayShort(W.y)) + " · " + hrs(b - a) + (yours(W.y, a, b) ? "<br>" + esc(yours(W.y, a, b)) : "") + "</p>" +
+    return head + '<p class="hp-big">' + span(a, b) + ' ' + TZ + '</p><p class="hp-mut">' + esc(dayShort(W.y)) + " · " + hrs(b - a) + (yours(W.y, a, b) ? "<br>" + esc(yours(W.y, a, b)) : "") + "</p>" +
       (b - a === MAX_LEN ? '<p class="hp-mut">4 hours is the longest a session can be.</p>' : "") +
-      '<div class="hp-io"><label>Hour in (ET)<select data-wf="a">' + ROWS.filter(m => free(W.y, m)).map(m => opt(m, tm(m), m === a)).join("") + "</select></label>" +
-        '<label>Hour out (ET)<select data-wf="b">' + lengths(W.y, a).map(n => opt(a + n, tm(a + n), a + n === b)).join("") + "</select></label></div>" +
+      '<div class="hp-io"><label>Hour in (' + TZ + ')<select data-wf="a">' + ROWS.filter(m => free(W.y, m)).map(m => opt(m, tm(m), m === a)).join("") + "</select></label>" +
+        '<label>Hour out (' + TZ + ')<select data-wf="b">' + lengths(W.y, a).map(n => opt(a + n, tm(a + n), a + n === b)).join("") + "</select></label></div>" +
       '<div class="hp-fld"><span class="hp-sub">Session</span><div class="bk-seg" role="group" aria-label="Session"><button type="button" data-wkind="team" aria-pressed="' + (W.kind === "team") + '">Team review</button>' +
         '<button type="button" data-wkind="individual" aria-pressed="' + (W.kind === "individual") + '">Individual</button></div></div>' +
       // a team review is for the whole team; only an individual session needs a player
@@ -310,12 +313,12 @@
     const y = W.y, a = W.a, b = W.b, clash = wClash(), name = esc(whole ? t.name : UI.who(p));
     const ok = await UI.ask({
       kicker: "Write a session", title: "Book this session?",
-      lead: "<b>" + (whole ? "Team review" : "Individual session") + "</b> · " + name + (whole ? "" : " · " + esc(t.name)) + "<br>" + esc(longDay(y)) + " · " + span(a, b) + " ET" +
+      lead: "<b>" + (whole ? "Team review" : "Individual session") + "</b> · " + name + (whole ? "" : " · " + esc(t.name)) + "<br>" + esc(longDay(y)) + " · " + span(a, b) + " " + TZ +
         (yours(y, a, b) ? '<br><span class="muted">' + esc(yours(y, a, b)) + "</span>" : ""),
       points: whole ? ["It's booked straight away. It shows as Accepted on every " + name + " player's desk and on your calendar.", "Players can't request this time anymore.", "You can cancel it from your calendar."]
         : ["It's booked straight away. It shows as Accepted on " + name + "'s desk and on your calendar.", "Players can't request this time anymore.", name + " can cancel it from their desk, and so can you."],
       warn: clash.length ? (clash.length === 1 ? "1 waiting request at this time will be declined:" : clash.length + " waiting requests at this time will be declined:") : "",
-      warnList: clash.map(r => esc(who(r)) + " · " + span(...rSpan(r)) + " ET"),
+      warnList: clash.map(r => esc(who(r)) + " · " + span(...rSpan(r)) + " " + TZ),
       yes: "Yes, book it"
     });
     if (!ok) return;
@@ -381,7 +384,7 @@
         rs.map(r => '<span class="blk-btn">' + short(...r) + "</span>").join("") +
         (n ? '<span class="hp-ovtot">' + hrs(n) + "</span>" : "") + "</div>";
     };
-    return '<div class="hp-bar"><p class="muted small">Your hours for both weeks. Click a day to change it. Times are Eastern (ET), 8 AM to 4 AM.</p><button type="button" class="btn" data-edithours>Change hours</button></div>' +
+    return '<div class="hp-bar"><p class="muted small">Your hours for both weeks. Click a day to change it. Times are in your time zone (' + TZ + ').</p><button type="button" class="btn" data-edithours>Change hours</button></div>' +
       '<div class="cal2 cc-cal hp-ov">' + weeks().map(w => {
         const ds = D.days.filter(d => d.week === w), h = ds.reduce((n, d) => n + total(CUR, d.ymd), 0) / 60;
         return '<span class="wkl">Week ' + w + " · " + (h % 1 ? h.toFixed(1) : h) + (h === 1 ? " hour" : " hours") + "</span>" + ds.map(cellO).join("");
@@ -437,7 +440,7 @@
       // dragging back over hours you just took out shows them as your hours again (that's what letting go does)
       f.dc && f.dc.has(k) ? (v.t === "add" && SAVED.has(k) ? "h" : v.t) : CUR.has(k) && !SAVED.has(k) ? "add" : !CUR.has(k) && SAVED.has(k) ? "rm" : "", inRm && !pastCell(y, m) && held(y, m) ? "skip" : ""].filter(Boolean).join(" ");
   }
-  const tip = (y, m) => { const rq = reqsAt(y, m); return dayName(y) + " · " + tm(m) + " ET · " + (rq.length ? rq.map(r => (r.status === "accepted" ? "Booked: " : "Waiting: ") + who(r)).join(", ") : CUR.has(key(y, m)) ? "Your hours" : "Free"); };
+  const tip = (y, m) => { const rq = reqsAt(y, m); return dayName(y) + " · " + tm(m) + " " + TZ + " · " + (rq.length ? rq.map(r => (r.status === "accepted" ? "Booked: " : "Waiting: ") + who(r)).join(", ") : CUR.has(key(y, m)) ? "Your hours" : "Free"); };
   function table() {
     const f = marks(), ds = wkDays();
     return '<table class="hp-pl"><thead><tr><th class="tm"></th>' + ds.map(d => '<th class="' + [d.ymd === UI.todayYmd() ? "today" : "", dayOver(d.ymd) ? "over" : ""].join(" ") + '">' +
@@ -487,7 +490,7 @@
   function form(v) {
     const sel = (io, from, to, val) => '<select data-io="' + io + '">' + (val == null ? '<option value="" selected disabled>Pick</option>' : "") + steps(from, to).map(m => '<option value="' + m + '"' + (m === val ? " selected" : "") + ">" + tm(m) + "</option>").join("") + "</select>";
     const open = openDays();
-    return '<div class="hp-io"><label>Hour in (ET)' + sel("a", M0, M1 - 30, v.a) + "</label><label>Hour out (ET)" + sel("b", v.a != null ? v.a + 30 : M0 + 30, M1, v.b) + "</label></div>" +
+    return '<div class="hp-io"><label>Hour in (' + TZ + ')' + sel("a", M0, M1 - 30, v.a) + "</label><label>Hour out (" + TZ + ")" + sel("b", v.a != null ? v.a + 30 : M0 + 30, M1, v.b) + "</label></div>" +
       '<div class="hp-dpick" role="group" aria-label="Days">' + wkDays().map(d => '<button type="button" data-dchip="' + d.ymd + '" aria-pressed="' + v.days.includes(d.ymd) + '"' + (dayOver(d.ymd) ? " disabled" : "") + ">" + d.dow + " " + d.n + "</button>").join("") +
       '<button type="button" class="all" data-dall aria-pressed="' + (open.length > 0 && open.every(y => v.days.includes(y))) + '">All week</button></div>';
   }
@@ -497,7 +500,7 @@
   function sideRange(v) {
     const add = v.t === "add", c = changes(v), ready = v.a != null && v.b != null && v.days.length, dragging = !!(drag && drag.moved), y0 = v.days[0];
     let out = back() + '<span><em class="hp-badge ' + v.t + '">' + (add ? "+ Adding hours" : "− Removing hours") + '</em> <button type="button" class="linkbtn" data-flip>' + (add ? "Remove these times instead" : "Add these times instead") + "</button></span>";
-    if (ready) out += '<p class="hp-big">' + span(v.a, v.b) + ' ET</p><p class="hp-mut">' + esc(daysLabel(v.days)) + " · " + hrs(v.b - v.a) + (v.days.length > 1 ? " a day" : "") + (yours(y0, v.a, v.b) ? "<br>" + esc(yours(y0, v.a, v.b)) : "") + "</p>";
+    if (ready) out += '<p class="hp-big">' + span(v.a, v.b) + ' ' + TZ + '</p><p class="hp-mut">' + esc(daysLabel(v.days)) + " · " + hrs(v.b - v.a) + (v.days.length > 1 ? " a day" : "") + (yours(y0, v.a, v.b) ? "<br>" + esc(yours(y0, v.a, v.b)) : "") + "</p>";
     out += form(v);
     if (!ready) return out + '<p class="hp-mut">' + (v.a == null || v.b == null ? "Pick an hour in and an hour out" + (v.days.length ? "." : ", and the days.") : "Pick the days.") + '</p><div class="hp-acts"><button type="button" class="linkbtn" data-back>Cancel</button></div>';
     // removing: sessions and waiting requests in these times lock it until they're declined or cancelled
@@ -518,12 +521,12 @@
     if (!runs(CUR, v.y).some(r => r[0] === v.a && r[1] === v.b)) { HP.view = { t: "week" }; return sideWeek(); }
     const inside = reqsIn(v.y, v.a, v.b), same = sameAs(v.y, v.a, v.b), E = v.edit, over = pastCell(v.y, v.b - 30);
     const sel = (io, from, to, val) => '<select data-eio="' + io + '">' + steps(from, to).map(m => '<option value="' + m + '"' + (m === val ? " selected" : "") + ">" + tm(m) + "</option>").join("") + "</select>";
-    const out = back() + '<span class="hp-k">Your hours</span><h5>' + esc(dayShort(v.y)) + '</h5><p class="hp-big">' + span(v.a, v.b) + ' ET</p><p class="hp-mut">' + hrs(v.b - v.a) + (yours(v.y, v.a, v.b) ? "<br>" + esc(yours(v.y, v.a, v.b)) : "") + "</p>" +
+    const out = back() + '<span class="hp-k">Your hours</span><h5>' + esc(dayShort(v.y)) + '</h5><p class="hp-big">' + span(v.a, v.b) + ' ' + TZ + '</p><p class="hp-mut">' + hrs(v.b - v.a) + (yours(v.y, v.a, v.b) ? "<br>" + esc(yours(v.y, v.a, v.b)) : "") + "</p>" +
       '<h6 class="hp-sub">In these hours</h6>' + (inside.length ? rows(inside) : '<p class="hp-mut">Nothing booked or waiting yet.</p>') +
       (same.length ? '<p class="hp-mut">Same hours on ' + (same.length > 4 ? same.length + " other days" : same.map(dayName).join(", ")) + ".</p>" : "");
     if (over) return out + '<p class="hp-mut">These hours are over.</p>';
     if (!E) return out + '<div class="hp-acts"><button type="button" class="btn ghost" data-edit>Change times</button><button type="button" class="btn ghost" data-rmblock>Remove hours</button></div>';
-    return out + '<h6 class="hp-sub">Change times</h6><div class="hp-io"><label>Hour in (ET)' + sel("a", M0, M1 - 30, E.a) + "</label><label>Hour out (ET)" + sel("b", E.a + 30, M1, E.b) + "</label></div>" +
+    return out + '<h6 class="hp-sub">Change times</h6><div class="hp-io"><label>Hour in (' + TZ + ')' + sel("a", M0, M1 - 30, E.a) + "</label><label>Hour out (" + TZ + ")" + sel("b", E.a + 30, M1, E.b) + "</label></div>" +
       (same.length ? '<label class="hp-also"><input type="checkbox" data-also' + (E.all ? " checked" : "") + "> Also change the " + (same.length === 1 ? "other day" : same.length + " other days") + " with these hours (" + same.map(dayName).join(", ") + ")</label>" : "") +
       (E.lost && E.lost.length ? '<p class="hp-warn"><b>Decline or cancel ' + (E.lost.length === 1 ? "this" : "these") + " first, or keep " + (E.lost.length === 1 ? "it" : "them") + " inside the new times.</b> " + (E.lost.length === 1 ? "It's" : "They're") + " outside the times you picked. Click one to answer it.</p>" + rows(E.lost) : "") +
       '<div class="hp-acts"><button type="button" class="btn" data-esave' + (E.a === v.a && E.b === v.b ? " disabled" : "") + '>Save changes</button><button type="button" class="linkbtn end" data-ecancel>Cancel</button></div>';
@@ -542,7 +545,7 @@
     const also = pending ? LIVE.filter(x => x.id !== r.id && x.status === "pending" && T(x.starts_at) < T(r.ends_at) && T(r.starts_at) < T(x.ends_at)) : [];
     const future = new Date(pending ? r.starts_at : r.ends_at) > new Date(UI.now());
     return back() + '<span class="hp-k">' + (pending ? "Request waiting" : "Booked session") + "</span><h5>" + (r.kind === "team" ? "Team review" : "Individual") + "</h5>" +
-      '<dl class="hp-kv"><dt>When</dt><dd>' + esc(dayShort(y)) + "<br><b>" + span(a, b) + " ET</b> · " + hrs(b - a) + (yours(y, a, b) ? '<br><span class="hp-mut">' + esc(yours(y, a, b)) + "</span>" : "") + "</dd>" +
+      '<dl class="hp-kv"><dt>When</dt><dd>' + esc(dayShort(y)) + "<br><b>" + span(a, b) + " " + TZ + "</b> · " + hrs(b - a) + (yours(y, a, b) ? '<br><span class="hp-mut">' + esc(yours(y, a, b)) + "</span>" : "") + "</dd>" +
       "<dt>" + (r.by_coach ? "With" : "From") + "</dt><dd>" + (r.by_coach && r.kind === "team" ? esc(who(r)) + ' <span class="sc-tag">Your team</span>' : esc(who(r)) + (t ? "<br>" + esc(t.name) + (t.coach_id === ctx.coach.id ? ' <span class="sc-tag">Your team</span>' : ' <span class="sc-tag other">Other team</span>') : '<br><span class="hp-mut">Not on a team</span>')) + "</dd>" +
       (r.note ? "<dt>Note</dt><dd>“" + esc(r.note) + "”</dd>" : "") +
       (r.by_coach ? "<dt>Written</dt><dd>By you · " + esc(UI.sentAt(r.created_at)) + "</dd>"

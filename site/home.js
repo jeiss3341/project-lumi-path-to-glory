@@ -635,7 +635,7 @@
      and the request card beside it. Week 1 drops away once it's over; closing the pop-up starts the next
      one back on the first week. Mentors and assistant coaches both take team reviews and individual sessions. */
   const T = iso => new Date(iso).getTime();
-  const etTime = iso => new Date(iso).toLocaleTimeString("en-US", { timeZone: UI.EVENT_TZ, hour: "numeric", minute: "2-digit" });
+  const etTime = iso => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })   // your own time;
   const etShort = (a, b) => { const f = s => etTime(s).replace(":00", ""); const x = f(a), y = f(b); return x.slice(-2) === y.slice(-2) ? x.slice(0, -3) + "–" + y : x + "–" + y; };
   const dayShort = ymd => UI.date(UI.etAt(ymd, 720), { weekday: "short", month: "short", day: "numeric" });
   const EVENT_DAYS = UI.eventDays();
@@ -677,7 +677,7 @@
   }
 
   const nextHours = c => BK.all.filter(b => b.coach_id === c.id && T(b.ends_at) > UI.now()).sort((a, b) => T(a.starts_at) - T(b.starts_at))[0];
-  const hoursLabel = b => dayShort(UI.dayOf(b.starts_at)) + " · " + etShort(b.starts_at, b.ends_at) + " ET";
+  const hoursLabel = b => dayShort(UI.dayOf(b.starts_at)) + " · " + etShort(b.starts_at, b.ends_at) + " " + UI.TZ;
 
   function renderCards() {
     const card = c => {
@@ -744,7 +744,7 @@
     days.forEach(d => slotsFor(d.ymd).forEach((s, i, all) => { s.fits = maxLen(all, i) >= coachRules().min; const m = Math.round((s.t - UI.etAt(d.ymd, 0).getTime()) / 6e4); cell[d.ymd + "|" + m] = s; used.add(m); }));
     if (!used.size) return '<div class="bk-empty">' + esc(UI.bare(UI.coachName(c))) + " has no hours in Week " + BK.wk + (weeks().length > 1 ? ". Try the other week." : " yet.") + "</div>";
     const sel = BK.start ? T(BK.start) : 0, selEnd = sel + BK.len * HALF, ask = canRequest();
-    const lab = m => { const h = Math.floor(m / 60) % 24, mm = m % 60; return (h % 12 || 12) + (mm ? ":" + pad(mm) : "") + " " + (h < 12 ? "AM" : "PM"); };
+    const lab = m => { const l = UI.lmin(m), h = Math.floor(l / 60), mm = l % 60; return (h % 12 || 12) + (mm ? ":" + pad(mm) : "") + " " + (h < 12 ? "AM" : "PM"); };
     const words = { mine: "Your request (waiting)", "mine-ok": "Your session", booked: "Booked", requested: "Someone's waiting", open: "Open" };
     let prev = null, rows = "";
     [...used].sort((a, b) => a - b).forEach(m => {
@@ -752,7 +752,7 @@
       rows += '<tr><th class="tm">' + (m % 60 && prev === m - 30 ? "" : lab(m)) + "</th>" + days.map(d => {
         const s = cell[d.ymd + "|" + m];
         if (!s || s.st === "past") return '<td class="off"></td>';
-        const label = esc(dayShort(d.ymd) + " · " + etTime(s.iso) + " ET · " + words[s.st]);
+        const label = esc(dayShort(d.ymd) + " · " + etTime(s.iso) + " " + UI.TZ + " · " + words[s.st]);
         if (!pickable(s) || !ask || !s.fits) return '<td><span class="is-' + s.st + '" title="' + label + '"></span></td>';   // view only: nothing to click
         const cls = s.t === sel ? "on" : s.t > sel && s.t < selEnd ? "in" : s.st === "requested" ? "req" : "";
         return '<td><button type="button" class="' + cls + '" data-start="' + s.iso + '" title="' + label + '" aria-label="' + label + '"></button></td>';
@@ -782,7 +782,7 @@
     const yours = has && !UI.onEastern(new Date(BK.start)) ? '<span class="bk-yours">' + esc(UI.time(BK.start) + " – " + UI.time(end)) + " your time</span>" : "";
     return '<div class="bk-req"><h4>Request card</h4><dl>' +
       "<div><dt>Coach</dt><dd>" + esc(UI.bare(UI.coachName(c))) + "</dd></div>" +
-      "<div><dt>When</dt>" + (has ? "<dd>" + esc(dayShort(startDay())) + "<br>" + etTime(BK.start) + " – " + etTime(end) + " ET" + yours + "</dd>" : '<dd class="empty">Click a start time on the planner</dd>') + "</div></dl>" +
+      "<div><dt>When</dt>" + (has ? "<dd>" + esc(dayShort(startDay())) + "<br>" + etTime(BK.start) + " – " + etTime(end) + " " + UI.TZ + "</dd>" : '<dd class="empty">Click a start time on the planner</dd>') + "</div></dl>" +
       '<div><span class="bk-lbl">How long</span>' + (BK.start ? '<div class="bk-seg" role="group" aria-label="How long">' + LEN.map((l, j) => '<button type="button" data-len="' + (j + 1) + '" aria-pressed="' + (BK.len === j + 1) + '"' + (j + 1 > mx || j + 1 < rules.min ? " disabled" : "") + ">" + l + "</button>").join("") + "</div>"
         : '<p class="bk-fine">Pick a start time first.</p>') + lenNote + "</div>" +
       '<div><span class="bk-lbl">Session</span><div class="bk-seg" role="group" aria-label="Session">' + (rules.kinds !== "individual" ? kindBtn("team", "Team review") : "") + (rules.kinds !== "team" ? kindBtn("individual", "Individual") : "") + "</div>" + kindNote + "</div>" +
@@ -799,7 +799,7 @@
     pop.innerHTML = '<div class="bk-top"><div><span class="k">' + (c.kind === "assistant" ? "Assistant coach" + (UI.coachTeam(c) ? " · " + esc(UI.bare(UI.coachTeam(c))) : "") : "Mentor · " + esc(UI.bare(UI.coachTeam(c)))) + '</span><h3 id="bk-pop-title">' + esc(UI.bare(UI.coachName(c))) + "</h3></div>" +
       '<div class="bk-tools">' + (wks.length === 1 ? '<span class="bk-wk-only">Week 2</span>' : '<div class="bk-seg">' + wks.map(w => '<button type="button" data-wk="' + w + '" aria-pressed="' + (BK.wk === w) + '">Week ' + w + "</button>").join("") + "</div>") +
         '<button type="button" class="linkbtn" data-close>Close</button></div></div>' +
-      '<div class="bk-body"><div><p class="bk-step">' + (canRequest() ? "Click a start time" : "Week view") + " · Eastern (ET)</p>" + planner() + "</div>" + requestCard() + "</div>";
+      '<div class="bk-body"><div><p class="bk-step">' + (canRequest() ? "Click a start time" : "Week view") + " · Your time (" + UI.TZ + ")</p>" + planner() + "</div>" + requestCard() + "</div>";
   }
 
   function onPopClick(e) {

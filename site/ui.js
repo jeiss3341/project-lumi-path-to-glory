@@ -47,6 +47,10 @@
   UI.dayOf = iso => UI.etYmd(new Date(new Date(iso).getTime() - (UI.DAY_END - 1440) * 6e4));
   // is the viewer on Eastern time right now (any zone that matches it, e.g. Toronto)?
   UI.onEastern = (d = new Date()) => d.getTimezoneOffset() === -tzOffset(d, UI.EVENT_TZ);
+  // the viewer's own time zone, shown on every time (e.g. "PST"), and how many minutes it is from Eastern (event days stay on Eastern underneath)
+  UI.TZ = (new Intl.DateTimeFormat("en-US", { timeZoneName: "short" }).formatToParts(new Date()).find(p => p.type === "timeZoneName") || {}).value || "local time";
+  UI.OFF = -new Date().getTimezoneOffset() - tzOffset(new Date(), UI.EVENT_TZ);
+  UI.lmin = m => ((m + UI.OFF) % 1440 + 1440) % 1440;   // Eastern minutes after midnight -> your own
   // an Eastern time for a picker, plus the viewer's own time when they're elsewhere
   UI.etLabel = (ymd, mins) => {
     const d = UI.etAt(ymd, mins);
@@ -252,7 +256,7 @@
     const T = iso => new Date(iso).getTime();
     const name = esc(UI.party(r, o.team)), coach = esc(o.coach || ""), what = r.kind === "team" ? "team review" : "individual session";
     const cal = me ? "your calendar" : coach + "'s calendar";
-    const when = esc(UI.date(UI.etAt(UI.dayOf(r.starts_at), 720), { weekday: "long", month: "long", day: "numeric" })) + " · " + et(r.starts_at) + "–" + et(r.ends_at) + " ET" +
+    const when = esc(UI.date(UI.etAt(UI.dayOf(r.starts_at), 720), { weekday: "long", month: "long", day: "numeric" })) + " · " + et(r.starts_at) + "–" + et(r.ends_at) + " " + UI.TZ +
       (UI.onEastern(new Date(r.starts_at)) ? "" : '<br><span class="muted">Your time: ' + esc(UI.time(r.starts_at) + "–" + UI.time(r.ends_at)) + "</span>");
     // accepting books the time, so other waiting requests that overlap it are declined (the database does the same)
     const clash = o.status !== "accepted" ? [] : (o.reqs || []).filter(x => x.id !== r.id && x.coach_id === r.coach_id && x.status === "pending" && T(x.starts_at) < T(r.ends_at) && T(r.starts_at) < T(x.ends_at));
@@ -271,7 +275,7 @@
       '<p class="sc-ask-who"><b>' + name + "</b>" + (o.team && !(r.by_coach && r.kind === "team") ? " · " + esc(o.team) : "") + "<br>" + what.charAt(0).toUpperCase() + what.slice(1) + (me ? "" : " with " + coach) + "<br>" + when + "</p>" +
       '<h4 class="sc-ask-k">What happens</h4><ul class="sc-ask">' + pts.map(p => "<li>" + p + "</li>").join("") + "</ul>" +
       (clash.length ? '<p class="sc-ask-warn">' + (clash.length === 1 ? "1 other waiting request overlaps this time and will be declined:" : clash.length + " other waiting requests overlap this time and will be declined:") + "</p>" +
-        '<ul class="sc-ask warn">' + clash.map(x => "<li>" + esc(UI.who(x.requester)) + " · " + et(x.starts_at) + "–" + et(x.ends_at) + " ET · " + UI.sentGap(x, r) + "</li>").join("") + "</ul>" : "") +
+        '<ul class="sc-ask warn">' + clash.map(x => "<li>" + esc(UI.who(x.requester)) + " · " + et(x.starts_at) + "–" + et(x.ends_at) + " " + UI.TZ + " · " + UI.sentGap(x, r) + "</li>").join("") + "</ul>" : "") +
       '<div class="sc-dact"><button type="button" class="btn' + (o.status === "accepted" ? "" : " cc-danger") + '" data-ok>' + A[2] + "</button>" +
         '<button type="button" class="linkbtn" data-back>Go back</button></div>';
     answer(d, done);

@@ -128,7 +128,7 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v35";   // bump when the sample data changes, so browsers drop their old copy
+    const KEY = "ptg-demo-v36";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
@@ -196,7 +196,7 @@
       team("t-ojama", "Ojama Trio", "m8", [["Chabs", ""], ["April", ""], ["Matthew1rox", ""], ["DestelloJoker", ""]], [], {});
       team("t-pengu", "Pengu Industries", "m3", [["jeiss", ""], ["VioletSkyfire", ""], ["Mareep", ""], ["Vinnyt", ""]], ["u-jeiss"], {});
       team("t-sleeping", "Sleeping Forest", "m6", [["Ravenbergier", ""], ["Tides", ""], ["Speex", ""], ["Redflake", ""]], [], {});
-      team("t-mango", "Mango Cats", "m7", [["Xinon", ""], ["Keeperbeast", ""], ["Given", ""], ["Ariaza", ""]], [], {});
+      team("t-mango", "Mango Cats", "m7", [["ArdentQ", ""], ["Keeperbeast", ""], ["Given", ""], ["Ariaza", ""]], [], {});
       team("t-sleepdeprived", "sleepdeprived", "m5", [["sleepun", ""], ["Maskedsamura1", ""], ["Ignis", ""], ["Silverace13", ""]], [], {});
 
       // ---- session requests ----
