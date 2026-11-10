@@ -7,5 +7,11 @@
 :{$PORT:8080} {
 	root * /srv
 	encode gzip
+	# Short cache times, so a "push it live" shows up within minutes (Cloudflare and browsers
+	# otherwise keep files for 4 hours). Pictures change less often, so they keep an hour.
+	@code path / *.html *.js *.css *.json *.svg
+	header @code Cache-Control "public, max-age=60"
+	@pics path *.png *.webp *.jpg *.jpeg *.gif
+	header @pics Cache-Control "public, max-age=3600"
 	file_server
 }
