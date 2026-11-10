@@ -31,7 +31,8 @@
     if (S.isPlayer) tabs.push(["player", "Player file"]);
     if (S.me.role === "staff") tabs.push(["staff", "Staff"]);
     // someone with several roles sees one at a time, picked in the profile menu
-    const want = location.hash.slice(1), has = v => tabs.some(t => t[0] === v);
+    const waitingAsked = location.hash === "#coach-waiting";
+    const want = waitingAsked ? "coach" : location.hash.slice(1), has = v => tabs.some(t => t[0] === v);
     S.tab = has(want) ? want : has(UI.view()) ? UI.view() : has("staff") ? "staff" : tabs[0][0];
     UI.setView(S.tab);
     tabs.splice(0, tabs.length, tabs.find(t => t[0] === S.tab));
@@ -54,7 +55,9 @@
       API.watch("requests", () => render());
       API.watch("availability", () => { if (S.tab === "coach") render(); });
     }
-    render();
+    render().then(() => {
+      if (waitingAsked && S.tab === "coach") { history.replaceState(null, "", "#coach"); go("coach:waiting"); }
+    });
   }
 
   /* ---------- the header: who you are, and the three numbers that matter on the tab you're on ----------
@@ -137,6 +140,7 @@
     head.onclick = e => { const s = e.target.closest("[data-ssk]"); if (s && !s.disabled) return saveSetting(s); const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go); };
   }
   // a header number: switch to its tab, then bring its part of the desk into view
+  window.PTGDeskGo = g => go(g);   // the coach notice (ui.js) opens the waiting requests from here
   async function go(g) {
     const [tab, where] = g.split(":");
     if (tab === "staff") S.staffTab = where;
@@ -307,7 +311,7 @@
 
   /* ================================================== staff */
   async function renderStaff(body) {
-    const sub = [["teams", "Teams"], ["coaches", "Coaches"], ["hours", "Hours"], ["requests", "Requests"], ["people", "People"], ["teamstats", "Team stats"], ["stats", "Sponsor stats"]];
+    const sub = [["teams", "Teams"], ["coaches", "Coaches"], ["hours", "Hours"], ["requests", "Requests"], ["people", "People"], ["teamstats", "Team stats"], ["streams", "Streams"], ["stats", "Sponsor stats"]];
     const head = '<div class="subtabs">' + sub.map(s => '<button type="button" class="stab" data-sub="' + s[0] + '" aria-pressed="' + (S.staffTab === s[0]) + '">' + s[1] + "</button>").join("") + "</div>";
     let inner = "";
     const [profiles, coaches] = await Promise.all([API.profiles(), API.coaches()]);
@@ -381,6 +385,42 @@
       body.innerHTML = head + '<section class="sheet dpanel wide-panel"><h2>People</h2>' + inner + "</section>";
       body.onclick = e => { stabClick(e); };
       body.onchange = e => { const s = e.target.closest(".js-role"); if (s) UI.act(s, async () => { await API.setRole(s.dataset.id, s.value); }, "Role updated."); };
+      return;
+    }
+
+    if (S.staffTab === "streams") {
+      // [PTG] Twitch streams Lumi-chan recorded (supabase/vods.sql): who's live now, and every stream with its times
+      const vods = await API.vods();
+      const T = iso => new Date(iso).getTime();
+      const hms = sec => { sec = Math.max(0, Math.round(sec)); return Math.floor(sec / 3600) + ":" + String(Math.floor(sec / 60) % 60).padStart(2, "0") + ":" + String(sec % 60).padStart(2, "0"); };
+      const nowMs = UI.now();
+      const cname = id => { const c = coaches.find(x => x.id === id); return c ? UI.bare(UI.coachName(c)) : id; };
+      const ptgSecs = v => (v.marks || []).reduce((n, m) => n + Math.max(0, ((m.ended_at ? T(m.ended_at) : nowMs) - T(m.started_at)) / 1000), 0);   // never below zero
+      const live = vods.filter(v => !v.ended_at && (v.marks || []).some(m => !m.ended_at));
+      const forLabel = v => !v.kind ? '<span class="muted">Not filed</span>' : esc(v.kind === "general" ? "General" : (v.for_name || (v.kind === "team" ? "A team" : "A player")));
+      const vodCell = v => !v.ended_at ? '<span style="color:var(--red-deep);font-weight:600">Live</span>' : !v.vod_id ? '<span class="muted">Waiting for Twitch</span>' :
+        v.saved ? '<span style="color:#2d7a4b">Saved</span>' : v.expires_at ? "Until " + esc(UI.date(v.expires_at, { month: "short", day: "numeric" })) : "Yes";
+      const total = vods.reduce((n, v) => n + ptgSecs(v), 0);
+      inner = '<p class="muted">[PTG] streams Lumi-chan recorded from the coaches\' Twitch channels (names set in Coaches). Times are yours. Checked every 3 minutes.</p>' +
+        '<div class="ss-tiles">' +
+          '<div class="ss-tile"><b>' + live.length + '</b><span>Live with [PTG] now</span></div>' +
+          '<div class="ss-tile"><b>' + vods.length + '</b><span>Streams recorded</span></div>' +
+          '<div class="ss-tile"><b>' + esc(hms(total)) + '</b><span>Total [PTG] time</span></div>' +
+          '<div class="ss-tile"><b>' + vods.filter(v => !v.kind).length + '</b><span>Not filed yet</span></div>' +
+        "</div>" +
+        '<h3 class="tp-sub" style="margin-top:18px">Live now</h3>' +
+        (live.length ? '<ul class="tp-list">' + live.map(v => "<li><b>" + esc(cname(v.coach_id)) + "</b> · since " + esc(UI.time(v.started_at)) + ' · <a href="https://twitch.tv/' + esc(v.twitch_login) + '" target="_blank" rel="noopener">twitch.tv/' + esc(v.twitch_login) + " ↗</a></li>").join("") + "</ul>"
+          : '<p class="muted small">Nobody is live with [PTG] right now.</p>') +
+        '<h3 class="tp-sub" style="margin-top:18px">Every stream</h3>' +
+        (vods.length ? '<div class="tbl"><table><thead><tr><th>Coach</th><th>Started</th><th>Length</th><th>[PTG] time</th><th>[PTG] parts</th><th>Filed for</th><th>VOD</th></tr></thead><tbody>' +
+          vods.map(v => {
+            const end = v.ended_at ? T(v.ended_at) : nowMs, marks = (v.marks || []).slice().sort((a, b) => T(a.started_at) - T(b.started_at));
+            const parts = marks.map(m => esc(UI.time(m.started_at)) + "–" + (m.ended_at ? esc(UI.time(m.ended_at)) : "now") + (m.label ? " " + esc(m.label) : "")).join("<br>");
+            return "<tr><td><b>" + esc(cname(v.coach_id)) + '</b><div class="small muted">' + esc(v.twitch_login) + "</div></td><td>" + esc(UI.date(v.started_at)) + '<div class="small muted">' + esc(UI.time(v.started_at)) + "</div></td><td>" + esc(hms((end - T(v.started_at)) / 1000)) + "</td><td>" + esc(hms(ptgSecs(v))) + '</td><td class="small">' + (parts || '<span class="muted">None</span>') + "</td><td>" + forLabel(v) + "</td><td>" + vodCell(v) + "</td></tr>";
+          }).join("") + "</tbody></table></div>"
+          : '<p class="muted small">No [PTG] streams yet. They show up here once a coach streams Eternal Return with [PTG] in the title.</p>');
+      body.innerHTML = head + '<section class="sheet dpanel wide-panel"><h2>Streams</h2>' + inner + "</section>";
+      body.onclick = e => { stabClick(e); };
       return;
     }
 

@@ -351,6 +351,7 @@
         views.filter(v => v[0] !== view).map((v, i) => '<button type="button" class="me-swap' + (i ? "" : " first") + '" data-view="' + v[0] + '">Switch to ' + v[1] + "</button>").join("");
       const settings = UI.$(".js-settings", links);
       if (settings) settings.onclick = () => { setOpen(false); UI.sessionSettings(coach); };
+      if (coach && view === "coach") UI.reqNotice(coach);
       el.querySelectorAll("[data-view]").forEach(b => { b.onclick = () => {
         UI.setView(b.dataset.view);
         const to = "desk.html#" + b.dataset.view;
@@ -359,6 +360,53 @@
     }).catch(() => { links.innerHTML = '<a href="desk.html">Your desk</a>'; });
   };
   UI.login = btn => UI.act(btn, () => API.signIn());
+
+  /* ---------- a coach's "requests waiting" notice, top left on every page ----------
+     "You have 3 requests waiting · Go to requests". On the desk the button opens the same pop-up as the
+     header's Requests waiting number; elsewhere it goes to desk.html#coach-waiting, which opens it there.
+     Closing it hides it until the number changes. Checks again every 2 minutes. */
+  UI.reqNotice = function (coach) {
+    if (UI.reqNoticeTimer) clearInterval(UI.reqNoticeTimer);
+    if (!UI.$("#req-notice-css")) {
+      const css = document.createElement("style");
+      css.id = "req-notice-css";
+      css.textContent =
+        ".req-notice{position:fixed;left:16px;top:58px;z-index:60;display:flex;align-items:center;gap:12px;max-width:calc(100vw - 32px);background-color:var(--paper);background-image:var(--grain);color:var(--ink);border-left:5px solid var(--red);box-shadow:var(--lift);padding:11px 12px 11px 14px;font:500 14px/1.3 var(--f-display)}" +
+        ".req-notice[hidden]{display:none}" +
+        ".req-notice b{font-weight:800}" +
+        ".req-notice .go{background:var(--ink);color:#fff;border:0;font:600 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;padding:9px 11px;cursor:pointer;white-space:nowrap;text-decoration:none}" +
+        ".req-notice .go:hover{background:var(--red-deep)}" +
+        ".req-notice .x{background:none;border:0;color:var(--ink-soft);font:400 20px/1 var(--f-display);cursor:pointer;padding:0 2px}" +
+        ".hours-page .req-notice{top:58px}";
+      document.head.appendChild(css);
+    }
+    let box = UI.$(".req-notice");
+    if (!box) {
+      box = document.createElement("div"); box.className = "req-notice"; box.setAttribute("role", "status"); box.hidden = true; document.body.appendChild(box);
+      // always just under the top bar, including the "Live now" strip when it shows (livestrip.js)
+      const bar = UI.$(".topbar");
+      const place = () => { box.style.top = Math.round((bar ? bar.getBoundingClientRect().height : 46) + 10) + "px"; };
+      place();
+      if (bar && window.ResizeObserver) new ResizeObserver(place).observe(bar);
+    }
+    const key = "ptg-req-notice-closed";
+    const check = async () => {
+      let n = 0;
+      try { n = (await API.coachRequests(coach.id)).filter(r => r.status === "pending" && new Date(r.starts_at).getTime() > UI.now()).length; } catch (e) { return; }
+      let closed = "";
+      try { closed = sessionStorage.getItem(key) || ""; } catch (e) { /* storage blocked */ }
+      if (!n || closed === String(n)) { box.hidden = true; return; }
+      box.innerHTML = "<span>You have <b>" + n + "</b> " + (n === 1 ? "request" : "requests") + " waiting</span>" +
+        '<a class="go" href="desk.html#coach-waiting">Go to requests</a><button type="button" class="x" aria-label="Hide this notice">×</button>';
+      box.hidden = false;
+      UI.$(".go", box).onclick = e => {
+        if (window.PTGDeskGo) { e.preventDefault(); box.hidden = true; window.PTGDeskGo("coach:waiting"); }   // already on the desk
+      };
+      UI.$(".x", box).onclick = () => { box.hidden = true; try { sessionStorage.setItem(key, String(n)); } catch (e) { /* storage blocked */ } };
+    };
+    check();
+    UI.reqNoticeTimer = setInterval(check, 2 * 60 * 1000);
+  };
 
   // a coach's questions about the sessions they take; the defaults are the event's normal rules
   UI.sessionSettings = function (c, done) {
