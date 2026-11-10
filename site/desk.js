@@ -273,7 +273,7 @@
 
   /* ================================================== staff */
   async function renderStaff(body) {
-    const sub = [["teams", "Teams"], ["coaches", "Coaches"], ["hours", "Hours"], ["requests", "Requests"], ["people", "People"], ["stats", "Sponsor stats"]];
+    const sub = [["teams", "Teams"], ["coaches", "Coaches"], ["hours", "Hours"], ["requests", "Requests"], ["people", "People"], ["teamstats", "Team stats"], ["stats", "Sponsor stats"]];
     const head = '<div class="subtabs">' + sub.map(s => '<button type="button" class="stab" data-sub="' + s[0] + '" aria-pressed="' + (S.staffTab === s[0]) + '">' + s[1] + "</button>").join("") + "</div>";
     let inner = "";
     const [profiles, coaches] = await Promise.all([API.profiles(), API.coaches()]);
@@ -343,6 +343,12 @@
       body.innerHTML = head + '<section class="sheet dpanel wide-panel"><h2>People</h2>' + inner + "</section>";
       body.onclick = e => { stabClick(e); };
       body.onchange = e => { const s = e.target.closest(".js-role"); if (s) UI.act(s, async () => { await API.setRole(s.dataset.id, s.value); }, "Role updated."); };
+      return;
+    }
+
+    if (S.staffTab === "teamstats") {
+      // sessions per team and coach, and each player's activity (teamstats.js)
+      await PTGTeamStats.render(body, head, S, stabClick, render);
       return;
     }
 

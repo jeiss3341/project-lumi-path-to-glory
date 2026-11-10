@@ -57,6 +57,51 @@
     };
   }
 
+  // ---- per player (Team stats tab): the same shape supabase/player-stats.sql's staff_player_stats() returns ----
+  function players(rows) {
+    const by = {};
+    rows.filter(r => r.profile_id).forEach(r => { (by[r.profile_id] = by[r.profile_id] || []).push(r); });
+    const sumBy = (list, key, val) => {
+      const m = {};
+      list.forEach(r => { const k = key(r); if (k) m[k] = (m[k] || 0) + val(r); });
+      return Object.entries(m).map(([name, v]) => ({ name, v }));
+    };
+    return Object.entries(by).map(([id, list]) => ({
+      profile_id: id,
+      visits: list.filter(r => r.kind === "visit").length,
+      seconds: Math.round(list.filter(r => r.kind === "time").reduce((a, r) => a + (r.ms || 0), 0) / 1000),
+      last_seen: list.reduce((a, r) => (r.created_at > a ? r.created_at : a), ""),
+      sections: sumBy(list.filter(r => r.kind === "section"), r => r.target, r => r.ms || 0).map(x => ({ name: x.name, seconds: Math.round(x.v / 1000) })).sort((a, b) => b.seconds - a.seconds),
+      coaches: sumBy(list.filter(r => r.kind === "coach" || r.kind === "flip"), r => r.target, () => 1).map(x => ({ name: x.name, n: x.v })).sort((a, b) => b.n - a.n),
+      chars: sumBy(list.filter(r => r.kind === "char"), r => r.target, () => 1).map(x => ({ name: x.name, n: x.v })).sort((a, b) => b.n - a.n),
+      days: sumBy(list.filter(r => r.kind === "time"), r => etParts(r.created_at).day, r => r.ms || 0).map(x => ({ day: x.name, seconds: Math.round(x.v / 1000) })).sort((a, b) => (a.day < b.day ? -1 : 1))
+    }));
+  }
+
+  // sample logged-in visits for the given accounts (demo mode only, the same every time)
+  function samplePlayers(ids) {
+    let seed = 1110;
+    const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+    const C = window.PTG || {}, names = (C.coachSeed || []).map(c => c.name), chars = [...new Set((C.coachSeed || []).flatMap(c => c.pool || []))];
+    const secs = ["Faculty", "Schedule", "Rosters", "Top of page", "Brief", "Office hours", "Field notes", "Channels"];
+    const rows = [];
+    ids.forEach((id, k) => {
+      const visits = 2 + Math.floor(rnd() * 7);
+      for (let i = 0; i < visits; i++) {
+        const t = new Date(Date.UTC(2026, 10, 10, 1 + Math.floor(rnd() * 16), Math.floor(rnd() * 60))).toISOString();   // Nov 9 evening to Nov 10 midday, Eastern
+        const base = { visitor: "pv" + k, session: "ps" + k + "-" + i, profile_id: id, logged_in: true, created_at: t };
+        rows.push(Object.assign({ kind: "visit", target: "Home" }, base));
+        const ms = Math.floor(20000 + Math.pow(rnd(), 2) * 600000);
+        rows.push(Object.assign({ kind: "time", ms }, base));
+        let left = ms;
+        for (let j = 0; j < 3 && left > 1000; j++) { const part = j === 2 ? left : Math.floor(left * (0.3 + rnd() * 0.5)); rows.push(Object.assign({ kind: "section", target: secs[Math.floor(rnd() * secs.length)], ms: part }, base)); left -= part; }
+        for (let j = Math.floor(rnd() * 4); j > 0; j--) rows.push(Object.assign({ kind: "coach", target: names[Math.floor(rnd() * names.length)] || "" }, base));
+        if (rnd() < 0.4 && chars.length) rows.push(Object.assign({ kind: "char", target: chars[Math.floor(rnd() * chars.length)] }, base));
+      }
+    });
+    return rows;
+  }
+
   // ---- sample visits for demo mode (the same every time) ----
   function sample() {
     let seed = 20261109;
@@ -175,7 +220,7 @@
     body.innerHTML = head + '<section class="sheet dpanel wide-panel"><div class="ss-top"><h2>Sponsor stats</h2><span>' +
       (s.sample ? '<span class="ss-sample">Demo · sample numbers</span> ' : "") +
       '<button type="button" class="btn ghost js-ss-refresh">Refresh</button> <button type="button" class="btn js-ss-copy">Copy summary for sponsors</button></span></div>' +
-      '<p class="muted">Counted anonymously on every visit: no names or Discord accounts are stored. Times are Eastern.</p>' +
+      '<p class="muted">Counted on every visit. Visitors who aren\'t logged in are anonymous; from Nov 10, a logged-in player\'s visits are saved with their account so staff can see their activity in Team stats. Times are Eastern.</p>' +
       '<div class="ss-tiles">' +
         [["Visits", num(s.visits)], ["Unique visitors", num(s.visitors)], ["Came back", num(s.returning) + " · " + pct(s.returning, s.visitors)],
          ["Avg time on site · since Nov 10", dur(s.avg_seconds)], ["Total time watched · since Nov 10", totalTime(s)], ["Left within 10 s · since Nov 10", s.bounce + "%"],
@@ -206,5 +251,5 @@
       '<div class="ss-copy" hidden></div></section>';
   }
 
-  window.PTGStats = { compute, sample, render, summary };
+  window.PTGStats = { compute, sample, render, summary, players, samplePlayers, dur };
 })();

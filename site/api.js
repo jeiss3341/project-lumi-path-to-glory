@@ -40,7 +40,9 @@
       const md = s.user.user_metadata || {};
       return p || { id: s.user.id, discord_id: md.provider_id || null, username: (md.name || "").replace(/#0$/, ""), display_name: md.full_name || md.name || "", avatar_url: md.avatar_url || "", role: "player" };
     })());
+    let token = null;   // the logged-in visitor's access token, for track.js (kept fresh as Supabase refreshes it)
     sb.auth.onAuthStateChange((evt, s) => {
+      token = s && s.access_token || null;
       const uid = s && s.user ? s.user.id : null;
       if (uid === lastUid) return;
       const first = lastUid === undefined;
@@ -116,14 +118,18 @@
     API.setRole = (id, role) => q(sb.from("profiles").update({ role }).eq("id", id));
 
     // visit counting (track.js): sent straight to the table with keepalive, so it still arrives as the page closes
+    // A logged-in visitor's rows carry their account and go with their token, so the database can check it's them;
+    // without a token they go anonymous rather than be turned down.
     API.track = rows => {
       try {
-        fetch(cfg.supabaseUrl + "/rest/v1/site_events", { method: "POST", keepalive: true,
-          headers: { apikey: cfg.supabaseAnonKey, "Content-Type": "application/json", Prefer: "return=minimal" },
-          body: JSON.stringify(rows) }).catch(() => {});
+        const headers = { apikey: cfg.supabaseAnonKey, "Content-Type": "application/json", Prefer: "return=minimal" };
+        if (token) headers.Authorization = "Bearer " + token;
+        else rows = rows.map(r => Object.assign({}, r, { profile_id: null }));
+        fetch(cfg.supabaseUrl + "/rest/v1/site_events", { method: "POST", keepalive: true, headers, body: JSON.stringify(rows) }).catch(() => {});
       } catch (e) { /* never get in the visitor's way */ }
     };
     API.sponsorStats = () => q(sb.rpc("sponsor_stats"));   // staff only (schema.sql)
+    API.playerStats = () => q(sb.rpc("staff_player_stats"));   // staff only (supabase/player-stats.sql)
     return API;
   }
 
@@ -535,6 +541,14 @@
         players: new Set(S.teams.flatMap(t => t.member_ids || [])).size, coaches_linked: S.coaches.filter(c => c.profile_id).length,
         requested: S.requests.filter(r => !r.by_coach).length, booked: S.requests.filter(r => r.status === "accepted").length, coach_hours: Math.round(hrs * 10) / 10 };
       return wait(Object.assign(window.PTGStats.compute(window.PTGStats.sample().concat(own)), { participation: part, sample: true }));
+    };
+    // Team stats tab: this browser's own logged-in visits, plus sample ones for every account on a team
+    API.playerStats = () => {
+      if (!isStaff()) return fail("Only staff can see player stats.");
+      let own = [];
+      try { own = JSON.parse(localStorage.getItem(EVENTS) || "[]"); } catch (e) { /* none */ }
+      const ids = [...new Set(S.teams.flatMap(t => t.member_ids || []))];
+      return wait(window.PTGStats.players(window.PTGStats.samplePlayers(ids).concat(own)));
     };
     return API;
   }

@@ -1,5 +1,6 @@
-/* Path to Glory · visit counting for the Sponsor Stats tab (desk → Staff → Sponsor stats).
-   Anonymous: a random visitor ID kept in this browser, never a name or Discord account. It records
+/* Path to Glory · visit counting for the Sponsor Stats and Team stats tabs (desk → Staff).
+   A random visitor ID kept in this browser; when someone is logged in, their account too, so staff
+   can see each player's time (visitors who aren't logged in stay anonymous). It records
    how long people stay, which sections they look at, and what they click (coach cards, characters,
    Discord invites, calendar adds). Saved through API.track: the real database on the real site,
    this browser only in demo mode. */
@@ -27,16 +28,17 @@
     if (/reddit/.test(h)) return "Reddit";
     return h.slice(0, 60);
   })();
-  let loggedIn = false;
+  let loggedIn = false, profileId = null;
   // every row carries every field: the database turns down a batch whose rows have different fields
-  // (that silently lost all the time-on-site rows, which go out together with the per-section ones)
-  const base = () => ({ visitor, session, device, tz: tz.slice(0, 60), logged_in: loggedIn, target: "", ms: 0, source: "" });
+  // (that silently lost all the time-on-site rows, which go out together with the per-section ones).
+  // profile_id: a logged-in visitor's account, so staff can see each player's time (Staff desk → Team stats).
+  const base = () => ({ visitor, session, device, tz: tz.slice(0, 60), logged_in: loggedIn, profile_id: profileId, target: "", ms: 0, source: "" });
   const send = rows => { if (rows.length) API.track(rows.map(r => Object.assign(base(), r))); };
   const page = new URLSearchParams(location.search).has("hours") ? "Office hours" : "Home";
 
   // ---- the visit itself (once the login check is done, so it knows whether they're logged in) ----
   Promise.resolve(API.session && API.session()).catch(() => null).then(me => {
-    loggedIn = !!me;
+    loggedIn = !!me; profileId = me ? me.id : null;
     send([{ kind: "visit", target: page, source }]);
   });
 
