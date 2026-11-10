@@ -183,7 +183,7 @@
     const from = mode === "coach" || mode === "coach-past";
     return '<div class="tbl"><table><thead><tr><th>When</th><th>' + (from ? "From" : "Coach") + "</th><th>Session</th><th>Status</th><th></th></tr></thead><tbody>" +
       list.map(r => { const s = UI.shown(r); return "<tr><td>" + esc(UI.range(r.starts_at, r.ends_at)) + "</td><td>" +
-        (from ? esc(UI.party(r, teamName)) : esc(UI.bare(UI.coachName(r.coach)))) + "</td><td>" + (r.kind === "team" ? "Team review" : "Individual") +
+        (from ? esc(UI.party(r, teamName)) : esc(UI.bare(UI.coachName(S.coaches.find(c => c.id === r.coach_id) || r.coach)))   /* the coach cards (blank database names fall back to content.js) */ ) + "</td><td>" + (r.kind === "team" ? "Team review" : "Individual") +
         // a session the mentor wrote down (set up with the team on Discord, say)
         (r.by_coach ? '<div class="muted small">' + (from ? "Written by you" : "Booked by your mentor") + "</div>" : "") +
         (r.note ? '<div class="muted small">' + esc(r.note) + "</div>" : "") + "</td><td>" + UI.statusChip(s) + "</td><td>" +

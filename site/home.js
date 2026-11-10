@@ -832,7 +832,7 @@
     const declined = upcoming.filter(r => r.status === "declined").length;
     box.innerHTML = '<div class="mine-head"><h3>Your requests</h3><a href="desk.html">All on your desk →</a></div>' +
       (list.length ? '<ul class="req-list">' + list.map(r =>
-        "<li>" + UI.statusChip(UI.shown(r)) + '<span class="rq-when">' + esc(UI.range(r.starts_at, r.ends_at)) + '</span><span class="rq-who">' + esc(UI.bare(UI.coachName(r.coach))) + " · " + (r.kind === "team" ? "Team review" : "Individual") + (r.by_coach ? " · booked by your mentor" : "") + "</span>" +
+        "<li>" + UI.statusChip(UI.shown(r)) + '<span class="rq-when">' + esc(UI.range(r.starts_at, r.ends_at)) + '</span><span class="rq-who">' + esc(UI.bare(UI.coachName(coachById(r.coach_id) || r.coach))) + " · " + (r.kind === "team" ? "Team review" : "Individual") + (r.by_coach ? " · booked by your mentor" : "") + "</span>" +
         (r.requester_id === S.me.id ? '<button type="button" class="linkbtn js-cancel-req" data-id="' + esc(r.id) + '">Cancel</button>' : "") + "</li>").join("") + "</ul>"
         : '<p class="empty-note">Nothing waiting or booked. Pick a coach above.</p>') +
       (declined ? '<p class="mine-note">' + declined + (declined === 1 ? " request was" : " requests were") + ' declined. <a href="desk.html">See them on your desk</a></p>' : "");
