@@ -123,9 +123,12 @@
     API.track = rows => {
       try {
         const headers = { apikey: cfg.supabaseAnonKey, "Content-Type": "application/json", Prefer: "return=minimal" };
-        if (token) headers.Authorization = "Bearer " + token;
-        else rows = rows.map(r => Object.assign({}, r, { profile_id: null }));
-        fetch(cfg.supabaseUrl + "/rest/v1/site_events", { method: "POST", keepalive: true, headers, body: JSON.stringify(rows) }).catch(() => {});
+        const anon = rows.map(r => { const x = Object.assign({}, r); delete x.profile_id; return x; });   // no account field at all
+        const post = (body, h) => fetch(cfg.supabaseUrl + "/rest/v1/site_events", { method: "POST", keepalive: true, headers: h, body: JSON.stringify(body) });
+        if (token && rows.some(r => r.profile_id)) {
+          // with the account; if the database turns it down (say the account column isn't there), send it anonymously instead
+          post(rows, Object.assign({ Authorization: "Bearer " + token }, headers)).then(r => { if (!r.ok) post(anon, headers).catch(() => {}); }, () => {});
+        } else post(anon, headers).catch(() => {});
       } catch (e) { /* never get in the visitor's way */ }
     };
     API.sponsorStats = () => q(sb.rpc("sponsor_stats"));   // staff only (schema.sql)
