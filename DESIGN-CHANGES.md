@@ -3,6 +3,7 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-09
+- Faculty: each instructor ID badge now flips (click or tap it, or Enter/Space) to a "Stats" back with a six-sided chart of the mentor's self-ratings from the coach form (character flexibility, farming efficiency, aggressiveness, APM, patience, greed; 1–5, stored as `stats` in `site/content.js`). The back is built like the front: red strip, ID box, grid window with corner marks, name and team tag. The Faculty slideshow waits while a badge is flipped.
 - Faculty: instructor card art and character pool pictures: Fwitchu shows Irem (`site/art/fwitchu.webp`, pictures Irem and Leni), Hresvelg shows Jan (`site/art/hresvelg.webp`, pictures Jan and Hisui), Isterio shows Luke (`site/art/isterio.webp`, pictures Luke and Jackie), Kazcross shows Henry (`site/art/kazcross.webp`, pictures Henry and Camilo), Magepower shows Alex (`site/art/magepower.webp`, pictures Alex and Fiora), Ioo shows Coraline (`site/art/ioo.webp`, pictures Coraline and Celine; Coraline's subject ID was already listed).
   - Needs info: these cards show the file number (INS-…) until Irem's, Jan's, Luke's, Henry's and Alex's in-game subject IDs are added to `subjects` in `site/content.js`.
 - Faculty: mentor files 03–08 filled in from the Coach Infographic form, front and back: 03 Fwitchu (Uberman), 04 Hresvelg (uberman), 05 Isterio (Blast), 06 Kazcross (The Casting Desk), 07 Magepower (6789), 08 Ioo (6789). Demo mentor logins renamed to match.

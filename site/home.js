@@ -123,6 +123,30 @@
     bowl: { at: "fun", svg: dzh(50, 46, '<path d="M6 24 H42 C42 36 34 44 24 44 C14 44 6 36 6 24 Z"/><path d="M28 22 L41 3 M33 22 L46 6"/><path d="M14 18 q-3 -3 0 -7 M22 18 q-3 -3 0 -7"/>') },
     plane: { at: "hobbies", svg: dzh(50, 46, '<path d="M4 24 L46 5 L36 42 L22 31 Z"/><path d="M46 5 L22 31 L20 42 L27 35"/>') }
   };
+  // back of the instructor ID badge: the mentor's self-ratings (1–5) as a six-sided chart, laid out like the front of the card
+  const STAT_LABELS = [["Character", "flexibility"], ["Farming", "efficiency"], ["Aggressiveness"], ["APM"], ["Patience"], ["Greed"]];
+  function statChart(stats) {
+    const cx = 150, cy = 212, R = 84, MAX = 5;
+    const at = (i, r) => { const a = (-90 + 60 * i) * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+    const pts = r => [0, 1, 2, 3, 4, 5].map(i => at(i, r).map(n => n.toFixed(1)).join(",")).join(" ");
+    const rings = [5, 4, 3, 2, 1].map(k => '<polygon class="st-ring' + (k % 2 ? " alt" : "") + '" points="' + pts(R * k / MAX) + '"/>').join("");
+    const spokes = [0, 1, 2].map(i => { const a = at(i, R), b = at(i + 3, R); return '<line class="st-spoke" x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"/>'; }).join("");
+    const val = i => Math.max(0, Math.min(MAX, Number(stats[i]) || 0));
+    const shape = [0, 1, 2, 3, 4, 5].map(i => at(i, R * val(i) / MAX).map(n => n.toFixed(1)).join(",")).join(" ");
+    const dots = [0, 1, 2, 3, 4, 5].map(i => { const p = at(i, R * val(i) / MAX); return '<circle class="st-dot" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="5"/>'; }).join("");
+    const SPOT = [[150, 44, 96], [240, 104, 153], [232, 284, 316], [150, 336, 372], [68, 284, 316], [60, 117, 153]];   // x, first label line, number baseline
+    const labels = STAT_LABELS.map((lines, i) => lines.map((t, n) => '<text class="st-label" x="' + SPOT[i][0] + '" y="' + (SPOT[i][1] + n * 13) + '">' + t.toUpperCase() + "</text>").join("") +
+      '<text class="st-num" x="' + SPOT[i][0] + '" y="' + SPOT[i][2] + '">' + pad(val(i)) + "</text>").join("");
+    return '<svg class="st-chart" viewBox="0 0 300 420" aria-hidden="true">' + rings + spokes + '<polygon class="st-shape" points="' + shape + '"/>' + dots + labels + "</svg>";
+  }
+  function badgeBack(m, hint) {
+    return '<div class="badge badge-back"><div class="b-strip"><span>FACULTY · PATH TO GLORY</span></div><div class="b-body">' +
+      '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>ID // 2026</span></div>' +
+      '<div class="b-role">Stats</div>' +
+      '<div class="b-row"><span class="b-id">' + esc(UI.cardId(m)) + '</span><span class="b-rated">Self-rated / 05</span></div>' +
+      '<div class="b-art">' + hint + '<div class="ptg-art art-grid" style="position:relative;overflow:hidden;width:100%;height:100%">' + statChart(m.stats) + "</div></div>" +
+      '<div class="b-name"><small>NAME</small><div class="b-nameline"><b>[' + esc(UI.bare(UI.coachName(m))) + ']</b><span class="b-team">' + esc(UI.bare(UI.coachTeam(m))) + "</span></div></div></div></div>";
+  }
   // competitive history line: a trailing "(...)" note drops onto its own line
   function histItem(h) {
     const m = String(h).match(/^(.*?)\s*(\([^()]*\))\s*$/);
@@ -266,7 +290,7 @@
   const FAC = { timer: 0, hover: false, keys: false, seen: false, wired: false, next: null };
   function facSync() {
     clearTimeout(FAC.timer);
-    const run = FAC.next && FAC.seen && !FAC.hover && !FAC.keys && !document.hidden && !AS_CALM && innerWidth > 640 && !$("#fac-info").classList.contains("flipped");
+    const run = FAC.next && FAC.seen && !FAC.hover && !FAC.keys && !document.hidden && !AS_CALM && innerWidth > 640 && !$("#fac-info").classList.contains("flipped") && !$("#fac-badge .badge-flip.flipped");
     $(".fac-nav").classList.toggle("paused", !run);
     $("#fac-bar").innerHTML = "<i></i>";   // the bar starts over with the timer, and waits while paused
     if (run) FAC.timer = setTimeout(FAC.next, FAC_EVERY);
@@ -291,7 +315,20 @@
     function show(i, focus) {
       fi = (i + ms.length) % ms.length;
       const m = ms[fi];
-      $("#fac-badge").innerHTML = UI.badge(m);
+      // the ID badge flips over to the mentor's self-rated stats
+      const badgeBox = $("#fac-badge");
+      if (m.stats && m.stats.length === 6) {
+        const hint = '<span class="b-flip-hint" aria-hidden="true">Flip ↻</span>';
+        const who = UI.bare(UI.coachName(m));
+        const said = STAT_LABELS.map((l, k) => l.join(" ").toLowerCase() + " " + m.stats[k] + " of 5").join(", ");
+        badgeBox.innerHTML = '<div class="badge-flip" role="button" tabindex="0" aria-pressed="false" aria-label="' + esc(who + "'s ID badge. Flip it to see their stats: " + said) + '">' +
+          '<div class="badge-card"><div class="badge-face">' + UI.badge(m) + '</div><div class="badge-face back">' + badgeBack(m, hint) + "</div></div></div>";
+        $(".badge-face .b-art", badgeBox).insertAdjacentHTML("afterbegin", hint);
+        const flipper = $(".badge-flip", badgeBox);
+        const turn = () => { flipper.setAttribute("aria-pressed", String(flipper.classList.toggle("flipped"))); facSync(); };   // the slideshow waits while the badge is turned over
+        flipper.onclick = e => { if (!e.target.closest("button, a")) turn(); };   // staff "Adjust art" keeps working
+        flipper.onkeydown = e => { if (e.target === flipper && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); turn(); } };
+      } else badgeBox.innerHTML = UI.badge(m);
       const top = side => '<div class="info-top"><span>Mentor file ' + pad(m.slot) + " / " + pad(ms.length) + side + "</span><span>" + esc(UI.cardId(m)) + "</span></div>";
       const chips = (list, ph) => list && list.length ? list.map(p => "<span>" + esc(p) + "</span>").join("") : ph;
       const flipBtn = label => '<button type="button" class="flip-btn js-flip" aria-pressed="false">' + label + "</button>";

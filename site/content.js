@@ -154,6 +154,7 @@ window.PTG = {
       playstyle: "I usually play the mage or ~~engage tank~~, either way I am running it down to make space for my teammates.",
       doodles: ["burst", "sparkles", "burger"], // red pencil doodles on the front of the file
       pool: ["Markus", "Niah", "Kenneth"],
+      stats: [4, 4, 4, 5, 3, 5], // self-ratings from the coach form, 1–5: character flexibility, farming efficiency, aggressiveness, APM, patience, greed
       history: ["2 mickey mouses (ERCC S9, ERCT 1)", "some mcchickens (ERCS 2nd-3rd million times)"],
       about: "I play whatever's op on patch and good for team comp. 15 ranked games.\n\nStarted playing early access solos, stopped before official launch, came back season 4-5 and have played ercs every season since.",
       // back of the mentor file (flip side)
@@ -167,6 +168,7 @@ window.PTG = {
     { id: "m2", kind: "mentor", slot: 2, badge_id: "INS-0472-KV", name: "Dylan", team_name: "Trigger", display_skin: "Prison Officer Abigail",
       playstyle: "My playstyle depends on my character and team comp, but I tend to lean greedy.",
       pool: ["Abigail", "Darko"],
+      stats: [4, 3, 3, 2, 3, 4],
       pool_note: "but ive been kinda inting on darko recently",
       history: ["Finals ercs/ercc when {{baeksu|BREADSU}} doesnt sleep"], // {{old|new}} = red pencil correction
       doodles: ["smile"],
@@ -182,6 +184,7 @@ window.PTG = {
     { id: "m3", kind: "mentor", slot: 3, badge_id: "INS-0473-BL", name: "Fwitchu", team_name: "Uberman", display_skin: "Irem", art_fit: { x: 7.52, y: -6.01, z: 1.27 },
       playstyle: "I prefer to tempo out and make sure that the team is always strong on objectives. Big fan of triangle theory. I think limit-testing in practice is the best way to improve long-term. I play a variety of roles — ex. piggy bank that give all my credits away to my melee players /ᐠ ◞ ᆺ ◟マ",
       pool: ["Irem", "Leni"],
+      stats: [3, 5, 5, 4, 2, 5],
       doodles: ["piggy", "fish", "catnap"],
       history: ["6x ERCS/ERCC Champion", "S7 Rank 1"],
       about: "I play mostly cat/supports/control mages. I've been playing ER since pre-season 4 but started playing more competitively around Season 3/4. I got my first win in Season 8 ERCC with Storytellers and have since won 5 times on Uberman.",
@@ -194,6 +197,7 @@ window.PTG = {
     { id: "m4", kind: "mentor", slot: 4, badge_id: "INS-0474-EP", name: "Hresvelg", team_name: "uberman", display_skin: "Jan",
       playstyle: "Playstyle is a myth u either play correct or u play wrong",
       pool: ["Jan", "Hisui"],
+      stats: [2, 5, 4, 2, 2, 4],
       doodles: ["rightwrong", "housefire", "bird"],
       history: ["Plat 3 in apex legend"],
       about: "Me play chud chungus bruiser tank",
@@ -206,6 +210,7 @@ window.PTG = {
     { id: "m5", kind: "mentor", slot: 5, badge_id: "INS-0475-LA", name: "Isterio", team_name: "Blast", display_skin: "Luke",
       playstyle: "I play melees. Specifically I have been a Luke \"one-trick\" since Solos (EA S6) but recently I have branched out to play other melees.",
       pool: ["Luke", "Jackie"],
+      stats: [2, 5, 5, 3, 3, 5],
       doodles: ["arrow", "nocoffee", "shuttle"],
       history: ["A few Final Lobbies in ERCS/ERCC (no wins yet D:)", "Season 8 Rank 1 NA (Rank 3 Global)"],
       about: "I play melees and I run at the enemy carries in a straight line.",
@@ -218,6 +223,7 @@ window.PTG = {
     { id: "m6", kind: "mentor", slot: 6, badge_id: "INS-0476-TH", name: "Kazcross", team_name: "The Casting Desk", display_skin: "Henry",
       playstyle: "Primary/secondary IGL (in game leader), tend to play flex but my most proficient chars are often mages",
       pool: ["Henry", "Yumin", "Craver"],
+      stats: [5, 3, 3, 3, 5, 4],
       doodles: ["mic", "btier", "wave"],
       history: ["Caster and analyst", "peaked top 10 NA", "top 1 Henry NA", "have coached various ERCS teams on draft"],
       about: "Official ER English caster. I commentate and watch NA, KR and APAC. Big fan of analyzing the game, I also do most Pro-fessors now so I've learned most new characters. I love teaching the game and have participated in previous coaching events! I also discuss the game with most top players to theorycraft compositions and character ideas.",
@@ -230,6 +236,7 @@ window.PTG = {
     { id: "m7", kind: "mentor", slot: 7, badge_id: "INS-0477-ES", name: "Magepower", team_name: "6789", display_skin: "Alex", art_fit: { x: 5.95, y: -3.02, z: 1.65 },
       playstyle: "Flex. Alex. Played since EA s1.",
       pool: ["Alex", "Fiora"],
+      stats: [4, 4, 3, 3, 4, 2],
       pool_note: "(idk markus, craver, anything op on patch)",
       history: ["ERCS winner."],
       about: "Killing excessive wildlife. Shotcaller, engage, frontline.",
@@ -243,6 +250,7 @@ window.PTG = {
     { id: "m8", kind: "mentor", slot: 8, badge_id: "INS-0478-BT", name: "Ioo", team_name: "6789", display_skin: "Coraline", subject_id: "21M-RFT48", art_fit: { x: 3.06, y: -30.43, z: 2.1 }, // Celine's ID, since Jalja shows Coraline's
       playstyle: "artillery and control mage player",
       pool: ["Coraline", "Celine"],
+      stats: [4, 5, 3, 3, 4, 4],
       doodles: ["rings", "eye", "bowl", "plane"],
       history: ["3 rings"],
       about: "mages and 3 rings",
