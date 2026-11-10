@@ -13,6 +13,8 @@
     ".rp-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin}" +
     ".rp-tab{flex:none;background:#c4ab84;color:var(--ink);border:0;font:600 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:9px 12px;cursor:pointer;white-space:nowrap}" +
     ".rp-tab[aria-selected=true]{background-color:var(--paper);background-image:var(--grain)}" +
+    ".rp-tab{transition:transform .15s}" +
+    "@media (hover:hover) and (prefers-reduced-motion:no-preference){.rp-tab:not([aria-selected=true]):hover{transform:translateY(-3px)}}" +
     ".rp-tab .rp-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:7px;vertical-align:1px}" +
     ".rp-file{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);box-shadow:var(--lift)}" +
     ".rp-left{padding:22px 24px;border-right:1px solid var(--paper-rule);min-width:0}" +
