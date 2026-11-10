@@ -459,7 +459,7 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .assist-head p{margin:0;color:var(--muted);max-width:62ch}
 /* small cards on the left, the tall card on the right. The cards sit in a strip inside a window:
    a slide moves the strip, then the cards that left are removed. */
-.as-stage{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:22px 46px;align-items:stretch}
+.as-stage{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:22px 70px;align-items:stretch}
 .as-left{display:grid;gap:14px;align-content:start;min-width:0}
 .as-view{overflow:hidden;padding:14px;margin:-14px;min-width:0}
 .as-track{will-change:transform;--g:20px;display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-auto-columns:calc((100% - var(--g)) / 2);gap:20px var(--g)}
@@ -481,7 +481,9 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 /* the tall card, leaning the opposite way from the Instructor card above it, with the details beside it */
 .as-main{display:grid;min-width:0}
 .as-tall{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px;align-items:stretch;min-width:0}
-.as-tall .badge{width:100%;transform:rotate(2.5deg);will-change:transform}   /* its own layer, so its tilted text is not redrawn each time the cards slide */
+.as-tall .badge{width:100%;transform:rotate(2.5deg);will-change:transform;transition:transform .2s ease}
+.as-tall .badge:hover{transform:rotate(2.5deg) translateY(-4px)}   /* lifts like the mentor badge, so both big cards match */
+@media (prefers-reduced-motion:reduce){.as-tall .badge:hover{transform:rotate(2.5deg)}}   /* its own layer, so its tilted text is not redrawn each time the cards slide */
 .as-badge{display:grid;min-width:0}
 .as-tall .b-role,.fac-badge .b-role{font-size:33px}
 .as-side{display:flex;flex-direction:column;gap:16px;min-width:0}
