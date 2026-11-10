@@ -147,7 +147,7 @@ window.PTG = {
 
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).
   coachSeed: [
-    { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Actor", team_name: "team not found", display_skin: "Markus", art_fit: { x: -5.54, y: -9.47, z: 1.11 },
+    { id: "m1", kind: "mentor", slot: 1, badge_id: "INS-0471-RX", name: "Actor", team_name: "Trigger", display_skin: "Markus", art_fit: { x: -5.54, y: -9.47, z: 1.11 },
       playstyle: "I usually play the mage or ~~engage tank~~, either way I am running it down to make space for my teammates.",
       doodles: ["burst", "sparkles", "burger"], // red pencil doodles on the front of the file
       pool: ["Markus", "Niah", "Kenneth"],
