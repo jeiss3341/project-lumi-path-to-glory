@@ -113,6 +113,16 @@
 
     API.profiles = () => q(sb.from("profiles").select(PROFILE).order("created_at"));
     API.setRole = (id, role) => q(sb.from("profiles").update({ role }).eq("id", id));
+
+    // visit counting (track.js): sent straight to the table with keepalive, so it still arrives as the page closes
+    API.track = rows => {
+      try {
+        fetch(cfg.supabaseUrl + "/rest/v1/site_events", { method: "POST", keepalive: true,
+          headers: { apikey: cfg.supabaseAnonKey, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify(rows) }).catch(() => {});
+      } catch (e) { /* never get in the visitor's way */ }
+    };
+    API.sponsorStats = () => q(sb.rpc("sponsor_stats"));   // staff only (schema.sql)
     return API;
   }
 
@@ -490,6 +500,26 @@
     API.setRole = (id, role) => {
       if (!isStaff()) return fail("You don't have permission to do that.");
       const p = prof(id); if (p) p.role = role; save(); return wait(null);
+    };
+
+    // visit counting: this browser's own visits are kept here, and the Sponsor Stats tab adds sample visits so it has something to show
+    const EVENTS = "ptg-demo-events";
+    API.track = rows => {
+      try {
+        const all = JSON.parse(localStorage.getItem(EVENTS) || "[]"), t = new Date().toISOString();
+        rows.forEach(r => all.push(Object.assign({ created_at: t }, r)));
+        localStorage.setItem(EVENTS, JSON.stringify(all.slice(-3000)));
+      } catch (e) { /* storage blocked or full */ }
+    };
+    API.sponsorStats = () => {
+      if (!isStaff()) return fail("Only staff can see sponsor stats.");
+      let own = [];
+      try { own = JSON.parse(localStorage.getItem(EVENTS) || "[]"); } catch (e) { /* none */ }
+      const hrs = S.availability.reduce((n, b) => n + (new Date(b.ends_at) - new Date(b.starts_at)) / 36e5, 0);
+      const part = { accounts: S.profiles.length, staff: S.profiles.filter(p => p.role === "staff").length,
+        players: new Set(S.teams.flatMap(t => t.member_ids || [])).size, coaches_linked: S.coaches.filter(c => c.profile_id).length,
+        requested: S.requests.filter(r => !r.by_coach).length, booked: S.requests.filter(r => r.status === "accepted").length, coach_hours: Math.round(hrs * 10) / 10 };
+      return wait(Object.assign(window.PTGStats.compute(window.PTGStats.sample().concat(own)), { participation: part, sample: true }));
     };
     return API;
   }
