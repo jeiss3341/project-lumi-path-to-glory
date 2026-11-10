@@ -182,10 +182,10 @@ begin
   values (
     new.id,
     new.raw_user_meta_data ->> 'provider_id',
-    coalesce(new.raw_user_meta_data ->> 'name', new.raw_user_meta_data ->> 'full_name'),
+    regexp_replace(coalesce(new.raw_user_meta_data ->> 'name', new.raw_user_meta_data ->> 'full_name'), '#0$', ''),   -- Discord's new usernames come as "name#0"
     coalesce(new.raw_user_meta_data -> 'custom_claims' ->> 'global_name',
-             new.raw_user_meta_data ->> 'full_name',
-             new.raw_user_meta_data ->> 'name'),
+             regexp_replace(new.raw_user_meta_data ->> 'full_name', '#0$', ''),
+             regexp_replace(new.raw_user_meta_data ->> 'name', '#0$', '')),
     new.raw_user_meta_data ->> 'avatar_url'
   )
   on conflict (id) do nothing;
@@ -202,7 +202,7 @@ create or replace function public.handle_user_update() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   update public.profiles set
-    username     = coalesce(new.raw_user_meta_data ->> 'name', username),
+    username     = coalesce(regexp_replace(new.raw_user_meta_data ->> 'name', '#0$', ''), username),
     display_name = coalesce(new.raw_user_meta_data -> 'custom_claims' ->> 'global_name', display_name),
     avatar_url   = coalesce(new.raw_user_meta_data ->> 'avatar_url', avatar_url)
   where id = new.id;

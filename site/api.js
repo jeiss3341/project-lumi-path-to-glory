@@ -38,7 +38,7 @@
       if (!s) return null;
       const p = await q(sb.from("profiles").select(PROFILE).eq("id", s.user.id).maybeSingle()).catch(() => null);
       const md = s.user.user_metadata || {};
-      return p || { id: s.user.id, discord_id: md.provider_id || null, username: md.name || "", display_name: md.full_name || md.name || "", avatar_url: md.avatar_url || "", role: "player" };
+      return p || { id: s.user.id, discord_id: md.provider_id || null, username: (md.name || "").replace(/#0$/, ""), display_name: md.full_name || md.name || "", avatar_url: md.avatar_url || "", role: "player" };
     })());
     sb.auth.onAuthStateChange((evt, s) => {
       const uid = s && s.user ? s.user.id : null;
