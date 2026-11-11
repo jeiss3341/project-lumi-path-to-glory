@@ -3,6 +3,7 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-10
+- Faculty: Ioo's red pencil doodles redrawn from the designer's sketch: sparkles around the name (two plus signs, a little burst and a four-point star: `namesparks`), an Espurr sketch top right with two dashes beside it (`espurr`), and a red underline under "3 rings" in About me (`~~3 rings~~`). The old three-rings doodle by Competitive history is removed. Shapes are in `DOODLE` in `site/home.js`; each mentor picks theirs in `doodles` in `site/content.js`.
 - Faculty: Ioo's file has the three Pikmin walking along the footer's bottom-left (`site/art/stickers/ioo-pikmin.png`). New content option: `foot_sticker`. (An Espurr pin by the name was tried and taken back out; `name_sticker` still works for any mentor.)
 - Faculty: Kazcross's About me splits into two paragraphs ("Big fan of analyzing the game…" starts the second).
 - Faculty: Isterio's file has a pouting chibi sticker (`site/art/stickers/isterio-pout.png`) right of his character pool. The source image is only 96px, so it's shown at 104px to stay sharp (new option `file_sticker_px`). A bigger version of the image would let it be larger.

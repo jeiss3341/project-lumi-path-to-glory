@@ -275,10 +275,10 @@ window.PTG = {
       playstyle: "artillery and control mage player",
       pool: ["Coraline", "Celine"],
       stats: [4, 5, 3, 3, 4, 4],
-      doodles: ["rings", "eye", "bowl", "plane"],
+      doodles: ["namesparks", "espurr", "eye", "bowl", "plane"], // sparkles by the name, an Espurr sketch top right (the old "rings" doodle is gone)
       foot_sticker: "art/stickers/ioo-pikmin.png", // Pikmin walking along the bottom-left of the footer
       history: ["3 rings"],
-      about: "mages and 3 rings",
+      about: "mages and ~~3 rings~~",
       coaching: "1-on-1 coaching, positioning and vision awareness",
       motto: "Buy vision or perish",
       games: ["gacha gaming", "occasional mmos", "roguelikes"],

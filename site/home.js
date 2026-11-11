@@ -84,6 +84,21 @@
     burst: '<svg class="doodle d-burst" viewBox="0 0 40 34" aria-hidden="true"><path d="M7 16 L4.5 5"/><path d="M15 21 L26 10.5"/><path d="M19 29.5 L35 27"/></svg>',
     sparkles: '<svg class="doodle d-spark" viewBox="0 0 64 40" aria-hidden="true"><path d="M17 3 C18 11 20 14 29 16 C20 18.5 18.5 21 17 30 C15.5 21 13.5 18.5 5 16.5 C13.5 14 15.5 11 17 3 Z"/><path d="M52 17 L51.5 33 M45 25.5 L59 24.5"/></svg>' +
       '<svg class="doodle d-plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 L11.5 22 M2.5 12.5 L21.5 11.5"/></svg>',
+    // Ioo: sparkles around the name (plus signs on the left, a little burst and a four-point star on the right)
+    namesparks: '<svg class="doodle d-name" viewBox="0 0 200 90" aria-hidden="true"><path d="M6 5 V21 M-1 13 H14"/><path d="M8 50 V62 M2 56 H14"/><path d="M195 6 L193 18 M187 13 L201 11 M189 7 L200 17"/>' +
+      '<path d="M169 54 C170 63 172 67 181 70 C172 73 170 77 169 87 C167 77 165 73 157 70 C165 67 167 63 169 54 Z"/></svg>',
+    // Ioo: a pencil sketch of Espurr (floppy ears, big eyes, little paws) in the top right of the file, with two dashes beside it
+    espurr: '<svg class="doodle d-espurr" viewBox="-40 0 300 240" aria-hidden="true">' +
+      '<path d="M52 52 C28 52 12 58 14 76 C16 98 36 112 58 126"/>' +                                                   // left ear
+      '<path d="M200 48 C222 46 236 56 238 72 C240 84 232 94 222 100"/>' +                                             // right ear
+      '<path d="M52 52 C70 40 88 44 88 46 C86 30 92 14 98 8 C104 22 112 30 116 40 C130 36 140 36 150 38 C154 24 160 14 168 12 C170 24 176 34 186 44 C192 44 196 46 200 48"/>' +   // head top with two fur tufts
+      '<path d="M58 126 C70 140 74 130 84 138 C94 148 100 136 112 142 C124 150 132 138 144 144 C156 150 162 138 174 142 C186 146 192 130 204 128 C214 126 220 114 222 100"/>' +   // fluffy cheeks
+      '<circle cx="112" cy="100" r="12"/><circle cx="112" cy="101" r="5"/><circle cx="185" cy="85" r="12"/><circle cx="185" cy="86" r="5"/>' +   // eyes
+      '<path d="M132 116 q4 6 8 0 q4 6 8 0"/>' +                                                                       // nose and mouth
+      '<path d="M84 144 C78 168 82 190 98 204 C110 214 126 214 140 208"/><path d="M96 160 C104 176 120 180 130 172"/>' +   // body and paw
+      '<path d="M176 142 C186 160 190 176 186 196"/><path d="M190 170 C210 160 232 172 236 190 C240 206 226 216 214 218 C220 228 212 238 200 232"/>' +   // other side and fluffy tail
+      '<path d="M100 218 C98 230 108 236 122 232 M134 226 C136 236 148 238 158 230"/>' +                               // feet
+      '<path d="M-34 100 L-18 104 M-26 124 L-12 116"/></svg>',
     burger: '<svg class="doodle d-burger" viewBox="0 0 64 50" aria-hidden="true">' +
       '<path d="M8 22 C8 9 20 4 33 4 C46 4 57 10 57 22 Z"/>' +                 // top bun
       '<path d="M22 11 l2 -1 M31 9 l2 0.5 M40 11 l2 1 M27 16 l1.5 -1 M36 16 l2 0"/>' + // sesame
@@ -340,7 +355,7 @@
       const dh = slot => (m.doodles || []).filter(k => HEAD_DOODLES[k] && HEAD_DOODLES[k].at === slot).map(k => HEAD_DOODLES[k].svg).join(""); // ones that sit beside a section heading
       const front =
         '<article class="sheet info face front">' + top("") +
-        "<h3>" + UI.dakLink(m, UI.ph(m.name, UI.coachName(m))) + (dz("burst") ? DOODLE.burst : "") + "</h3>" +
+        "<h3>" + UI.dakLink(m, UI.ph(m.name, UI.coachName(m))) + (dz("burst") ? DOODLE.burst : "") + (dz("namesparks") ? DOODLE.namesparks : "") + "</h3>" + (dz("espurr") ? DOODLE.espurr : "") +
         '<span class="team-tag">' + esc(UI.bare(UI.coachTeam(m))) + "</span>" +
         (m.name_sticker ? '<img class="name-sticker" src="' + esc(m.name_sticker) + '" alt="" width="280" height="280">' : "") +   // round pin up in the top-right, beside the name
         '<div class="info-grid' + (m.photo_sticker ? " has-photo" : "") + '">' +   // with a photo, Playstyle fills the left and the rest stacks on the right
