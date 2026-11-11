@@ -350,6 +350,7 @@
                 m.pool.map((p, k) => '<button type="button" class="pool-chip' + (k ? "" : " on") + '" data-char="' + esc(p) + '">' + esc(p) + "</button>").join("") + "</div>" +
                 (m.pool_note ? '<p class="pool-note">' + esc(m.pool_note) + "</p>" : "")
               : '<div class="pfp">' + charPfp("") + '</div><div class="pool"><span class="ph">[Main]</span><span class="ph">[Secondary]</span><span class="ph">[Pocket pick]</span></div>') +
+            (m.file_sticker ? '<img class="file-sticker" src="' + esc(m.file_sticker) + '" alt="" width="200" height="200">' : "") +
           "</section>" +
           '<section class="hist-sec"><h4>Competitive history' + dh("hist") + '</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul>" + (dz("burger") ? DOODLE.burger : "") + "</section>" +
           "<section><h4>About me" + dh("about") + "</h4>" + (m.about ? paras(m.about) : "<p>" + UI.ph("", "[A short about-me written by the mentor.]") + "</p>") + "</section>" +
@@ -366,7 +367,7 @@
           '<section class="games-sec"><h4>Other games played' + dh("games") + "</h4>" + (dz("maple") ? DOODLE.maple : "") + '<div class="pool">' + chips(m.games, '<span class="ph">[Game]</span><span class="ph">[Game]</span>') + "</div></section>" +
           '<section><h4>Favorite hobbies' + dh("hobbies") + '</h4><ul class="hist">' + (m.hobbies && m.hobbies.length ? m.hobbies.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[Hobby]</span></li>') + "</ul></section>" +
           '<section><h4>Fav teams' + dh("teams") + '</h4><ul class="hist">' + (m.fav_teams && m.fav_teams.length ? m.fav_teams.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[Team · player]</span></li>') + "</ul></section>" +
-          '<section><h4>Fun fact' + dh("fun") + '</h4><p class="fun">' + UI.ph(m.fun_fact, "[Something fun about this mentor.]") + "</p></section>" +
+          '<section><h4>Fun fact' + dh("fun") + '</h4><p class="fun">' + (m.fun_fact ? esc(m.fun_fact).replace(/\n/g, "<br>") : UI.ph("", "[Something fun about this mentor.]")) + "</p></section>" +
           (m.ps && m.ps.length ? '<section class="wide"><h4>P.S.</h4><ul class="hist ps">' + m.ps.map(h => "<li>" + esc(h) + "</li>").join("") + "</ul></section>" : "") +
         "</div>" +
         '<div class="info-foot"><span>Click the file to flip it back</span>' + flipBtn("Flip back ↺") + "</div>" +
