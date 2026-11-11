@@ -10,6 +10,7 @@ create table if not exists public.access_list (
   coach_id   text references public.coaches(id) on delete set null,   -- m1..m8 or a1..a8
   team_name  text not null default ''                  -- must match the team's name in the teams table
 );
+alter table public.access_list add column if not exists is_student boolean not null default false;   -- "student too" (needs student-access.sql)
 alter table public.access_list enable row level security;
 drop policy if exists "access list staff" on public.access_list;
 create policy "access list staff" on public.access_list
@@ -27,6 +28,9 @@ begin
   end if;
   if a.is_staff then
     update public.profiles set role = 'staff' where id = uid;
+  end if;
+  if a.is_student then
+    update public.profiles set is_student = true where id = uid;
   end if;
   if a.coach_id is not null then
     update public.coaches set profile_id = uid where id = a.coach_id;

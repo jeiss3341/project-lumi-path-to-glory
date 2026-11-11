@@ -50,7 +50,7 @@
     ]);
     S.coaches = res[0]; S.teams = res[1];
     if (HOURS_PAGE) {
-      const inEvent = S.me && (S.me.role === "staff" || S.coaches.some(c => c.profile_id === S.me.id) || S.teams.some(t => (t.member_ids || []).includes(S.me.id)));
+      const inEvent = S.me && (S.me.role === "staff" || S.me.is_student || S.coaches.some(c => c.profile_id === S.me.id) || S.teams.some(t => (t.member_ids || []).includes(S.me.id)));
       $("#bk-locked").style.display = inEvent ? "none" : "";
       $("#bk-cards").style.display = $("#my-req").style.display = inEvent ? "" : "none";
     }
@@ -758,8 +758,7 @@
 
   // Only players request sessions. Coaches (mentors and assistants) and staff get a view-only planner, unless
   // they're on a team themselves: the same rule as the desk's Player file. The database enforces it too.
-  const canRequest = () => !S.me || S.teams.some(t => (t.member_ids || []).includes(S.me.id)) ||
-    (S.me.role !== "staff" && !S.coaches.some(c => c.profile_id === S.me.id));
+  const canRequest = () => !S.me || UI.isStudent(S.me, S.coaches, S.teams);   // players, plus coaches/staff on a team or marked "student too"
 
   // the week planner: days across, half hours down, only the times the coach has hours (gaps squeezed out)
   function planner() {

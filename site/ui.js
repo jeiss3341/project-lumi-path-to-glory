@@ -110,6 +110,9 @@
   };
   UI.coachName = c => c ? (c.name && c.name.trim() ? c.name : "[" + (c.kind === "assistant" ? "Assistant " : "Mentor ") + UI.pad(c.slot) + "]") : "[Coach]";
   // no_team in the event content hides the team tag for that coach
+  // a student (player): anyone on a team, anyone who isn't a coach or staff, and coaches/staff marked "student too" (profiles.is_student)
+  UI.isStudent = (me, coaches, teams) => !!me && ((teams || []).some(t => (t.member_ids || []).includes(me.id)) || !!me.is_student ||
+    (me.role !== "staff" && !(coaches || []).some(c => c.profile_id === me.id)));
   UI.noTeam = c => !!c && !!(c.no_team || ((C.coachSeed || []).find(x => x.id === c.id) || {}).no_team);
   UI.coachTeam = c => UI.noTeam(c) ? "" : c && c.team_name && c.team_name.trim() ? c.team_name : (c && c.kind === "assistant" ? "Any team" : "[Team TBA]");
   const bare = s => String(s).replace(/^\[|\]$/g, "");
@@ -339,11 +342,11 @@
       document.addEventListener("click", e => { const open = UI.$(".me-menu.open"); if (open && !open.contains(e.target)) { open.classList.remove("open"); UI.$(".me-chip", open).setAttribute("aria-expanded", "false"); } });
     }
     Promise.all([API.coaches(), API.teams()]).then(([coaches, teams]) => {
-      const coach = coaches.find(c => c.profile_id === me.id), staff = me.role === "staff", onTeam = teams.some(t => (t.member_ids || []).includes(me.id));
+      const coach = coaches.find(c => c.profile_id === me.id), staff = me.role === "staff";
       // someone with more than one role picks which one they're using
       const views = [];
       if (coach) views.push(["coach", coach.kind === "assistant" ? "Coach" : "Mentor"]);
-      if (onTeam || (!coach && !staff)) views.push(["player", "Student"]);
+      if (UI.isStudent(me, coaches, teams)) views.push(["player", "Student"]);
       if (staff) views.push(["staff", "Staff"]);
       let view = UI.view();
       if (!views.some(v => v[0] === view)) view = staff ? "staff" : views[0][0];

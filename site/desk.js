@@ -24,8 +24,8 @@
     const [coaches, teams] = await Promise.all([API.coaches().catch(() => []), API.teams().catch(() => [])]);
     S.coaches = coaches;
     S.myCoach = S.coaches.find(c => c.profile_id === S.me.id) || null;
-    // the player file is for players: mentors, assistants and staff only get it if they're linked to a team
-    S.isPlayer = (!S.myCoach && S.me.role !== "staff") || teams.some(t => (t.member_ids || []).includes(S.me.id));
+    // the player file is for players: mentors, assistants and staff only get it if they're on a team or marked "student too"
+    S.isPlayer = UI.isStudent(S.me, S.coaches, teams);
     const tabs = [];
     if (S.myCoach) tabs.push(["coach", S.myCoach.kind === "assistant" ? "Coach calendar" : "Mentor calendar"]);
     if (S.isPlayer) tabs.push(["player", "Player file"]);
@@ -379,12 +379,17 @@
     }
 
     if (S.staffTab === "people") {
-      inner = '<p class="muted">Everyone who has logged in with Discord. Staff can see and change everything on this site.</p><div class="tbl"><table><thead><tr><th></th><th>Name</th><th>Discord ID</th><th>Coach slot</th><th>Role</th></tr></thead><tbody>' +
+      inner = '<p class="muted">Everyone who has logged in with Discord. Staff can see and change everything on this site.</p><div class="tbl"><table><thead><tr><th></th><th>Name</th><th>Discord ID</th><th>Coach slot</th><th>Role</th><th title="A mentor, assistant or staff member who is also a student, without being on a team">Student too</th></tr></thead><tbody>' +
         profiles.map(p => { const c = coaches.find(x => x.profile_id === p.id); return "<tr><td>" + UI.avatar(p, 28) + "</td><td><b>" + esc(UI.who(p)) + '</b><div class="small muted">@' + esc(p.username || "") + '</div></td><td class="small">' + esc(p.discord_id || "") + "</td><td>" + (c ? (c.kind === "assistant" ? "A" : "M") + pad(c.slot) : '<span class="muted">—</span>') + "</td>" +
-          '<td><select class="js-role" data-id="' + esc(p.id) + '"' + (p.id === S.me.id ? ' disabled title="You can\'t change your own role"' : "") + '><option value="player"' + (p.role === "player" ? " selected" : "") + '>Player</option><option value="staff"' + (p.role === "staff" ? " selected" : "") + ">Staff</option></select></td></tr>"; }).join("") + "</tbody></table></div>";
+          '<td><select class="js-role" data-id="' + esc(p.id) + '"' + (p.id === S.me.id ? ' disabled title="You can\'t change your own role"' : "") + '><option value="player"' + (p.role === "player" ? " selected" : "") + '>Player</option><option value="staff"' + (p.role === "staff" ? " selected" : "") + ">Staff</option></select></td>" +
+          // "student too": only matters for coaches and staff (everyone else is already a student)
+          '<td>' + (c || p.role === "staff" ? '<label class="small"><input type="checkbox" class="js-student" data-id="' + esc(p.id) + '"' + (p.is_student ? " checked" : "") + "> Student</label>" : '<span class="muted small">Already</span>') + "</td></tr>"; }).join("") + "</tbody></table></div>";
       body.innerHTML = head + '<section class="sheet dpanel wide-panel"><h2>People</h2>' + inner + "</section>";
       body.onclick = e => { stabClick(e); };
-      body.onchange = e => { const s = e.target.closest(".js-role"); if (s) UI.act(s, async () => { await API.setRole(s.dataset.id, s.value); }, "Role updated."); };
+      body.onchange = e => {
+        const s = e.target.closest(".js-role"); if (s) UI.act(s, async () => { await API.setRole(s.dataset.id, s.value); }, "Role updated.");
+        const st = e.target.closest(".js-student"); if (st) UI.act(st, async () => { await API.setStudent(st.dataset.id, st.checked); await boot(); }, st.checked ? "Now a student too." : "No longer a student.");
+      };
       return;
     }
 

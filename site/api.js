@@ -29,7 +29,7 @@
       if (error) throw new Error(friendly(error));
       return data;
     }
-    const PROFILE = "id,discord_id,username,display_name,avatar_url,role";
+    const PROFILE = "*";   // every column, so a new one (like is_student from student-access.sql) never breaks logging in before its SQL has run
     const COACH_MINI = "id,kind,slot,name,team_name,badge_id";
 
     API.session = () => sessP || (sessP = (async () => {
@@ -116,6 +116,7 @@
 
     API.profiles = () => q(sb.from("profiles").select(PROFILE).order("created_at"));
     API.setRole = (id, role) => q(sb.from("profiles").update({ role }).eq("id", id));
+    API.setStudent = (id, on) => q(sb.from("profiles").update({ is_student: !!on }).eq("id", id));   // "student too" (needs student-access.sql)
 
     // visit counting (track.js): sent straight to the table with keepalive, so it still arrives as the page closes
     // A logged-in visitor's rows carry their account and go with their token, so the database can check it's them;
@@ -144,7 +145,7 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v36";   // bump when the sample data changes, so browsers drop their old copy
+    const KEY = "ptg-demo-v37";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
@@ -198,6 +199,7 @@
        ["u-zephyr", "zephyr", "Zephyr"], ["u-gale", "gale", "Gale"],
        ["u-rook", "rook", "Rook"], ["u-ember", "ember", "Ember"],
        ["u-solo", "newplayer", "New Player"]].forEach(a => profiles.push(P(...a)));
+      profiles.find(p => p.id === "u-neotep").is_student = true;   // the demo mentor is "student too": Mentor and Student views, no team
       const LINK = { m1: "u-neotep", m2: "u-dylan", m3: "u-fwitchu", m4: "u-m4", m5: "u-m5", m6: "u-m6", m7: "u-m7", m8: "u-m8",
         a1: "u-baeksu", a2: "u-jalja", a3: "u-camper", a4: "u-squortle", a5: "u-jignut", a6: "u-kyro", a7: "u-superior", a9: "u-chibi" };   // a8 stays unlinked
 
@@ -462,9 +464,9 @@
       if (!S.me) return fail("Log in with Discord first.");
       const c = S.coaches.find(x => x.id === r.coach_id);
       if (!c) return fail("That coach doesn't exist.");
-      // only players request: coaches and staff can't, unless they're on a team (same rule as the database)
+      // only players request: coaches and staff can't, unless they're on a team or marked "student too" (same rule as the database)
       const onTeam = S.teams.some(t => (t.member_ids || []).includes(S.me));
-      if (!onTeam && (isStaff() || S.coaches.some(x => x.profile_id === S.me))) return fail("Only players can request sessions.");
+      if (!onTeam && !(me() && me().is_student) && (isStaff() || S.coaches.some(x => x.profile_id === S.me))) return fail("Only players can request sessions.");
       const mins = (new Date(r.ends_at) - new Date(r.starts_at)) / 6e4;
       if (mins < 30 || mins > 120) return fail("Sessions run from 30 minutes to 2 hours.");
       if (mins < (c.min_minutes || 30) || mins > (c.max_minutes || 120)) return fail("That length is outside what this coach takes.");
@@ -530,6 +532,10 @@
     API.setRole = (id, role) => {
       if (!isStaff()) return fail("You don't have permission to do that.");
       const p = prof(id); if (p) p.role = role; save(); return wait(null);
+    };
+    API.setStudent = (id, on) => {
+      if (!isStaff()) return fail("You don't have permission to do that.");
+      const p = prof(id); if (p) p.is_student = !!on; save(); return wait(null);
     };
 
     // visit counting: this browser's own visits are kept here, and the Sponsor Stats tab adds sample visits so it has something to show

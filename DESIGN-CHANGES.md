@@ -2,6 +2,12 @@
 
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
+## 2026-11-11
+- Access: "student too". A mentor, assistant or staff member can also be a student (player) without being on a team: they get the Student view (Player file) and can request individual sessions. Staff switch it on in Desk › Staff › People › "Student too" (or `is_student` in the access list before the person has logged in). One rule in `UI.isStudent` (`site/ui.js`) is used by the profile menu, the desk and the booking planner.
+  - Needs database: run `supabase/student-access.sql` in Supabase BEFORE this goes live (adds `is_student` to profiles and the access list, and lets "student too" accounts request sessions). `schema.sql` and `access-list.sql` are updated to match.
+  - The site now loads every profile column (`PROFILE = "*"` in `site/api.js`), so a new column can't break logging in.
+  - Demo: the demo mentor (Neotep's demo account, shown as Actor) is "student too", so "View as" mentor shows both Mentor and Student. Demo data key bumped to v37.
+
 ## 2026-11-10
 - Faculty: Ioo's red pencil doodles redrawn from the designer's sketch: sparkles around the name (two plus signs, a little burst and a four-point star: `namesparks`), the designer's own Espurr sketch top right with its two dashes (`espurr`; traced from the sketch into `site/art/doodles/espurr.png`, a transparent mask the site colors red, so it matches the drawing exactly), and a red underline under "3 rings" in About me (`~~3 rings~~`). The old three-rings doodle by Competitive history is removed. Shapes are in `DOODLE` in `site/home.js`; each mentor picks theirs in `doodles` in `site/content.js`.
 - Faculty: Ioo's file has the three Pikmin walking along the footer's bottom-left (`site/art/stickers/ioo-pikmin.png`). New content option: `foot_sticker`. (An Espurr pin by the name was tried and taken back out; `name_sticker` still works for any mentor.)

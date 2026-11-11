@@ -36,6 +36,8 @@ create table if not exists public.profiles (
   role         text not null default 'player' check (role in ('player', 'staff')),
   created_at   timestamptz not null default now()
 );
+-- "student too": a coach or staff member who is also a student (player) without being on a team (student-access.sql)
+alter table public.profiles add column if not exists is_student boolean not null default false;
 
 -- The 8 mentor slots and the assistant / role coach slots.
 create table if not exists public.coaches (
@@ -393,7 +395,8 @@ begin
   -- only players request sessions: coaches (mentors and assistants) and staff can't, unless they're on a team
   if (exists (select 1 from public.coaches c where c.profile_id = new.requester_id)
       or exists (select 1 from public.profiles p where p.id = new.requester_id and p.role = 'staff'))
-     and not exists (select 1 from public.teams t where new.requester_id = any (t.member_ids)) then
+     and not exists (select 1 from public.teams t where new.requester_id = any (t.member_ids))
+     and not exists (select 1 from public.profiles p where p.id = new.requester_id and p.is_student) then
     raise exception 'Only players can request sessions.';
   end if;
   if new.starts_at < now() then
