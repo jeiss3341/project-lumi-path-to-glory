@@ -178,13 +178,18 @@
   // a coach can carry its own subject_id (two coaches sharing a character), else it comes from their character
   UI.subjectId = c => c.subject_id || ((C.coachSeed || []).find(x => x.id === c.id) || {}).subject_id || (C.subjects && C.subjects[charOf(c)]) || "";
   UI.cardId = c => UI.subjectId(c) || c.badge_id;
+  // a coach's name as a link to their dak.gg profile (new tab), or the plain html when they don't have one
+  UI.dakLink = (c, html) => {
+    const url = c && C.dakgg && C.dakgg[c.id];
+    return url ? '<a class="dak-link" href="' + UI.esc(url) + '" target="_blank" rel="noopener" title="Open ' + UI.esc(bare(UI.coachName(c))) + ' on dak.gg">' + html + "</a>" : html;
+  };
   UI.badge = function (c) {
     return '<div class="badge"><div class="b-strip"><span>FACULTY · PATH TO GLORY</span></div><div class="b-body">' +
       '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>ID // 2026</span></div>' +
       '<div class="b-role">' + (c.kind === "assistant" ? "Assistant" : "Instructor") + "</div>" +
       '<div class="b-row"><span class="b-id">' + UI.esc(UI.cardId(c)) + "</span>" + "</div>" +
       '<div class="b-art" data-coach="' + UI.esc(c.id) + '">' + UI.art(c) + "</div>" +
-      '<div class="b-name"><small>NAME</small><div class="b-nameline"><b>[' + UI.esc(bare(UI.coachName(c))) + ']</b><span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div></div></div>";
+      '<div class="b-name"><small>NAME</small><div class="b-nameline"><b>' + UI.dakLink(c, "[" + UI.esc(bare(UI.coachName(c))) + "]") + '</b><span class="b-team">' + UI.esc(bare(UI.coachTeam(c))) + "</span></div></div></div></div>";
   };
   // a long name gets a little smaller, just until it shares one line with the team tag (never below 15px)
   UI.fitNames = (root = document) => root.querySelectorAll(".b-nameline").forEach(line => {

@@ -64,7 +64,7 @@ window.PTG = {
 
   // TODO: paste real Discord invite links.
   links: [
-    { name: "Project Lumi", tag: "Main Hub", d: "Announcements, schedules and team channels.", url: "https://discord.gg/zWs5GHFPT5" },
+    { name: "Project Lumi", tag: "Main Hub", d: "Announcements, schedules and team channels.", url: "https://discord.gg/zWs5GHFPT5", logo: "art/lumi-logo-sm.png" },
     { name: "Scrim Cord", tag: "Practice", d: "Scrim scheduling and lobbies.", url: "https://discord.gg/tbzPvX3Nj3" },
     { name: "Lumia Rumble", tag: "T2", d: "Tier 2 tournament circuit.", url: "https://discord.gg/Xk7dZS3YrV" },
     { name: "Eternal Return Challengers Hub", tag: "T1", d: "Tier 1 competitive hub.", url: "https://discord.gg/KP3JqAHK4v" }
@@ -144,6 +144,18 @@ window.PTG = {
     Katja: "24M-RFT75", Fiora: "14M-RFT02", Barbara: "16M-RFT15", Elena: "22M-RFT52", Laura: "21M-RFT49", Theodore: "23M-RFT65",
     Estelle: "22M-RFT58", Bianca: "20M-RFT45", Nicky: "20M-RFT43", Abigail: "23M-RFT70", Shoichi: "16M-RFT23", Blair: "25M-RFT87", Coraline: "26M-RFT90", Markus: "22M-RFT56", Irem: "22M-RFT64", Jan: "18M-RFT35", Luke: "18M-RFT36", Henry: "25M-RFT86", Alex: "14M-RFT13",
     Rozzi: "18M-RFT37", Tsubame: "23M-RFT73", Camilo: "16M-RFT25", Mai: "16M-RFT34", Sua: "17M-RFT33", Yumin: "24M-RFT80", Hyunwoo: "14M-RFT04"
+  },
+
+  // each mentor's dak.gg profile: clicking their name on the ID badge or the mentor file opens it
+  dakgg: {
+    m1: "https://dak.gg/er/players/PaidisThatActor",
+    m2: "https://dak.gg/er/players/Dylannn",
+    m3: "https://dak.gg/er/players/Fwitchu",
+    m4: "https://dak.gg/er/players/AatroxMain",
+    m5: "https://dak.gg/er/players/Isterio",
+    m6: "https://dak.gg/er/players/kazcross",
+    m7: "https://dak.gg/er/players/magepower",
+    m8: "https://dak.gg/er/players/ioo"
   },
 
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).

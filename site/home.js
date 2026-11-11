@@ -207,7 +207,8 @@
       (s.note ? "<b>" + esc(s.title) + '</b><span class="d n">' + esc(s.note) + "</span>"   // a plain note, e.g. "coming soon"
         : "<b>" + UI.ph("", s.title) + '</b><span class="d">Host: ' + UI.ph("", s.host) + "<br>" + UI.ph("", s.when) + "</span>") + "</div>").join("");
     $("#links").innerHTML = C.links.map(l =>
-      '<a class="link" href="' + esc(l.url) + '" target="_blank" rel="noopener"><span class="tier"><span>' + esc(l.tag) + '</span></span><div class="lb"><h3>' + esc(l.name) + "</h3><p>" + esc(l.d) + '</p><span class="go">Join on Discord ↗</span></div></a>').join("");
+      '<a class="link' + (l.logo ? " has-logo" : "") + '" href="' + esc(l.url) + '" target="_blank" rel="noopener"><span class="tier"><span>' + esc(l.tag) + '</span></span><div class="lb"><h3>' + esc(l.name) + "</h3><p>" + esc(l.d) + '</p><span class="go">Join on Discord ↗</span></div>' +
+      (l.logo ? '<img class="link-logo" src="' + esc(l.logo) + '" alt="" width="240" height="230">' : "") + "</a>").join("");
   }
 
   function renderSchedule() {
@@ -336,7 +337,7 @@
       const dh = slot => (m.doodles || []).filter(k => HEAD_DOODLES[k] && HEAD_DOODLES[k].at === slot).map(k => HEAD_DOODLES[k].svg).join(""); // ones that sit beside a section heading
       const front =
         '<article class="sheet info face front">' + top("") +
-        "<h3>" + UI.ph(m.name, UI.coachName(m)) + (dz("burst") ? DOODLE.burst : "") + "</h3>" +
+        "<h3>" + UI.dakLink(m, UI.ph(m.name, UI.coachName(m))) + (dz("burst") ? DOODLE.burst : "") + "</h3>" +
         '<span class="team-tag">' + esc(UI.bare(UI.coachTeam(m))) + "</span>" +
         '<div class="info-grid">' +
           "<section><h4>Playstyle" + dh("play") + "</h4>" + (m.playstyle ? paras(m.playstyle) : "<p>" + UI.ph("", "[One or two lines on how this mentor plays and what they focus on in review.]") + "</p>") + "</section>" +
@@ -355,7 +356,7 @@
         "</article>";
       const back =
         '<article class="sheet info face back" inert>' + top(" · back") +
-        '<div class="back-head"><h3>' + UI.ph(m.name, UI.coachName(m)) + '</h3><span class="stamp">Off the record</span></div>' +
+        '<div class="back-head"><h3>' + UI.dakLink(m, UI.ph(m.name, UI.coachName(m))) + '</h3><span class="stamp">Off the record</span></div>' +
         '<div class="info-grid">' +
           '<section class="wide"><h4>Coaching style' + dh("coach") + "</h4>" + (m.coaching ? paras(m.coaching) : "<p>" + UI.ph("", "[How this mentor likes to coach.]") + "</p>") +
             (m.motto ? '<p class="motto">“' + esc(m.motto) + "”</p>" : "") + "</section>" +

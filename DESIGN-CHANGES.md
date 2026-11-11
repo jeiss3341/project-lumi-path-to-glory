@@ -2,6 +2,11 @@
 
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
+## 2026-11-10
+- Faculty: each mentor's name (on the ID badge and on both sides of the mentor file) links to their dak.gg profile in a new tab. Links are in `dakgg` in `site/content.js` (m1 PaidisThatActor, m2 Dylannn, m3 Fwitchu, m4 AatroxMain, m5 Isterio, m6 kazcross, m7 magepower, m8 ioo). Clicking the name doesn't flip the badge or file.
+- Channels: the Project Lumi (Main Hub) card shows the Project Lumi TV cat logo on its right side (`site/art/lumi-logo-sm.png`, set by `logo` on the link in `site/content.js`).
+- Link preview + tab icon: now the Project Lumi TV cat logo (`site/art/lumi-logo.png`) instead of `og.png` and the "PTG" square. `og:`/`twitter:` meta tags added to `site/index.html`, pointing at `https://jeiss3341.github.io/project-lumi-path-to-glory/site/`.
+
 ## 2026-11-09
 - Faculty: each instructor ID badge now flips (click or tap it, or Enter/Space) to a "Stats" back with a six-sided chart of the mentor's self-ratings from the coach form (character flexibility, farming efficiency, aggressiveness, APM, patience, greed; 1–5, stored as `stats` in `site/content.js`). The back is built like the front: red strip, ID box, grid window with corner marks, name and team tag. The Faculty slideshow waits while a badge is flipped.
 - Faculty: instructor card art and character pool pictures: Fwitchu shows Irem (`site/art/fwitchu.webp`, pictures Irem and Leni), Hresvelg shows Jan (`site/art/hresvelg.webp`, pictures Jan and Hisui), Isterio shows Luke (`site/art/isterio.webp`, pictures Luke and Jackie), Kazcross shows Henry (`site/art/kazcross.webp`, pictures Henry and Camilo), Magepower shows Alex (`site/art/magepower.webp`, pictures Alex and Fiora), Ioo shows Coraline (`site/art/ioo.webp`, pictures Coraline and Celine; Coraline's subject ID was already listed).
