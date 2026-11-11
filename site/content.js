@@ -216,6 +216,7 @@ window.PTG = {
       fav_teams: ["FN · E8"] },
     { id: "m4", kind: "mentor", slot: 4, badge_id: "INS-0474-EP", name: "Hresvelg", team_name: "uberman", display_skin: "Jan",
       playstyle: "Playstyle is a myth u either play correct or u play wrong",
+      photo_sticker: "art/stickers/hresvelg-photo.webp", // photo stuck on the file under the playstyle
       pool: ["Jan", "Hisui"],
       stats: [2, 5, 4, 2, 2, 4],
       doodles: ["rightwrong", "housefire", "bird"],

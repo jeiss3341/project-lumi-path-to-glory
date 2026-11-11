@@ -343,7 +343,8 @@
         "<h3>" + UI.dakLink(m, UI.ph(m.name, UI.coachName(m))) + (dz("burst") ? DOODLE.burst : "") + "</h3>" +
         '<span class="team-tag">' + esc(UI.bare(UI.coachTeam(m))) + "</span>" +
         '<div class="info-grid">' +
-          "<section><h4>Playstyle" + dh("play") + "</h4>" + (m.playstyle ? paras(m.playstyle) : "<p>" + UI.ph("", "[One or two lines on how this mentor plays and what they focus on in review.]") + "</p>") + "</section>" +
+          "<section><h4>Playstyle" + dh("play") + "</h4>" + (m.playstyle ? paras(m.playstyle) : "<p>" + UI.ph("", "[One or two lines on how this mentor plays and what they focus on in review.]") + "</p>") +
+            (m.photo_sticker ? '<img class="photo-sticker" src="' + esc(m.photo_sticker) + '" alt="" width="691" height="699">' : "") + "</section>" +
           '<section class="pool-sec"><h4>Character pool</h4>' + (dz("sparkles") ? DOODLE.sparkles : "") + (dz("smile") ? '<span class="scribble s-smile" aria-hidden="true">^_^</span>' : "") +
             (m.pool && m.pool.length
               ? '<div class="pfp" aria-live="polite">' + charPfp(m.pool[0]) + '</div><div class="pool pool-pick">' +
