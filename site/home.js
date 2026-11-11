@@ -87,18 +87,8 @@
     // Ioo: sparkles around the name (plus signs on the left, a little burst and a four-point star on the right)
     namesparks: '<svg class="doodle d-name" viewBox="0 0 200 90" aria-hidden="true"><path d="M6 5 V21 M-1 13 H14"/><path d="M8 50 V62 M2 56 H14"/><path d="M195 6 L193 18 M187 13 L201 11 M189 7 L200 17"/>' +
       '<path d="M169 54 C170 63 172 67 181 70 C172 73 170 77 169 87 C167 77 165 73 157 70 C165 67 167 63 169 54 Z"/></svg>',
-    // Ioo: a pencil sketch of Espurr (floppy ears, big eyes, little paws) in the top right of the file, with two dashes beside it
-    espurr: '<svg class="doodle d-espurr" viewBox="-40 0 300 240" aria-hidden="true">' +
-      '<path d="M52 52 C28 52 12 58 14 76 C16 98 36 112 58 126"/>' +                                                   // left ear
-      '<path d="M200 48 C222 46 236 56 238 72 C240 84 232 94 222 100"/>' +                                             // right ear
-      '<path d="M52 52 C70 40 88 44 88 46 C86 30 92 14 98 8 C104 22 112 30 116 40 C130 36 140 36 150 38 C154 24 160 14 168 12 C170 24 176 34 186 44 C192 44 196 46 200 48"/>' +   // head top with two fur tufts
-      '<path d="M58 126 C70 140 74 130 84 138 C94 148 100 136 112 142 C124 150 132 138 144 144 C156 150 162 138 174 142 C186 146 192 130 204 128 C214 126 220 114 222 100"/>' +   // fluffy cheeks
-      '<circle cx="112" cy="100" r="12"/><circle cx="112" cy="101" r="5"/><circle cx="185" cy="85" r="12"/><circle cx="185" cy="86" r="5"/>' +   // eyes
-      '<path d="M132 116 q4 6 8 0 q4 6 8 0"/>' +                                                                       // nose and mouth
-      '<path d="M84 144 C78 168 82 190 98 204 C110 214 126 214 140 208"/><path d="M96 160 C104 176 120 180 130 172"/>' +   // body and paw
-      '<path d="M176 142 C186 160 190 176 186 196"/><path d="M190 170 C210 160 232 172 236 190 C240 206 226 216 214 218 C220 228 212 238 200 232"/>' +   // other side and fluffy tail
-      '<path d="M100 218 C98 230 108 236 122 232 M134 226 C136 236 148 238 158 230"/>' +                               // feet
-      '<path d="M-34 100 L-18 104 M-26 124 L-12 116"/></svg>',
+    // Ioo: Espurr, traced from the designer's own pencil sketch (site/art/doodles/espurr.png is a transparent mask, drawn in the doodle red by styles.css .d-espurr)
+    espurr: '<span class="doodle d-espurr" aria-hidden="true"></span>',
     burger: '<svg class="doodle d-burger" viewBox="0 0 64 50" aria-hidden="true">' +
       '<path d="M8 22 C8 9 20 4 33 4 C46 4 57 10 57 22 Z"/>' +                 // top bun
       '<path d="M22 11 l2 -1 M31 9 l2 0.5 M40 11 l2 1 M27 16 l1.5 -1 M36 16 l2 0"/>' + // sesame
