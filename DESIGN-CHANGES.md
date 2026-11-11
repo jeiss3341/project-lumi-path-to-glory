@@ -3,7 +3,7 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-10
-- Faculty: Ioo's file has two stickers: a round Espurr pin top right beside the name (`site/art/stickers/ioo-espurr.png`) and the three Pikmin walking along the footer's bottom-left (`site/art/stickers/ioo-pikmin.png`). New content options: `name_sticker` and `foot_sticker`.
+- Faculty: Ioo's file has the three Pikmin walking along the footer's bottom-left (`site/art/stickers/ioo-pikmin.png`). New content option: `foot_sticker`. (An Espurr pin by the name was tried and taken back out; `name_sticker` still works for any mentor.)
 - Faculty: Kazcross's About me splits into two paragraphs ("Big fan of analyzing the game…" starts the second).
 - Faculty: Isterio's file has a pouting chibi sticker (`site/art/stickers/isterio-pout.png`) right of his character pool. The source image is only 96px, so it's shown at 104px to stay sharp (new option `file_sticker_px`). A bigger version of the image would let it be larger.
 - Faculty: Hresvelg's file has a photo sticker (plush in the Costco hat, `site/art/stickers/hresvelg-photo.webp`) under his playstyle: white photo border, slight tilt, and the file grows taller to fit it. New content option: `photo_sticker` on any mentor in `site/content.js`.

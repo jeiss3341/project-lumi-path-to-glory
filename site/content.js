@@ -276,7 +276,6 @@ window.PTG = {
       pool: ["Coraline", "Celine"],
       stats: [4, 5, 3, 3, 4, 4],
       doodles: ["rings", "eye", "bowl", "plane"],
-      name_sticker: "art/stickers/ioo-espurr.png", // round Espurr pin, top right beside the name
       foot_sticker: "art/stickers/ioo-pikmin.png", // Pikmin walking along the bottom-left of the footer
       history: ["3 rings"],
       about: "mages and 3 rings",
