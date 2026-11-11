@@ -4,7 +4,9 @@ A running list of design changes, newest first. Note anything that will need cod
 
 ## 2026-11-10
 - Faculty: Hresvelg's file has a photo sticker (plush in the Costco hat, `site/art/stickers/hresvelg-photo.webp`) under his playstyle: white photo border, slight tilt, and the file grows taller to fit it. New content option: `photo_sticker` on any mentor in `site/content.js`.
+  - On a file with a photo, Playstyle + photo take the whole left column and Character pool, Competitive history and About me stack on the right (computers and tablets; phones stay one column).
 - Faculty: Fwitchu's playstyle splits into two paragraphs ("Big fan of triangle theory…" starts the second). A cat sticker (`site/art/stickers/fwitchu-cat.png`, white background cut out) sits in the empty space right of his character pool. New content option: `file_sticker` on any mentor in `site/content.js`.
+  - Second Fwitchu sticker: the cat getting its head patted (`site/art/stickers/fwitchu-cat-pat.png`), under his competitive history. New content option: `hist_sticker`.
   - Fwitchu's fun fact: the kaomoji + fish sit on their own line. `fun_fact` now supports `\n` for a new line.
 - Assistant & role coaches: names link to their dak.gg too (small cards, the tall card, and the swinging top card). Added a1–a8 to `dakgg` in `site/content.js`: Baeksu 백수, Jalja popquiz, CamperonDuty, Squortle, Jignut jignutjorgeston, Kyroshoot, Superior, Nesious, and a9 Chibiarc.
   - Needs info: confirm popquiz is Jalja's account.

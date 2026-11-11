@@ -206,6 +206,7 @@ window.PTG = {
       stats: [3, 5, 5, 4, 2, 5],
       doodles: ["piggy", "fish", "catnap"],
       file_sticker: "art/stickers/fwitchu-cat.png", // sticker on the front of the file, under the character pool
+      hist_sticker: "art/stickers/fwitchu-cat-pat.png", // sticker under the competitive history
       history: ["6x ERCS/ERCC Champion", "S7 Rank 1"],
       about: "I play mostly cat/supports/control mages. I've been playing ER since pre-season 4 but started playing more competitively around Season 3/4. I got my first win in Season 8 ERCC with Storytellers and have since won 5 times on Uberman.",
       coaching: "I'd like to give shorter, digestible reviews (<30 min) that focus on a main point of improvement or strategy. Will start out with broader concepts with a large focus on early game and then dive into specifics such as matchups later. I'll often reference KR vods for learning. Your team can choose what type of playstyle or comp archetype you want though!",

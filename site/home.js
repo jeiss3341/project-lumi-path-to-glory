@@ -342,8 +342,8 @@
         '<article class="sheet info face front">' + top("") +
         "<h3>" + UI.dakLink(m, UI.ph(m.name, UI.coachName(m))) + (dz("burst") ? DOODLE.burst : "") + "</h3>" +
         '<span class="team-tag">' + esc(UI.bare(UI.coachTeam(m))) + "</span>" +
-        '<div class="info-grid">' +
-          "<section><h4>Playstyle" + dh("play") + "</h4>" + (m.playstyle ? paras(m.playstyle) : "<p>" + UI.ph("", "[One or two lines on how this mentor plays and what they focus on in review.]") + "</p>") +
+        '<div class="info-grid' + (m.photo_sticker ? " has-photo" : "") + '">' +   // with a photo, Playstyle fills the left and the rest stacks on the right
+          '<section class="play-sec"><h4>Playstyle' + dh("play") + "</h4>" + (m.playstyle ? paras(m.playstyle) : "<p>" + UI.ph("", "[One or two lines on how this mentor plays and what they focus on in review.]") + "</p>") +
             (m.photo_sticker ? '<img class="photo-sticker" src="' + esc(m.photo_sticker) + '" alt="" width="691" height="699">' : "") + "</section>" +
           '<section class="pool-sec"><h4>Character pool</h4>' + (dz("sparkles") ? DOODLE.sparkles : "") + (dz("smile") ? '<span class="scribble s-smile" aria-hidden="true">^_^</span>' : "") +
             (m.pool && m.pool.length
@@ -353,7 +353,8 @@
               : '<div class="pfp">' + charPfp("") + '</div><div class="pool"><span class="ph">[Main]</span><span class="ph">[Secondary]</span><span class="ph">[Pocket pick]</span></div>') +
             (m.file_sticker ? '<img class="file-sticker" src="' + esc(m.file_sticker) + '" alt="" width="200" height="200">' : "") +
           "</section>" +
-          '<section class="hist-sec"><h4>Competitive history' + dh("hist") + '</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul>" + (dz("burger") ? DOODLE.burger : "") + "</section>" +
+          '<section class="hist-sec"><h4>Competitive history' + dh("hist") + '</h4><ul class="hist">' + (m.history && m.history.length ? m.history.map(histItem).join("") : '<li><span class="ph">[ERCS qualifier · result]</span></li><li><span class="ph">[ERCC / T2 event · placement]</span></li>') + "</ul>" + (dz("burger") ? DOODLE.burger : "") +
+            (m.hist_sticker ? '<img class="hist-sticker" src="' + esc(m.hist_sticker) + '" alt="" width="200" height="200">' : "") + "</section>" +
           "<section><h4>About me" + dh("about") + "</h4>" + (m.about ? paras(m.about) : "<p>" + UI.ph("", "[A short about-me written by the mentor.]") + "</p>") + "</section>" +
         "</div>" +
         '<div class="info-foot"><span class="foot-btns">' + flipBtn("Flip file ↻") + '<a class="btn" href="index.html?hours&coach=' + encodeURIComponent(m.id) + '">Request a session</a></span>' +
