@@ -3,6 +3,10 @@
 A running list of design changes, newest first. Note anything that will need code or database work later, so Jeiss can pick it up.
 
 ## 2026-11-10
+- Assistant & role coaches: names link to their dak.gg too (small cards, the tall card, and the swinging top card). Added a1–a8 to `dakgg` in `site/content.js`: Baeksu 백수, Jalja popquiz, CamperonDuty, Squortle, Jignut jignutjorgeston, Kyroshoot, Superior, Nesious, and a9 Chibiarc.
+  - Needs info: confirm popquiz is Jalja's account.
+- Landing page: when the swinging card at the top is an instructor, it now flips to their Stats too (click, tap, Enter or Space), same as the Faculty badge. Assistants' cards don't flip (no stats). Shared `flipBadge` in `site/home.js`.
+- Project Lumi logo swapped for the brighter red version (same files: `site/art/lumi-logo.png` and `site/art/lumi-logo-sm.png`), so the Main Hub card, tab icon and link preview all use it.
 - Faculty: each mentor's name (on the ID badge and on both sides of the mentor file) links to their dak.gg profile in a new tab. Links are in `dakgg` in `site/content.js` (m1 PaidisThatActor, m2 Dylannn, m3 Fwitchu, m4 AatroxMain, m5 Isterio, m6 kazcross, m7 magepower, m8 ioo). Clicking the name doesn't flip the badge or file.
 - Channels: the Project Lumi (Main Hub) card shows the Project Lumi TV cat logo on its right side (`site/art/lumi-logo-sm.png`, set by `logo` on the link in `site/content.js`).
 - Link preview + tab icon: now the Project Lumi TV cat logo (`site/art/lumi-logo.png`) instead of `og.png` and the "PTG" square. `og:`/`twitter:` meta tags added to `site/index.html`, pointing at `https://jeiss3341.github.io/project-lumi-path-to-glory/site/`.

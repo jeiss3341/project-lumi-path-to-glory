@@ -363,6 +363,8 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .badge-face.back{transform:rotateY(180deg)}
 .badge-flip.flipped .badge-card{transform:rotateY(180deg)}
 .fac-badge .badge-face>.badge{width:100%;transform:none}
+/* the swinging card at the top: the lanyard already tilts and moves it, so the flip box adds no tilt or hover lift of its own */
+.lanyard .badge-flip,.lanyard .badge-flip:hover{width:auto;transform:none}
 @media (max-width:640px){.fac-badge .badge-flip{zoom:.8}.fac-badge .badge-face>.badge{zoom:1}}
 @media (prefers-reduced-motion:reduce){.badge-card,.badge-flip{transition:none}}
 .b-flip-hint{position:absolute;top:8px;right:8px;z-index:3;font:600 9px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:#f4f4f2;background:rgba(11,11,13,.72);border:1px solid rgba(255,255,255,.22);padding:4px 6px;border-radius:2px;pointer-events:none}
@@ -481,7 +483,7 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .as-card.on{box-shadow:var(--lift),0 0 0 2.5px var(--red)}
 .as-hit{position:absolute;inset:0;z-index:4;background:none;border:0;padding:0;cursor:pointer;border-radius:12px}
 .as-hit:focus-visible{outline:2px solid #fff;outline-offset:-3px}
-.as-card .mb-foot a{position:relative;z-index:5}
+.as-card .mb-foot a,.as-card .mb-name .dak-link{position:relative;z-index:5}
 /* the tall card, leaning the opposite way from the Instructor card above it, with the details beside it */
 .as-main{display:grid;min-width:0}
 .as-tall{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px;align-items:stretch;min-width:0}

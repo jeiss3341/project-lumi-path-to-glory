@@ -155,7 +155,16 @@ window.PTG = {
     m5: "https://dak.gg/er/players/Isterio",
     m6: "https://dak.gg/er/players/kazcross",
     m7: "https://dak.gg/er/players/magepower",
-    m8: "https://dak.gg/er/players/ioo"
+    m8: "https://dak.gg/er/players/ioo",
+    a1: "https://dak.gg/er/players/%EB%B0%B1%EC%88%98", // Baeksu (백수)
+    a2: "https://dak.gg/er/players/popquiz",            // Jalja
+    a3: "https://dak.gg/er/players/camperonduty",
+    a4: "https://dak.gg/er/players/squortle",
+    a5: "https://dak.gg/er/players/jignutjorgeston",
+    a6: "https://dak.gg/er/players/kyroshoot",
+    a7: "https://dak.gg/er/players/superior",
+    a8: "https://dak.gg/er/players/nesious",
+    a9: "https://dak.gg/er/players/chibiarc"
   },
 
   // Same starting slots as supabase/schema.sql (used by demo mode and as a fallback).

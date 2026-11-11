@@ -147,6 +147,21 @@
       '<div class="b-art">' + hint + '<div class="ptg-art art-grid" style="position:relative;overflow:hidden;width:100%;height:100%">' + statChart(m.stats) + "</div></div>" +
       '<div class="b-name"><small>NAME</small><div class="b-nameline"><b>[' + esc(UI.bare(UI.coachName(m))) + ']</b><span class="b-team">' + esc(UI.bare(UI.coachTeam(m))) + "</span></div></div></div></div>";
   }
+  // an instructor ID badge that flips over to their stats (click, tap, Enter or Space); without stats it's the plain badge.
+  // Used by the Faculty card and the swinging card at the top of the page. onTurn runs after each flip.
+  function flipBadge(box, m, onTurn) {
+    if (!(m.kind === "mentor" && m.stats && m.stats.length === 6)) { box.innerHTML = UI.badge(m); return; }
+    const hint = '<span class="b-flip-hint in-row" aria-hidden="true">Flip ↻</span>';
+    const who = UI.bare(UI.coachName(m));
+    const said = STAT_LABELS.map((l, k) => l.join(" ").toLowerCase() + " " + m.stats[k] + " of 5").join(", ");
+    box.innerHTML = '<div class="badge-flip" role="button" tabindex="0" aria-pressed="false" aria-label="' + esc(who + "'s ID badge. Flip it to see their stats: " + said) + '">' +
+      '<div class="badge-card"><div class="badge-face">' + UI.badge(m) + '</div><div class="badge-face back">' + badgeBack(m, "") + "</div></div></div>";   // no Flip label on the Stats side
+    $(".badge-face .b-row", box).insertAdjacentHTML("beforeend", hint);   // front: level with the Subject ID
+    const flipper = $(".badge-flip", box);
+    const turn = () => { flipper.setAttribute("aria-pressed", String(flipper.classList.toggle("flipped"))); if (onTurn) onTurn(); };
+    flipper.onclick = e => { if (!e.target.closest("button, a")) turn(); };   // staff "Adjust art" and the dak.gg name link keep working
+    flipper.onkeydown = e => { if (e.target === flipper && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); turn(); } };
+  }
   // competitive history line: a trailing "(...)" note drops onto its own line
   function histItem(h) {
     const m = String(h).match(/^(.*?)\s*(\([^()]*\))\s*$/);
@@ -266,7 +281,7 @@
       try { localStorage.setItem(HERO_KEY, JSON.stringify(recent.concat(m.id).slice(-HERO_SKIP))); } catch (e) { /* storage blocked or full */ }
     }
     heroPick = m ? m.id : null;
-    $("#hero-badge").innerHTML = m ? UI.badge(m) : "";
+    if (m) flipBadge($("#hero-badge"), m); else $("#hero-badge").innerHTML = "";   // instructors flip to their stats here too
     preloadArt();
   }
 
@@ -317,19 +332,7 @@
       fi = (i + ms.length) % ms.length;
       const m = ms[fi];
       // the ID badge flips over to the mentor's self-rated stats
-      const badgeBox = $("#fac-badge");
-      if (m.stats && m.stats.length === 6) {
-        const hint = '<span class="b-flip-hint" aria-hidden="true">Flip ↻</span>';
-        const who = UI.bare(UI.coachName(m));
-        const said = STAT_LABELS.map((l, k) => l.join(" ").toLowerCase() + " " + m.stats[k] + " of 5").join(", ");
-        badgeBox.innerHTML = '<div class="badge-flip" role="button" tabindex="0" aria-pressed="false" aria-label="' + esc(who + "'s ID badge. Flip it to see their stats: " + said) + '">' +
-          '<div class="badge-card"><div class="badge-face">' + UI.badge(m) + '</div><div class="badge-face back">' + badgeBack(m, "") + "</div></div></div>";   // no Flip label on the Stats side
-        $(".badge-face .b-row", badgeBox).insertAdjacentHTML("beforeend", hint.replace('class="b-flip-hint"', 'class="b-flip-hint in-row"'));   // front: level with the Subject ID
-        const flipper = $(".badge-flip", badgeBox);
-        const turn = () => { flipper.setAttribute("aria-pressed", String(flipper.classList.toggle("flipped"))); facSync(); };   // the slideshow waits while the badge is turned over
-        flipper.onclick = e => { if (!e.target.closest("button, a")) turn(); };   // staff "Adjust art" keeps working
-        flipper.onkeydown = e => { if (e.target === flipper && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); turn(); } };
-      } else badgeBox.innerHTML = UI.badge(m);
+      flipBadge($("#fac-badge"), m, facSync);   // the slideshow waits while the badge is turned over
       const top = side => '<div class="info-top"><span>Mentor file ' + pad(m.slot) + " / " + pad(ms.length) + side + "</span><span>" + esc(UI.cardId(m)) + "</span></div>";
       const chips = (list, ph) => list && list.length ? list.map(p => "<span>" + esc(p) + "</span>").join("") : ph;
       const flipBtn = label => '<button type="button" class="flip-btn js-flip" aria-pressed="false">' + label + "</button>";
@@ -458,7 +461,7 @@
       (sticker ? '<img class="mb-sticker" src="' + esc(sticker) + '" alt="" width="240" height="240" style="' + (at.top ? "top:" + esc(at.top) + ";" : "") + (at.tilt != null ? "--tilt:" + Number(at.tilt) + "deg" : "") + '">' : "") +
       '<div class="b-strip"><span>FACULTY · PATH TO GLORY</span></div><div class="mb-body">' +
       '<div class="b-top"><span class="b-dash"><i></i><i></i><i></i></span><span>' + esc(UI.cardId(a)) + "</span></div>" +
-      '<div class="mb-role">Assistant</div><div class="mb-nameline"><div class="mb-name">[' + esc(name) + ']</div><span class="b-team">' + esc(UI.bare(UI.coachTeam(a))) + "</span></div>" +
+      '<div class="mb-role">Assistant</div><div class="mb-nameline"><div class="mb-name">' + UI.dakLink(a, "[" + esc(name) + "]") + '</div><span class="b-team">' + esc(UI.bare(UI.coachTeam(a))) + "</span></div>" +
       // icon between the name and the role focus: a headshot from PTG.artHead (e.g. a1: "art/heads/a1.webp"), else an empty slot
       UI.headIcon(a, name) +
       '<div class="mb-focus">' + UI.ph(a.focus, "[Role focus]") + "<br>" + UI.ph((a.pool || []).join(", "), "[Characters or topics]") + "</div>" +
