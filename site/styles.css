@@ -357,6 +357,10 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
   .info-grid.has-photo>.play-sec{grid-column:1;grid-row:1/span 3}
   .info-grid.has-photo>section:not(.play-sec){grid-column:2}
 }
+/* an emoji sticker on the back of the file, in the empty space right of the motto (back_sticker in content.js) */
+.info.back .wide{position:relative}
+.back-sticker{position:absolute;right:8%;top:6px;font-size:clamp(56px,7vw,76px);line-height:1;transform:rotate(10deg);filter:drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(2px 4px 4px rgba(0,0,0,.25));pointer-events:none;user-select:none}
+@media (max-width:640px){.back-sticker{right:0;top:-6px;font-size:48px}}
 /* a photo stuck on the mentor file under the playstyle (photo_sticker in content.js): white border, slight tilt, makes the file taller */
 .photo-sticker{display:block;width:min(220px,80%);height:auto;margin:18px 0 6px 10px;border:7px solid #fff;border-radius:6px;transform:rotate(-4deg);box-shadow:2px 5px 10px rgba(0,0,0,.25)}
 /* a sticker under the competitive history (hist_sticker in content.js), slapped on the empty space above the footer */

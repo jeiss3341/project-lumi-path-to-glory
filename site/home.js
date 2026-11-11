@@ -365,7 +365,8 @@
         '<div class="back-head"><h3>' + UI.dakLink(m, UI.ph(m.name, UI.coachName(m))) + '</h3><span class="stamp">Off the record</span></div>' +
         '<div class="info-grid">' +
           '<section class="wide"><h4>Coaching style' + dh("coach") + "</h4>" + (m.coaching ? paras(m.coaching) : "<p>" + UI.ph("", "[How this mentor likes to coach.]") + "</p>") +
-            (m.motto ? '<p class="motto">“' + esc(m.motto) + "”</p>" : "") + "</section>" +
+            (m.motto ? '<p class="motto">“' + esc(m.motto) + "”</p>" : "") +
+            (m.back_sticker ? '<span class="back-sticker" aria-hidden="true">' + esc(m.back_sticker) + "</span>" : "") + "</section>" +
           '<section class="games-sec"><h4>Other games played' + dh("games") + "</h4>" + (dz("maple") ? DOODLE.maple : "") + '<div class="pool">' + chips(m.games, '<span class="ph">[Game]</span><span class="ph">[Game]</span>') + "</div></section>" +
           '<section><h4>Favorite hobbies' + dh("hobbies") + '</h4><ul class="hist">' + (m.hobbies && m.hobbies.length ? m.hobbies.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[Hobby]</span></li>') + "</ul></section>" +
           '<section><h4>Fav teams' + dh("teams") + '</h4><ul class="hist">' + (m.fav_teams && m.fav_teams.length ? m.fav_teams.map(h => "<li>" + esc(h) + "</li>").join("") : '<li><span class="ph">[Team · player]</span></li>') + "</ul></section>" +

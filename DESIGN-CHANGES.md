@@ -4,6 +4,7 @@ A running list of design changes, newest first. Note anything that will need cod
 
 ## 2026-11-10
 - Faculty: Hresvelg's file has a photo sticker (plush in the Costco hat, `site/art/stickers/hresvelg-photo.webp`) under his playstyle: white photo border, slight tilt, and the file grows taller to fit it. New content option: `photo_sticker` on any mentor in `site/content.js`.
+  - Back of Hresvelg's file: a 🫃 emoji sticker (white outline, tilted) right of his "mpreg squortle" motto. New content option: `back_sticker` (any emoji).
   - On a file with a photo, Playstyle + photo take the whole left column and Character pool, Competitive history and About me stack on the right (computers and tablets; phones stay one column).
 - Faculty: Fwitchu's playstyle splits into two paragraphs ("Big fan of triangle theory…" starts the second). A cat sticker (`site/art/stickers/fwitchu-cat.png`, white background cut out) sits in the empty space right of his character pool. New content option: `file_sticker` on any mentor in `site/content.js`.
   - Second Fwitchu sticker: the cat getting its head patted (`site/art/stickers/fwitchu-cat-pat.png`), under his competitive history. New content option: `hist_sticker`.
