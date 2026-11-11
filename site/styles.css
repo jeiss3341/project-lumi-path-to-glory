@@ -361,6 +361,10 @@ mark.hl{color:inherit;background:linear-gradient(100deg,rgba(255,230,0,0) 0,rgba
 .info.back .wide{position:relative}
 .back-sticker{position:absolute;right:8%;top:6px;font-size:clamp(56px,7vw,76px);line-height:1;transform:rotate(10deg);filter:drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(2px 4px 4px rgba(0,0,0,.25));pointer-events:none;user-select:none}
 @media (max-width:640px){.back-sticker{right:0;top:-6px;font-size:48px}}
+/* name_sticker: a round pin in the empty top-right of the file, beside the name; foot_sticker: a die-cut sticker in the footer's empty left side */
+.name-sticker{position:absolute;right:clamp(26px,9%,90px);top:clamp(96px,10vw,124px);width:clamp(84px,12vw,112px);height:auto;border-radius:50%;border:5px solid #fff;transform:rotate(8deg);box-shadow:2px 4px 8px rgba(0,0,0,.25);pointer-events:none}
+.foot-sticker{width:clamp(150px,30%,200px);height:auto;margin:-6px auto -6px 0;transform:rotate(-3deg);filter:drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(2px 4px 4px rgba(0,0,0,.2));pointer-events:none}
+@media (max-width:640px){.name-sticker{right:16px;top:72px;width:72px;border-width:4px}}
 /* a photo stuck on the mentor file under the playstyle (photo_sticker in content.js): white border, slight tilt, makes the file taller */
 .photo-sticker{display:block;width:min(220px,80%);height:auto;margin:18px 0 6px 10px;border:7px solid #fff;border-radius:6px;transform:rotate(-4deg);box-shadow:2px 5px 10px rgba(0,0,0,.25)}
 /* a sticker under the competitive history (hist_sticker in content.js), slapped on the empty space above the footer */

@@ -235,6 +235,7 @@ window.PTG = {
       pool: ["Luke", "Jackie"],
       stats: [2, 5, 5, 3, 3, 5],
       doodles: ["arrow", "nocoffee", "shuttle"],
+      file_sticker: "art/stickers/isterio-pout.png", file_sticker_px: 104, // small pouting chibi right of the character pool (image is 96px, so kept small to stay sharp)
       history: ["A few Final Lobbies in ERCS/ERCC (no wins yet D:)", "Season 8 Rank 1 NA (Rank 3 Global)"],
       about: "I play melees and I run at the enemy carries in a straight line.",
       coaching: "I am a chill guy but I WILL laugh at you if you do the funny.",
@@ -249,7 +250,7 @@ window.PTG = {
       stats: [5, 3, 3, 3, 5, 4],
       doodles: ["mic", "btier", "wave"],
       history: ["Caster and analyst", "peaked top 10 NA", "top 1 Henry NA", "have coached various ERCS teams on draft"],
-      about: "Official ER English caster. I commentate and watch NA, KR and APAC. Big fan of analyzing the game, I also do most Pro-fessors now so I've learned most new characters. I love teaching the game and have participated in previous coaching events! I also discuss the game with most top players to theorycraft compositions and character ideas.",
+      about: "Official ER English caster. I commentate and watch NA, KR and APAC.\n\nBig fan of analyzing the game, I also do most Pro-fessors now so I've learned most new characters. I love teaching the game and have participated in previous coaching events! I also discuss the game with most top players to theorycraft compositions and character ideas.",
       coaching: "I'm very detail oriented and holistic with my approach to learning, I think a lot of learning is done by cultivating an environment to learn. I emphasize things you're doing out of game to help you in game",
       motto: "Your favorite player's favorite player's favorite caster",
       games: ["Deadlock", "CS", "Valorant"],
@@ -275,6 +276,8 @@ window.PTG = {
       pool: ["Coraline", "Celine"],
       stats: [4, 5, 3, 3, 4, 4],
       doodles: ["rings", "eye", "bowl", "plane"],
+      name_sticker: "art/stickers/ioo-espurr.png", // round Espurr pin, top right beside the name
+      foot_sticker: "art/stickers/ioo-pikmin.png", // Pikmin walking along the bottom-left of the footer
       history: ["3 rings"],
       about: "mages and 3 rings",
       coaching: "1-on-1 coaching, positioning and vision awareness",
