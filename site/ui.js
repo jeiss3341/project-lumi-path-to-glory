@@ -416,6 +416,15 @@
     UI.reqNoticeTimer = setInterval(check, 2 * 60 * 1000);
   };
 
+  // minutes in words: 45 → "45 minutes", 60 → "1 hour", 90 → "1 hour 30 minutes", 1440 → "1 day"
+  // (the database's minutes_words says it the same way)
+  UI.noticeWords = m => {
+    const n = (v, w) => v + " " + w + (v === 1 ? "" : "s");
+    if (m >= 1440) return "1 day";
+    if (m < 60) return n(m, "minute");
+    return n(Math.floor(m / 60), "hour") + (m % 60 ? " " + n(m % 60, "minute") : "");
+  };
+
   // a coach's questions about the sessions they take; the defaults are the event's normal rules
   UI.sessionSettings = function (c, done) {
     const LENGTHS = [[30, "30 min"], [60, "1 h"], [90, "1.5 h"], [120, "2 h"]], KINDS = [["both", "Both"], ["team", "Team only"], ["individual", "Individual only"]];

@@ -93,19 +93,39 @@
   // player tab: your team (name, mentor, players, request button) sits along the bottom of the header
   // coach tab: Session settings right in the header; a click saves straight away
   const SS_LEN = [[30, "30 min"], [60, "1 h"], [90, "1.5 h"], [120, "2 h"]], SS_KINDS = [["both", "Both"], ["team", "Team only"], ["individual", "Individual only"]];
+  // notice: how far ahead players must request; ping: how long before a session Lumi-chan DMs you (0 = off).
+  // Any amount the coach types, in minutes or hours, up to 1 day; saved when they leave the box or change the unit.
+  const ssNow = c => ({ min: c.min_minutes || 30, max: c.max_minutes || 120, kinds: c.session_kinds || "both", notice: c.notice_minutes ?? 60, ping: c.ping_minutes ?? 20 });
   function headSettings() {
-    const c = S.myCoach, v = { min: c.min_minutes || 30, max: c.max_minutes || 120, kinds: c.session_kinds || "both" };
+    const c = S.myCoach, v = ssNow(c);
     const seg = (key, label, opts) => '<div class="ss-q"><span>' + label + '</span><div class="bk-seg" role="group" aria-label="' + label + '">' +
       opts.map(([val, text]) => '<button type="button" data-ssk="' + key + '" data-ssv="' + val + '" aria-pressed="' + (v[key] === val) + '"' + ((key === "min" && val > v.max) || (key === "max" && val < v.min) ? " disabled" : "") + ">" + text + "</button>").join("") + "</div></div>";
+    // a number and a min / hours picker; whole hours show as hours
+    const amt = (key, label, after) => {
+      const m = v[key], hrs = m > 0 && m % 60 === 0;
+      return '<div class="ss-q"><span id="ss-' + key + '">' + label + '</span><div class="ss-amt" data-amt="' + key + '" role="group" aria-labelledby="ss-' + key + '">' +
+        '<input type="number" inputmode="decimal" min="0" max="' + (hrs ? 24 : 1440) + '" step="' + (hrs ? 0.5 : 1) + '" value="' + (hrs ? m / 60 : m) + '" aria-label="Amount">' +
+        '<select aria-label="Unit"><option value="1"' + (hrs ? "" : " selected") + '>min</option><option value="60"' + (hrs ? " selected" : "") + ">hours</option></select>" +
+        "<em>" + after(m) + "</em></div></div>";
+    };
     return '<div class="dh-ss"><span class="mono-label">Session settings · players only see what you allow</span><div class="dh-ss-row">' +
-      seg("min", "Shortest", SS_LEN) + seg("max", "Longest", SS_LEN) + seg("kinds", "Sessions you take", SS_KINDS) + "</div></div>";
+      seg("min", "Shortest", SS_LEN) + seg("max", "Longest", SS_LEN) + seg("kinds", "Sessions you take", SS_KINDS) +
+      amt("notice", "Latest a player can book", () => "before") +
+      amt("ping", "Lumi-chan pings you before", m => m ? "before · 0 = off" : "Off · type a time to turn on") + "</div></div>";
+  }
+  // a typed amount: minutes from the box and unit, 0 to 1 day
+  async function saveAmount(box) {
+    const n = parseFloat(UI.$("input", box).value), unit = +UI.$("select", box).value, m = Math.round(n * unit);
+    if (!Number.isFinite(m) || m < 0 || m > 1440) { UI.toast("Pick a time between 0 minutes and 1 day.", "bad"); renderHead(); return; }
+    if (m === ssNow(S.myCoach)[box.dataset.amt]) return renderHead();   // nothing changed (tidies 120 min into 2 hours)
+    return saveSetting({ dataset: { ssk: box.dataset.amt, ssv: String(m) } });
   }
   async function saveSetting(b) {
-    const c = S.myCoach, v = { min: c.min_minutes || 30, max: c.max_minutes || 120, kinds: c.session_kinds || "both" };
+    const c = S.myCoach, v = ssNow(c);
     v[b.dataset.ssk] = b.dataset.ssk === "kinds" ? b.dataset.ssv : +b.dataset.ssv;
-    await UI.act(b, async () => {
-      await API.saveSessionSettings(c.id, v.min, v.max, v.kinds);
-      Object.assign(c, { min_minutes: v.min, max_minutes: v.max, session_kinds: v.kinds });
+    await UI.act(b.nodeType ? b : null, async () => {
+      await API.saveSessionSettings(c.id, v.min, v.max, v.kinds, v.notice, v.ping);
+      Object.assign(c, { min_minutes: v.min, max_minutes: v.max, session_kinds: v.kinds, notice_minutes: v.notice, ping_minutes: v.ping });
     }, "Session settings saved.");
     renderHead();
   }
@@ -138,6 +158,8 @@
     head.querySelector(".dh-stats").innerHTML = stats.map(s => '<button type="button" class="dh-stat' + (s.hot ? " hot" : "") + '" data-go="' + s.go + '" title="' + esc(s.v + " · " + s.k) + '"><b>' + esc(s.v) + "</b><span>" + esc(s.k) + "</span></button>").join("");
     head.querySelector(".dh-stats").style.setProperty("--n", stats.length);   // mentors get a fourth box (Session settings)
     head.onclick = e => { const s = e.target.closest("[data-ssk]"); if (s && !s.disabled) return saveSetting(s); const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go); };
+    head.onchange = e => { const box = e.target.closest("[data-amt]"); if (box) saveAmount(box); };   // typed amounts: leaving the box, or a new unit
+    head.onkeydown = e => { if (e.key === "Enter" && e.target.closest("[data-amt] input")) e.target.blur(); };
   }
   // a header number: switch to its tab, then bring its part of the desk into view
   window.PTGDeskGo = g => go(g);   // the coach notice (ui.js) opens the waiting requests from here

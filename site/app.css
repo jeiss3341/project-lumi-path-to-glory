@@ -678,6 +678,11 @@ dialog#cc-dlg.wide.moving{width:min(1180px,calc(100vw - 32px))}   /* Change time
 .dh-ss-row{display:flex;flex-wrap:wrap;gap:12px 28px}
 .dh-ss .ss-q{margin:0}
 .dh-ss .bk-seg{flex-wrap:wrap}
+/* a typed amount: number + min / hours, then a short note */
+.ss-amt{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ss-amt input,.ss-amt select{font:600 12px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--ink);border-radius:0;background:#fff;color:var(--ink);padding:8px 8px;height:33px}
+.ss-amt input{width:72px}
+.ss-amt em{font:400 12.5px/1.3 var(--f-type);font-style:normal;color:var(--ink-soft)}
 .cc-mvtop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .cc-mvpl td{cursor:pointer}
 .cc-mvnow{margin:6px 0 0}

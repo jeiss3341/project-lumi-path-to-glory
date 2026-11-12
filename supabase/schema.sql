@@ -66,6 +66,10 @@ alter table public.coaches add column if not exists art_url text;   -- a picture
 alter table public.coaches add column if not exists head_fit jsonb;   -- the same two settings for the small assistant icon
 alter table public.coaches add column if not exists head_url text;
 alter table public.coaches add column if not exists session_kinds text not null default 'both' check (session_kinds in ('both', 'team', 'individual'));
+-- how far ahead players must request, and how long before a session Lumi-chan DMs the coach on Discord (0 = off);
+-- see supabase/session-pings.sql
+alter table public.coaches add column if not exists notice_minutes int not null default 60 check (notice_minutes between 0 and 1440);
+alter table public.coaches add column if not exists ping_minutes int not null default 20 check (ping_minutes between 0 and 1440);
 
 -- Event teams. Signups happen on Google Forms and Discord; the organiser enters the final teams here
 -- (read only from the site, staff can't change them).
@@ -362,6 +366,17 @@ begin
 end $$;
 
 -- Validate a new request: inside posted hours, not booked, not in the past.
+-- A number of minutes in words: 45 → "45 minutes", 60 → "1 hour", 90 → "1 hour 30 minutes", 1440 → "1 day".
+create or replace function public.minutes_words(m int) returns text
+language sql immutable as $$
+  select case
+    when m >= 1440 then '1 day'
+    when m < 60 then m || ' minute' || case when m = 1 then '' else 's' end
+    else (m / 60) || ' hour' || case when m / 60 = 1 then '' else 's' end
+         || case when m % 60 > 0 then ' ' || (m % 60) || ' minute' || case when m % 60 = 1 then '' else 's' end else '' end
+  end
+$$;
+
 create or replace function public.requests_before_insert() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
@@ -369,6 +384,7 @@ declare
   mn int;
   mx int;
   ks text;
+  nt int;
 begin
   if current_setting('ptg.writing_session', true) = 'on' then
     return new;   -- write_session checked everything itself
@@ -382,7 +398,8 @@ begin
     raise exception 'Sessions run from 30 minutes to 2 hours.';
   end if;
 
-  select kind, min_minutes, max_minutes, session_kinds into k, mn, mx, ks from public.coaches where id = new.coach_id;
+  select kind, min_minutes, max_minutes, session_kinds, notice_minutes into k, mn, mx, ks, nt
+    from public.coaches where id = new.coach_id;
   if k is null then
     raise exception 'That coach doesn''t exist.';
   end if;
@@ -401,6 +418,9 @@ begin
   end if;
   if new.starts_at < now() then
     raise exception 'That time has already passed.';
+  end if;
+  if new.starts_at < now() + make_interval(mins => coalesce(nt, 60)) then
+    raise exception 'This coach takes requests up to % before a session. Pick a later time.', public.minutes_words(coalesce(nt, 60));
   end if;
   if not exists (
     select 1 from public.availability a
@@ -431,7 +451,9 @@ create trigger requests_before_insert before insert on public.requests
 -- left null) and shows on all their desks; k = 'individual' is with player p. Waiting requests at the same time
 -- are declined, as when accepting one.
 -- A coach answers their own Session settings (staff can too).
-create or replace function public.save_session_settings(c text, mn int, mx int, k text)
+-- nt / pm (notice and ping minutes) left out stay as they are.
+drop function if exists public.save_session_settings(text, int, int, text);
+create or replace function public.save_session_settings(c text, mn int, mx int, k text, nt int default null, pm int default null)
 returns public.coaches
 language plpgsql security definer set search_path = public as $$
 declare
@@ -443,7 +465,13 @@ begin
   if mn > mx then
     raise exception 'The shortest session can''t be longer than the longest.';
   end if;
-  update public.coaches set min_minutes = mn, max_minutes = mx, session_kinds = k where id = c returning * into row_out;
+  if nt not between 0 and 1440 or pm not between 0 and 1440 then
+    raise exception 'Pick a time between 0 minutes and 1 day.';
+  end if;
+  update public.coaches
+     set min_minutes = mn, max_minutes = mx, session_kinds = k,
+         notice_minutes = coalesce(nt, notice_minutes), ping_minutes = coalesce(pm, ping_minutes)
+   where id = c returning * into row_out;
   return row_out;
 end $$;
 

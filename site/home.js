@@ -733,7 +733,7 @@
 
   // every half hour inside the coach's hours on one day, with its state
   function slotsFor(ymd) {
-    const now = UI.now(), out = [];
+    const now = UI.now(), out = [], cut = now + coachRules().notice * 6e4;   // too soon to request: the coach's notice
     const mine = S.myReqs.filter(r => r.coach_id === BK.coach && (r.status === "pending" || r.status === "accepted"));
     BK.blocks.filter(b => UI.dayOf(b.starts_at) === ymd).sort((a, b) => T(a.starts_at) - T(b.starts_at)).forEach((b, bi) => {
       for (let t = T(b.starts_at); t + HALF <= T(b.ends_at); t += HALF) {
@@ -743,6 +743,7 @@
         if (t < now) st = "past";
         else if (my) st = my.status === "accepted" ? "mine-ok" : "mine";
         else if (BK.busy.some(x => x.status === "accepted" && ov(x))) st = "booked";
+        else if (t < cut) st = "past";   // inside the notice: shown as closed, like a time that's gone
         else if (BK.busy.some(x => x.status === "pending" && ov(x))) st = "requested";   // someone else is waiting; still open
         out.push({ t, e, iso: new Date(t).toISOString(), st, bi });
       }
@@ -753,7 +754,8 @@
   // how many half hours can follow a start (same block, still pickable, 2 hours at most)
   const maxLen = (sl, i) => { const top = coachRules().max; let n = 0; for (let j = i; j < sl.length && n < top; j++) { if (sl[j].bi !== sl[i].bi || !pickable(sl[j])) break; n++; } return n; };
   // what this coach takes, in half hours (their Session settings; the defaults are 30 minutes to 2 hours, both kinds)
-  const coachRules = () => { const c = coachById(BK.coach) || {}; return { min: (c.min_minutes || 30) / 30, max: (c.max_minutes || 120) / 30, kinds: c.session_kinds || "both" }; };
+  // notice: minutes ahead a request must be (default 1 hour)
+  const coachRules = () => { const c = coachById(BK.coach) || {}; return { min: (c.min_minutes || 30) / 30, max: (c.max_minutes || 120) / 30, kinds: c.session_kinds || "both", notice: c.notice_minutes ?? 60 }; };
   const startDay = () => BK.start ? UI.dayOf(BK.start) : null;
 
   // Only players request sessions. Coaches (mentors and assistants) and staff get a view-only planner, unless
@@ -801,11 +803,12 @@
     // says so when this coach's Session settings narrow the choices
     const lenNote = rules.min > 1 || rules.max < 4 ? '<p class="bk-fine bk-rule">' + who + " only does " + (rules.min === rules.max ? span(rules.min) : span(rules.min) + "–" + span(rules.max)) + " sessions.</p>" : "";
     const kindNote = rules.kinds !== "both" ? '<p class="bk-fine bk-rule">' + who + " only does " + (rules.kinds === "team" ? "team reviews" : "individual sessions") + ".</p>" : "";
+    const noticeNote = rules.notice > 0 ? '<p class="bk-fine bk-rule">Request at least ' + esc(UI.noticeWords(rules.notice)) + " ahead.</p>" : "";
     const kindBtn = (k, t) => '<button type="button" data-kind="' + k + '" aria-pressed="' + (BK.kind === k) + '">' + t + "</button>";
     const yours = has && !UI.onEastern(new Date(BK.start)) ? '<span class="bk-yours">' + esc(UI.time(BK.start) + " – " + UI.time(end)) + " your time</span>" : "";
     return '<div class="bk-req"><h4>Request card</h4><dl>' +
       "<div><dt>Coach</dt><dd>" + esc(UI.bare(UI.coachName(c))) + "</dd></div>" +
-      "<div><dt>When</dt>" + (has ? "<dd>" + esc(dayShort(startDay())) + "<br>" + etTime(BK.start) + " – " + etTime(end) + " " + UI.TZ + "</dd>" : '<dd class="empty">Click a start time on the planner</dd>') + "</div></dl>" +
+      "<div><dt>When</dt>" + (has ? "<dd>" + esc(dayShort(startDay())) + "<br>" + etTime(BK.start) + " – " + etTime(end) + " " + UI.TZ + "</dd>" : '<dd class="empty">Click a start time on the planner</dd>') + "</div></dl>" + noticeNote +
       '<div><span class="bk-lbl">How long</span>' + (BK.start ? '<div class="bk-seg" role="group" aria-label="How long">' + LEN.map((l, j) => '<button type="button" data-len="' + (j + 1) + '" aria-pressed="' + (BK.len === j + 1) + '"' + (j + 1 > mx || j + 1 < rules.min ? " disabled" : "") + ">" + l + "</button>").join("") + "</div>"
         : '<p class="bk-fine">Pick a start time first.</p>') + lenNote + "</div>" +
       '<div><span class="bk-lbl">Session</span><div class="bk-seg" role="group" aria-label="Session">' + (rules.kinds !== "individual" ? kindBtn("team", "Team review") : "") + (rules.kinds !== "team" ? kindBtn("individual", "Individual") : "") + "</div>" + kindNote + "</div>" +

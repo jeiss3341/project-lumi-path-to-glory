@@ -108,7 +108,8 @@
     API.coachRequests = coachId => q(sb.from("requests").select("*, requester:profiles(" + PROFILE + ")").eq("coach_id", coachId).order("starts_at"));
     API.allRequests = () => q(sb.from("requests").select("*, requester:profiles(" + PROFILE + "), coach:coaches(" + COACH_MINI + ")").order("starts_at"));
     API.requestSession = r => q(sb.from("requests").insert(r).select().single());
-    API.saveSessionSettings = (c, mn, mx, k) => q(sb.rpc("save_session_settings", { c, mn, mx, k }));
+    // nt / pm: notice and Lumi-chan ping minutes; left out, they stay as they are
+    API.saveSessionSettings = (c, mn, mx, k, nt, pm) => q(sb.rpc("save_session_settings", { c, mn, mx, k, nt, pm }));
     API.setRequestStatus = (id, status) => q(sb.from("requests").update({ status }).eq("id", id).select().single());
     API.moveRequest = (id, s, e) => q(sb.rpc("move_request", { r: id, s, e }));   // coach or staff moves a waiting or booked session (schema.sql)
     // a mentor writes down a session set up with their own team: booked straight away (see schema.sql)
@@ -346,12 +347,15 @@
 
     API.coaches = () => wait(S.coaches.slice().sort((a, b) => (a.kind === b.kind ? a.slot - b.slot : a.kind === "mentor" ? -1 : 1)));
     // same rules as the database's save_session_settings
-    API.saveSessionSettings = (id, mn, mx, k) => {
+    API.saveSessionSettings = (id, mn, mx, k, nt, pm) => {
       const c = S.coaches.find(x => x.id === id);
       if (!c) return fail("That coach doesn't exist.");
       if (!isStaff() && !isCoach(id)) return fail("You don't have permission to do that.");
-      if (![30, 60, 90, 120].includes(mn) || ![30, 60, 90, 120].includes(mx) || mn > mx || !["both", "team", "individual"].includes(k)) return fail("Those settings don't work together.");
-      Object.assign(c, { min_minutes: mn, max_minutes: mx, session_kinds: k }); save(); return wait(c);
+      nt = nt == null ? (c.notice_minutes ?? 60) : nt; pm = pm == null ? (c.ping_minutes ?? 20) : pm;
+      if (![30, 60, 90, 120].includes(mn) || ![30, 60, 90, 120].includes(mx) || mn > mx || !["both", "team", "individual"].includes(k) ||
+          !Number.isInteger(nt) || !Number.isInteger(pm)) return fail("Those settings don't work together.");
+      if (nt < 0 || nt > 1440 || pm < 0 || pm > 1440) return fail("Pick a time between 0 minutes and 1 day.");
+      Object.assign(c, { min_minutes: mn, max_minutes: mx, session_kinds: k, notice_minutes: nt, ping_minutes: pm }); save(); return wait(c);
     };
     API.updateCoach = (id, patch) => {
       const c = S.coaches.find(x => x.id === id);
@@ -472,6 +476,8 @@
       if (mins < (c.min_minutes || 30) || mins > (c.max_minutes || 120)) return fail("That length is outside what this coach takes.");
       if ((c.session_kinds || "both") !== "both" && c.session_kinds !== r.kind) return fail("This coach doesn't take that kind of session.");
       if (new Date(r.starts_at) < new Date(window.UI ? UI.now() : Date.now())) return fail("That time has already passed.");
+      const nt = c.notice_minutes ?? 60;
+      if (new Date(r.starts_at) - (window.UI ? UI.now() : Date.now()) < nt * 6e4) return fail("This coach takes requests up to " + UI.noticeWords(nt) + " before a session. Pick a later time.");
       if (!S.availability.some(b => b.coach_id === r.coach_id && new Date(b.starts_at) <= new Date(r.starts_at) && new Date(b.ends_at) >= new Date(r.ends_at))) return fail("That time is outside the hours this coach posted.");
       if (S.requests.some(x => x.coach_id === r.coach_id && x.status === "accepted" && overlap(x.starts_at, x.ends_at, r.starts_at, r.ends_at))) return fail("That time is already booked.");
       if (S.requests.filter(x => x.requester_id === S.me && x.status === "pending").length >= 5) return fail("You already have 5 requests waiting. Cancel one or wait for answers.");
