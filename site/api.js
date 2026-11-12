@@ -146,7 +146,7 @@
 
   /* ================================================================ DEMO */
   function demoApi() {
-    const KEY = "ptg-demo-v37";   // bump when the sample data changes, so browsers drop their old copy
+    const KEY = "ptg-demo-v38";   // bump when the sample data changes, so browsers drop their old copy
     const C = window.PTG;
     const API = { live: false };
     const authListeners = [], watchers = [];
@@ -200,7 +200,6 @@
        ["u-zephyr", "zephyr", "Zephyr"], ["u-gale", "gale", "Gale"],
        ["u-rook", "rook", "Rook"], ["u-ember", "ember", "Ember"],
        ["u-solo", "newplayer", "New Player"]].forEach(a => profiles.push(P(...a)));
-      profiles.find(p => p.id === "u-neotep").is_student = true;   // the demo mentor is "student too": Mentor and Student views, no team
       const LINK = { m1: "u-neotep", m2: "u-dylan", m3: "u-fwitchu", m4: "u-m4", m5: "u-m5", m6: "u-m6", m7: "u-m7", m8: "u-m8",
         a1: "u-baeksu", a2: "u-jalja", a3: "u-camper", a4: "u-squortle", a5: "u-jignut", a6: "u-kyro", a7: "u-superior", a9: "u-chibi" };   // a8 stays unlinked
 

@@ -97,9 +97,11 @@ begin
     raise exception 'This coach doesn''t take that kind of session.';
   end if;
   -- only players request sessions: coaches (mentors and assistants) and staff can't, unless they're on a team
+  -- or marked "student too" (profiles.is_student, from student-access.sql)
   if (exists (select 1 from public.coaches c where c.profile_id = new.requester_id)
       or exists (select 1 from public.profiles p where p.id = new.requester_id and p.role = 'staff'))
-     and not exists (select 1 from public.teams t where new.requester_id = any (t.member_ids)) then
+     and not exists (select 1 from public.teams t where new.requester_id = any (t.member_ids))
+     and not exists (select 1 from public.profiles p where p.id = new.requester_id and p.is_student) then
     raise exception 'Only players can request sessions.';
   end if;
   if new.starts_at < now() then
@@ -130,8 +132,16 @@ end $$;
 
 notify pgrst, 'reload schema';
 
--- check: expect three rows (notice_minutes, ping_minutes, ptg_pings)
+-- check: notice_minutes, ping_minutes, ptg_pings, "student too" kept in the request rule,
+-- then one row per account marked "student too" (none = no rows after the first four)
 select 'coaches.' || column_name || ' (default ' || column_default || ')' as part from information_schema.columns
   where table_schema = 'public' and table_name = 'coaches' and column_name in ('notice_minutes', 'ping_minutes')
 union all
-select 'ptg_pings table' from information_schema.tables where table_schema = 'public' and table_name = 'ptg_pings';
+select 'ptg_pings table' from information_schema.tables where table_schema = 'public' and table_name = 'ptg_pings'
+union all
+select 'request rule allows student too: ' || (position('is_student' in pg_get_functiondef('public.requests_before_insert()'::regprocedure)) > 0)::text
+union all
+select 'student too: ' || coalesce(nullif(p.display_name, ''), p.username, '?')
+       || coalesce(' (' || (select c.id || ' ' || c.name from public.coaches c where c.profile_id = p.id limit 1) || ')', '')
+       || case when p.role = 'staff' then ' [staff]' else '' end
+  from public.profiles p where p.is_student;
