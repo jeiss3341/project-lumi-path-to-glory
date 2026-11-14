@@ -1,0 +1,41 @@
+# Path to Glory · CI
+# On every push to main or live (and every pull request), GitHub checks the site:
+#   1. every JavaScript file in site/ parses (one typo can break every page)
+#   2. each page opens in a real browser, logged out and as a player, mentor, assistant
+#      and staff in demo mode, with no errors in the console
+# Railway's "Wait for CI" setting then only deploys the live branch when this passes.
+name: CI
+
+on:
+  push:
+    branches: [main, live]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: JavaScript syntax check
+        run: |
+          for f in site/*.js; do
+            node --check "$f" || exit 1
+          done
+          echo "All site/*.js files parse."
+
+      - name: Install the test browser
+        working-directory: tests
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Open every page and check for errors
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /dev/null 2>&1 &
+          node tests/smoke.mjs

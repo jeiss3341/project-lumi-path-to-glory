@@ -20,6 +20,7 @@ The site itself is in `site/`. There is no build step: the files are served as t
    - Everything on `main` goes live, including other people's changes. Before pushing, run `git log --oneline origin/live..origin/main` and tell the person in a few plain words what will go live.
    - Afterwards, check the real site really has it: fetch a changed file from `https://projectlumi.space/<file>` (add `?x=<random>` to skip caches) and compare it with the local file, or open the page. Railway takes about a minute.
 4. **Before going live, open the page and check the browser console has no errors.** A broken file breaks the real site for everyone.
+5. **CI:** every push to `main` or `live` runs GitHub Actions (`.github/workflows/ci.yml`): a syntax check of `site/*.js`, then `tests/smoke.mjs` opens each page in demo mode (logged out, player, mentor, assistant, staff) and fails on any error. Before "push it live", check the latest run on `main` is green: https://github.com/jeiss3341/project-lumi-path-to-glory/actions
 
 ## Database changes (Supabase)
 

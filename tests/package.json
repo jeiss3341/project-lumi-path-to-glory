@@ -1,0 +1,9 @@
+{
+  "name": "ptg-tests",
+  "private": true,
+  "description": "Path to Glory page checks, run by GitHub Actions (.github/workflows/ci.yml)",
+  "type": "module",
+  "devDependencies": {
+    "playwright": "1.47.2"
+  }
+}
