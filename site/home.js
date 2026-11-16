@@ -719,6 +719,7 @@
     const pop = $("#bk-pop");
     const myTeam = S.me && S.teams.some(t => (t.member_ids || []).includes(S.me.id));
     Object.assign(BK, { coach: id, start: null, len: 0, note: "", kind: myTeam ? "team" : "individual" });
+    if (!weeks().includes(BK.wk)) BK.wk = weeks()[0];   // once Week 1 is over, the first pop-up opens on Week 2 too
     if (coachRules().kinds !== "both") BK.kind = coachRules().kinds;
     if (!pop.open) { pop.innerHTML = '<p class="loading">Loading ' + esc(UI.bare(UI.coachName(coachById(id)))) + "'s week…</p>"; pop.showModal(); }
     await loadCoach();
