@@ -26,6 +26,10 @@ window.PTG = {
     { date: "2026-11-12", kind: "scrim", fcfs: true, short: "FCFS", title: "FCFS Scrims", note: "Open scrims, first come first served. Grab a lobby in the Scrim Cord." },
     { date: "2026-11-13", kind: "scrim", short: "Scrim", title: "Scrim Day 2", note: "Scrim block, the last practice before the Mock Checkpoint Series." },
     { date: "2026-11-14", kind: "mock", short: "Mock", title: "Mock Checkpoint Series", note: "A full practice run of the checkpoint format. Checkpoint activates after 4 games, one fewer than the Final." },
+    { date: "2026-11-18", kind: "scrim", short: "Scrim", title: "PTG Scrims", note: "Path to Glory scrim block. Mentors watch live or review after." },
+    { date: "2026-11-19", kind: "scrim", fcfs: true, short: "FCFS", title: "FCFS Scrims", note: "Open scrims, first come first served. Grab a lobby in the Scrim Cord." },
+    { date: "2026-11-20", kind: "scrim", short: "Scrim", title: "PTG Scrims", note: "Path to Glory scrim block. Mentors watch live or review after." },
+    { date: "2026-11-21", kind: "scrim", short: "Scrim", title: "PTG Scrims", note: "Path to Glory scrim block, the last practice before the Final Checkpoint Series." },
     { date: "2026-11-22", kind: "final", short: "Final", title: "Final Checkpoint Series", note: "The checkpoint that counts. Closes out the event." }
   ],
 

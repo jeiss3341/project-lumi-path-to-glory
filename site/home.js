@@ -247,8 +247,15 @@
         t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
       };
-      const nudgeX = { "2026-11-19": 7 }[ymd] || 0;   // hand-placed tweaks, in % of the day's width (Nov 19 sat a little too far left)
-      return "--sx:" + (Math.round(2 + r() * 38) + nudgeX) + "%;--sy:" + Math.round(38 + r() * 10) + "%;--sr:" + (ymd === "2026-11-18" ? -4 : Math.round(-14 + r() * 28)) + "deg";   // Nov 18 landed perfectly straight, so it gets a slight lean by hand
+      // playful but tidy: about the same spot in every day, a small wobble, and a lean that alternates day to day
+      // the lean flips between neighbouring days AND between the same weekday in week 1 and week 2,
+      // so stickers stacked in one column never look parallel
+      const dt = new Date(ymd + "T12:00:00Z");
+      const flip = (dt.getUTCDay() + Math.floor(dt.getTime() / 6048e5)) % 2;
+      const lean = (flip ? 1 : -1) * Math.round(6 + r() * 7);
+      // hand-placed: Nov 21 came out nearly the same as Nov 18, so it leans the other way
+      if (ymd === "2026-11-21") return "--sx:24%;--sy:45%;--sr:9deg";
+      return "--sx:" + Math.round(20 + r() * 10) + "%;--sy:" + Math.round(44 + r() * 6) + "%;--sr:" + lean + "deg";
     };
     const chip = ev => ev.kind === "scrim" && !ev.fcfs ? '<img class="scrim-sticker" src="art/scrim-sticker.svg" alt="" width="240" height="240" style="' + stickerSpot(ev.date) + '">' : '<span class="chip ' + (ev.fcfs ? "fcfs" : ev.kind) + (ev.tentative ? " tbc" : "") + '">' + esc(ev.short) + "</span>";
     $("#weeks").innerHTML = [1, 2].map(w => '<div class="wk">' + label[w] + '</div><div class="week">' +
